@@ -8,19 +8,14 @@ up:
 up-detach:
 	$(DCOMPOSE) up -d
 
+up-build:
+	$(DCOMPOSE) up --build
+
 down:
 	$(DCOMPOSE) down
 
-build:
-	$(DCOMPOSE) build
-
-clean:
-	$(DCOMPOSE) rm -f
-
-remove-volumes:
-	$(DCOMPOSE) down --volumes
-
-restart: down up
+down-clean:
+	$(DCOMPOSE) down --rmi all -v --remove-orphans
 
 logs:
 	$(DCOMPOSE) logs
@@ -31,7 +26,4 @@ logs-%:
 exec-%:
 	$(DCOMPOSE) exec $* /bin/sh
 
-restart-%:
-	$(DCOMPOSE) restart $*
-
-.PHONY: up up-detach down build clean remove-volumes restart logs exec-% restart-%
+.PHONY:

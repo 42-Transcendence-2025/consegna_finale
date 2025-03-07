@@ -1,17 +1,24 @@
 version: '3.8'
 
 services:
+  django-base:
+    image: django-base
+    build:
+      context: ./src
+      dockerfile: ./Dockerfile.django.base
+
   matchmaking:
     container_name: matchmaking
     build:
       context: ./src/matchmaking
     volumes:
       - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
-      - matchmaking_venv:/app/venv
+      - matchmaking_venv:/venv
     ports:
       - "8001:8001"
     environment:
       - APP_PORT=8001
+      - SIGNING_KEY=TODO # TODO: .env file
 
   pong_game:
     container_name: pong_game
@@ -19,11 +26,12 @@ services:
       context: ./src/pong_game
     volumes:
       - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
-      - pong_game_venv:/app/venv
+      - pong_game_venv:/venv
     ports:
       - "8002:8002"
     environment:
       - APP_PORT=8002
+      - SIGNING_KEY=TODO # TODO: .env file
 
   user_management:
     container_name: user_management
@@ -31,9 +39,10 @@ services:
       context: ./src/user_management
     volumes:
       - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
-      - user_management_venv:/app/venv
+      - user_management_venv:/venv
     environment:
       - APP_PORT=8003
+      - SIGNING_KEY=TODO # TODO: .env file
 
 volumes:
   matchmaking_venv:

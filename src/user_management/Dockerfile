@@ -1,18 +1,9 @@
-FROM python:3.11-alpine
+FROM django-base
 
-RUN apk add --no-cache gcc musl-dev postgresql-dev
-
-WORKDIR /app
-
-ENV VIRTUAL_ENV=/app/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV APP_PORT=8000
-
-RUN python -m venv $VIRTUAL_ENV && \
-	$VIRTUAL_ENV/bin/pip install --upgrade pip setuptools wheel
+ENV SIGNING_KEY=TODO
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # TODO: USE THIS FOR PRODUCTION
 # COPY . .
@@ -20,5 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # EXPOSE $APP_PORT
 
 # TODO: LAUNCH WITH GUNICORN INSTEAD OF PYTHON MANAGE
-# CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:$APP_PORT"]
-CMD ["sh", "-c", "python -m http.server $APP_PORT"]
+CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:$APP_PORT"]
