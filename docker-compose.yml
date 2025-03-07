@@ -6,7 +6,7 @@ services:
     build:
       context: ./src/matchmaking
     volumes:
-      - ./src/matchmaking:/app
+      - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
       - matchmaking_venv:/app/venv
     ports:
       - "8001:8001"
@@ -18,7 +18,7 @@ services:
     build:
       context: ./src/pong_game
     volumes:
-      - ./src/pong_game:/app
+      - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
       - pong_game_venv:/app/venv
     ports:
       - "8002:8002"
@@ -30,7 +30,7 @@ services:
     build:
       context: ./src/user_management
     volumes:
-      - ./src/user_management:/app
+      - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/app/venv
     environment:
       - APP_PORT=8003
