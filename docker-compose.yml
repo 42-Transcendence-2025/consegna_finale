@@ -4,9 +4,9 @@ services:
   matchmaking:
     container_name: matchmaking
     build:
-      context: ./backend/matchmaking
+      context: ./src/matchmaking
     volumes:
-      - ./backend/matchmaking:/app
+      - ./src/matchmaking:/app
       - matchmaking_venv:/app/venv
     ports:
       - "8001:8001"
@@ -16,9 +16,9 @@ services:
   pong_game:
     container_name: pong_game
     build:
-      context: ./backend/pong_game
+      context: ./src/pong_game
     volumes:
-      - ./backend/pong_game:/app
+      - ./src/pong_game:/app
       - pong_game_venv:/app/venv
     ports:
       - "8002:8002"
@@ -28,9 +28,9 @@ services:
   user_management:
     container_name: user_management
     build:
-      context: ./backend/user_management
+      context: ./src/user_management
     volumes:
-      - ./backend/user_management:/app
+      - ./src/user_management:/app
       - user_management_venv:/app/venv
     environment:
       - APP_PORT=8003

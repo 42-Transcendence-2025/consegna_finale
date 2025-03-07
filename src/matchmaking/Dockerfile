@@ -20,4 +20,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # EXPOSE $APP_PORT
 
 # TODO: LAUNCH WITH GUNICORN INSTEAD OF PYTHON MANAGE
-CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:$APP_PORT"]
+# CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:$APP_PORT"]
+CMD ["sh", "-c", "python -m http.server $APP_PORT"]
