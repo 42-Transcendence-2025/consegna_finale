@@ -6,7 +6,7 @@ services:
     build:
       context: ./backend/matchmaking
     volumes:
-      - ./backend/matchmaking:/app  # Mount only the relevant subdirectory
+      - ./backend/matchmaking:/app
       - matchmaking_venv:/app/venv
     ports:
       - "8001:8001"
