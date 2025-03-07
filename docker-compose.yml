@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  matchmaking:
+    container_name: matchmaking
+    build:
+      context: ./backend/matchmaking
+    volumes:
+      - ./backend/matchmaking:/app  # Mount only the relevant subdirectory
+      - matchmaking_venv:/app/venv
+    ports:
+      - "8001:8001"
+    environment:
+      - APP_PORT=8001
+
+  pong_game:
+    container_name: pong_game
+    build:
+      context: ./backend/pong_game
+    volumes:
+      - ./backend/pong_game:/app
+      - pong_game_venv:/app/venv
+    ports:
+      - "8002:8002"
+    environment:
+      - APP_PORT=8002
+
+  user_management:
+    container_name: user_management
+    build:
+      context: ./backend/user_management
+    volumes:
+      - ./backend/user_management:/app
+      - user_management_venv:/app/venv
+    environment:
+      - APP_PORT=8003
+
+volumes:
+  matchmaking_venv:
+  pong_game_venv:
+  user_management_venv:
