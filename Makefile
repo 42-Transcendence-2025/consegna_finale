@@ -1,14 +1,17 @@
 DCOMPOSE = $(shell if command -v docker-compose > /dev/null 2>&1; then echo "docker-compose"; else echo "docker compose"; fi)
 
+VENVS_DIR = venvs
+VENVS = $(VENVS_DIR)/matchmaking $(VENVS_DIR)/pong_game $(VENVS_DIR)/user_management
+
 all: up-detach
 
-up:
+up: create-venvs-dirs
 	$(DCOMPOSE) up
 
-up-detach:
+up-detach: create-venvs-dirs
 	$(DCOMPOSE) up -d
 
-up-build:
+up-build: create-venvs-dirs
 	$(DCOMPOSE) up --build
 
 down:
@@ -25,5 +28,8 @@ logs-%:
 
 exec-%:
 	$(DCOMPOSE) exec $* /bin/sh
+
+create-venvs-dirs:
+	mkdir -p $(VENVS)
 
 .PHONY:

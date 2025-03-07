@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   django-base:
+    container_name: django-base-image
     image: django-base
     build:
       context: ./src
@@ -46,5 +47,20 @@ services:
 
 volumes:
   matchmaking_venv:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $PWD/venvs/matchmaking
   pong_game_venv:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $PWD/venvs/pong_game
   user_management_venv:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $PWD/venvs/user_management

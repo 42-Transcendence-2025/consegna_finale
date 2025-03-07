@@ -12,4 +12,8 @@ ENV VIRTUAL_ENV=/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV APP_PORT=8000
 
-RUN python -m venv $VIRTUAL_ENV && $VIRTUAL_ENV/bin/pip install --upgrade pip setuptools wheel
+COPY requirements.txt .
+
+RUN python -m venv $VIRTUAL_ENV \
+	&& $VIRTUAL_ENV/bin/pip install --upgrade pip setuptools wheel \
+	&& $VIRTUAL_ENV/bin/pip install -r requirements.txt
