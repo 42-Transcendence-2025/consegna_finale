@@ -43,6 +43,8 @@ services:
     volumes:
       - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
+    ports:
+      - "8003:8003"
     environment:
       - APP_PORT=8003
       - SIGNING_KEY=TODO # TODO: .env file
