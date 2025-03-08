@@ -15,6 +15,7 @@ from datetime import timedelta
 from rest_framework.settings import api_settings
 import environ
 import os
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -91,14 +92,7 @@ WSGI_APPLICATION = 'user_mgmt.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',  # Nome predefinito o il nome specificato su Supabase
-        'USER': 'postgres.ggbckomtbwupqqvjasap',  # Nome utente fornito da Supabase
-        'PASSWORD': 'GokuSuperSaiyan4',
-        'HOST': 'aws-0-eu-central-2.pooler.supabase.com',
-        'PORT': '6543',
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 

@@ -20,6 +20,7 @@ services:
     environment:
       - APP_PORT=8001
       - SIGNING_KEY=TODO # TODO: .env file
+      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
 
   pong_game:
     container_name: pong_game
@@ -33,6 +34,7 @@ services:
     environment:
       - APP_PORT=8002
       - SIGNING_KEY=TODO # TODO: .env file
+      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
 
   user_management:
     container_name: user_management
@@ -44,6 +46,20 @@ services:
     environment:
       - APP_PORT=8003
       - SIGNING_KEY=TODO # TODO: .env file
+      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
+
+  postgres_db:
+    container_name: postgres_db
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: main_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   matchmaking_venv:
@@ -64,3 +80,4 @@ volumes:
       type: none
       o: bind
       device: $PWD/venvs/user_management
+  postgres_data:
