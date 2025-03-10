@@ -19,8 +19,8 @@ services:
       - "8001:8001"
     environment:
       - APP_PORT=8001
-      - SIGNING_KEY=TODO # TODO: .env file
-      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
+      - SIGNING_KEY=${SIGNING_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
 
   pong_game:
     container_name: pong_game
@@ -33,8 +33,8 @@ services:
       - "8002:8002"
     environment:
       - APP_PORT=8002
-      - SIGNING_KEY=TODO # TODO: .env file
-      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
+      - SIGNING_KEY=${SIGNING_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
 
   user_management:
     container_name: user_management
@@ -47,16 +47,16 @@ services:
       - "8003:8003"
     environment:
       - APP_PORT=8003
-      - SIGNING_KEY=TODO # TODO: .env file
-      - DATABASE_URL=postgres://postgres:mysecretpassword@postgres_db:5432/main_db
+      - SIGNING_KEY=${SIGNING_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
 
   postgres_db:
     container_name: postgres_db
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: main_db
     ports:
       - "5432:5432"
