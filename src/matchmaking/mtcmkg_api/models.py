@@ -9,6 +9,9 @@ class PongUser(AbstractUser):
     otp_secret = models.CharField(max_length=32, blank=True, null=True)
     trophies = models.IntegerField(default=0)
     last_activity = models.DateTimeField(null=True, blank=True)
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    last_login_device = models.TextField(null=True, blank=True)
+    last_otp_verification = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.username

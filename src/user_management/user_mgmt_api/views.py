@@ -14,6 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.utils import timezone
 from .mixins import UpdateLastActivityMixin
+from .utils import get_client_ip, get_user_agent
+from django.utils.timezone import now
 
 User = get_user_model()
 
@@ -38,7 +40,7 @@ class PongRegisterView(APIView):
             fail_silently=False,
         )
         return Response({
-            "message": "Registration completed successfully, check the email for the OTP code"
+            "detail": "Registration completed successfully, check the email for the OTP code"
         }, status=status.HTTP_201_CREATED)
 
 class PongLoginView(APIView):
@@ -55,6 +57,31 @@ class PongLoginView(APIView):
                 {"detail": "invalid credentials"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if user.is_otp_required(request):
+            user.otp_secret = pyotp.random_base32()
+            user.save()
+            totp = pyotp.TOTP(user.otp_secret)
+            otp_code = totp.now()
+
+            print(f"Generated OTP: {otp_code}")
+
+            send_mail(
+                subject='OTP Code',
+                message=f'Your OTP Code is: {otp_code}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False,
+                )
+        
+            return Response(
+                {"detail": "Correct credentials, check your email for the OTP code"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        user.last_login_ip = get_client_ip(request)
+        user.last_login_device = get_user_agent(request)
+        user.last_otp_verification = now()
+        user.save()
 
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
@@ -65,8 +92,20 @@ class PongLoginView(APIView):
 class PongLogoutView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        request.user.auth_token.delete()
-        return Response(status=status.HTTP_200_OK)
+        try:
+            # Estrarre il refresh token dalla richiesta
+            refresh_token = request.data.get("refresh_token")
+            if not refresh_token:
+                return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Revocare il refresh token
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Blacklist se usi la blacklist dei token
+
+            return Response({"detail": "Successfully logged out"}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = PongUserSerializer
@@ -113,6 +152,11 @@ class VerifyOTPView(APIView):
                 {"detail": "Invalid OTP code."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        user.last_login_ip = get_client_ip(request)
+        user.last_login_device = get_user_agent(request)
+        user.last_otp_verification = now()
+        user.save()
 
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
