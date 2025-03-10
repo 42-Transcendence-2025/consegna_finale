@@ -1,6 +1,9 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,linux,django,intellij,intellij+all,jetbrains+all,ninja,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,linux,django,intellij,intellij+all,jetbrains+all,ninja,python
+.env
+.env*.local
+!.env.example
 
 ### Django ###
 *.log

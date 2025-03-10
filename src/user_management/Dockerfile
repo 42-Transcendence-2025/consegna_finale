@@ -1,4 +1,4 @@
-FROM django-base
+FROM django_base_image
 
 ENV SIGNING_KEY=TODO
 

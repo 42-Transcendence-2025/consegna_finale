@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   django-base:
-    container_name: django-base-image
-    image: django-base
+    container_name: django_base_image
+    image: django_base_image
     build:
       context: ./src
       dockerfile: ./Dockerfile.django.base
@@ -12,6 +10,11 @@ services:
     container_name: matchmaking
     build:
       context: ./src/matchmaking
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      django-base:
+        condition: service_started
     volumes:
       - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
       - matchmaking_venv:/venv
@@ -26,6 +29,11 @@ services:
     container_name: pong_game
     build:
       context: ./src/pong_game
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      django-base:
+        condition: service_started
     volumes:
       - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
       - pong_game_venv:/venv
@@ -40,6 +48,11 @@ services:
     container_name: user_management
     build:
       context: ./src/user_management
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      django-base:
+        condition: service_started
     volumes:
       - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
@@ -54,6 +67,11 @@ services:
     container_name: postgres_db
     image: postgres:15
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
