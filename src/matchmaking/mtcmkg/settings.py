@@ -162,6 +162,6 @@ SIMPLE_JWT = {
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://:ygUaAUFPNM723Wf7aAuH08YlamO0c56l@redis-17373.c339.eu-west-3-1.ec2.redns.redis-cloud.com:17373",  # Porta predefinita e database 1
+        "LOCATION": env('REDIS_URL'),
     }
 }
