@@ -16,6 +16,10 @@ class PongUser(AbstractUser):
         """Controlla se l'OTP è necessario"""
         new_ip = get_client_ip(request)
         new_device = get_user_agent(request)
+        print(f"Last IP: {self.last_login_ip}")
+        print(f"Last Device: {self.last_login_device}")
+        print(f"New IP: {new_ip}")
+        print(f"New Device: {new_device}")
 
         # Se è la prima volta che salva IP/dispositivo
         if not self.last_login_ip or not self.last_login_device:

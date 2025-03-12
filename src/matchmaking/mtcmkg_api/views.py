@@ -31,7 +31,7 @@ class PongPrivatePasswordMatchView(APIView):
                 condition.wait(timeout=1)
 
         if cache.get(game_id_key):  # Giocatore 2 trova il game_id
-            game_id = cache.get(game_id_key)
+            game_id = cache.get(game_id_key)["game_id"]
             cache.delete(game_id_key)
             with get_condition(password):
                 get_condition(password).notify()
