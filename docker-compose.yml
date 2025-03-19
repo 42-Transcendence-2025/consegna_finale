@@ -1,15 +1,15 @@
 services:
   django-base:
-    container_name: django_base_image
     image: django_base_image
+    container_name: django_base_image
     build:
       context: ./src
       dockerfile: ./Dockerfile.django.base
 
   matchmaking:
-    container_name: matchmaking
     build:
       context: ./src/matchmaking
+    container_name: matchmaking
     depends_on:
       postgres_db:
         condition: service_healthy
@@ -17,21 +17,23 @@ services:
         condition: service_started
       redis:
         condition: service_started
-    volumes:
-      - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
-      - matchmaking_venv:/venv
-    ports:
-      - "8001:8001"
     environment:
       - APP_PORT=8001
       - SIGNING_KEY=${SIGNING_KEY}
       - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
       - REDIS_URL=redis://redis:6379
+    networks:
+      - transcendence
+    ports:
+      - 8001:8001
+    volumes:
+      - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
+      - matchmaking_venv:/venv
 
   pong_game:
-    container_name: pong_game
     build:
       context: ./src/pong_game
+    container_name: pong_game
     depends_on:
       postgres_db:
         condition: service_healthy
@@ -39,60 +41,69 @@ services:
         condition: service_started
       redis:
         condition: service_started
-    volumes:
-      - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
-      - pong_game_venv:/venv
-    ports:
-      - "8002:8002"
     environment:
       - APP_PORT=8002
       - SIGNING_KEY=${SIGNING_KEY}
       - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
       - REDIS_URL=redis://redis:6379
+    networks:
+      - transcendence
+    ports:
+      - 8002:8002
+    volumes:
+      - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
+      - pong_game_venv:/venv
 
   user_management:
-    container_name: user_management
     build:
       context: ./src/user_management
+    container_name: user_management
     depends_on:
       postgres_db:
         condition: service_healthy
       django-base:
         condition: service_started
-    volumes:
-      - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
-      - user_management_venv:/venv
-    ports:
-      - "8003:8003"
     environment:
       - APP_PORT=8003
       - SIGNING_KEY=${SIGNING_KEY}
       - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
+    networks:
+      - transcendence
+    ports:
+      - 8003:8003
+    volumes:
+      - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
+      - user_management_venv:/venv
+
 
   postgres_db:
-    container_name: postgres_db
     image: postgres:15
-    restart: always
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: main_db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
-    environment:
-      POSTGRES_USER: ${POSTGRES_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: main_db
-    ports:
-      - "5432:5432"
+    networks:
+      - transcendence
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+
   redis:
-    container_name: redis
     image: redis:7
+    container_name: redis
+    networks:
+      - transcendence
     restart: always
-    ports:
-      - "6379:6379"
+
+networks:
+  transcendence:
 
 volumes:
   matchmaking_venv:
@@ -107,10 +118,10 @@ volumes:
       type: none
       o: bind
       device: $PWD/venvs/pong_game
+  postgres_data:
   user_management_venv:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: $PWD/venvs/user_management
-  postgres_data:
