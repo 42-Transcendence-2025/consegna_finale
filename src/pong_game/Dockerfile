@@ -3,10 +3,10 @@ FROM django_base_image
 ENV SIGNING_KEY=TODO
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # TODO: USE THIS FOR PRODUCTION
-# COPY . .
+COPY . .
 
 # EXPOSE $APP_PORT
 

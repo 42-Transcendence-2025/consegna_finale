@@ -90,6 +90,8 @@ services:
       retries: 5
     networks:
       - transcendence
+    ports:
+      - 5432:5432
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -100,28 +102,19 @@ services:
     container_name: redis
     networks:
       - transcendence
+    ports:
+      - 9999:6379 # TODO: change the host port if needed
     restart: always
+    volumes:
+      - redis_data:/data
 
 networks:
   transcendence:
 
 volumes:
-  matchmaking_venv:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $PWD/venvs/matchmaking
-  pong_game_venv:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $PWD/venvs/pong_game
-  postgres_data:
-  user_management_venv:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $PWD/venvs/user_management
+    postgres_data:
+    redis_data:
+
+    matchmaking_venv:
+    pong_game_venv:
+    user_management_venv:
