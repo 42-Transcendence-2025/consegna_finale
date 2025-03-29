@@ -54,10 +54,14 @@ services:
       - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
       - pong_game_venv:/venv
 
+# `user_management` SHOULD BE THE FIRST OF THE 3 SERVICES TO START, BECAUSE IT HAS TO MAKE DB MIGRATIONS
   user_management:
     build:
       context: ./src/user_management
     container_name: user_management
+    command: >
+        sh -c "python manage.py migrate --noinput &&
+                python manage.py runserver 0.0.0.0:$$APP_PORT"
     depends_on:
       postgres_db:
         condition: service_healthy
