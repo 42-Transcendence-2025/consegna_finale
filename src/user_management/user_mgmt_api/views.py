@@ -75,7 +75,7 @@ class PongLoginView(APIView):
         
             return Response(
                 {"detail": "Correct credentials, check your email for the OTP code"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_202_ACCEPTED
             )
         
         user.last_login_ip = get_client_ip(request)
