@@ -29,6 +29,7 @@ media
 
 # Distribution / packaging
 .Python
+venvs/
 build/
 develop-eggs/
 dist/
