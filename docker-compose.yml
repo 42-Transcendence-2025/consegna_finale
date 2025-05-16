@@ -3,12 +3,12 @@ services:
     image: django_base_image
     container_name: django_base_image
     build:
-      context: ./src
+      context: ./backend
       dockerfile: ./Dockerfile.django.base
 
   matchmaking:
     build:
-      context: ./src/matchmaking
+      context: ./backend/matchmaking
     container_name: matchmaking
     depends_on:
       postgres_db:
@@ -27,12 +27,12 @@ services:
     ports:
       - 8001:8001
     volumes:
-      - ./src/matchmaking:/app # TODO: remove this on prod and use COPY instead
+      - ./backend/matchmaking:/app # TODO: remove this on prod and use COPY instead
       - matchmaking_venv:/venv
 
   pong_game:
     build:
-      context: ./src/pong_game
+      context: ./backend/pong_game
     container_name: pong_game
     depends_on:
       postgres_db:
@@ -51,13 +51,13 @@ services:
     ports:
       - 8002:8002
     volumes:
-      - ./src/pong_game:/app # TODO: remove this on prod and use COPY instead
+      - ./backend/pong_game:/app # TODO: remove this on prod and use COPY instead
       - pong_game_venv:/venv
 
 # `user_management` SHOULD BE THE FIRST OF THE 3 SERVICES TO START, BECAUSE IT HAS TO MAKE DB MIGRATIONS
   user_management:
     build:
-      context: ./src/user_management
+      context: ./backend/user_management
     container_name: user_management
     command: >
         sh -c "python manage.py migrate --noinput &&
@@ -76,7 +76,7 @@ services:
     ports:
       - 8003:8003
     volumes:
-      - ./src/user_management:/app # TODO: remove this on prod and use COPY instead
+      - ./backend/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
 
 
