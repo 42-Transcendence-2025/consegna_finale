@@ -5,6 +5,7 @@ import asyncio
 import json
 from .pong import PongGame  # Assumendo che la classe PongGame sia in un file separato
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.core.cache import cache
 
 class GameConsumer(AsyncWebsocketConsumer):
     games = {}  # Dizionario condiviso per memorizzare le istanze del gioco per ogni `game_id`
@@ -12,6 +13,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.room_group_name = f"game_{self.game_id}"
+        self.match_id = await self.get_match_id()
         self.player_side = None  # Sarà assegnato come "left" o "right" dopo l'autenticazione
         self.user = None  # Utente autenticato
         self.game = None  # Istanza del gioco
@@ -118,6 +120,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Avvia il game loop se non è già in esecuzione e entrambi i giocatori sono connessi
         if len(self.game.clients) == 2 and not self.game.game_loop_running:
             self.game.game_loop_running = True
+            if self.match_id:
+                await self.update_match_status('in_game')
             asyncio.create_task(self.game_loop())
 
     async def leave_game(self):
@@ -155,6 +159,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 # Aggiorna i trofei
                 await self.update_trophies(winner, loser)
+                # Aggiorna lo stato della partita nel database
+                if self.match_id:
+                    await self.update_match_finished(
+                        points_player_1=self.game.state["left_score"],
+                        points_player_2=self.game.state["right_score"]
+                    )
+
 
                 # Invia un messaggio di fine gioco ai client
                 await self.channel_layer.group_send(
@@ -198,6 +209,33 @@ class GameConsumer(AsyncWebsocketConsumer):
             "type": "game_over",
             "winner": event["winner"],
         })
+
+    @database_sync_to_async
+    def get_match_id(self):
+        return cache.get(f"match_id_for_game_{self.game_id}")
+    
+    @database_sync_to_async
+    def update_match_status(self, status):
+        from .models import Match
+        try:
+            match = Match.objects.get(id=self.match_id)
+            match.status = status
+            match.save()
+        except Exception as e:
+            print(f"[ERROR] Match update failed: {e}")
+
+    @database_sync_to_async
+    def update_match_finished(self, points_player_1, points_player_2):
+        from .models import Match
+        try:
+            match = Match.objects.get(id=self.match_id)
+            match.points_player_1 = points_player_1
+            match.points_player_2 = points_player_2
+            match.status = 'finished'
+            match.save()
+        except Exception as e:
+            print(f"[ERROR] Final match update failed: {e}")
+
 
     @database_sync_to_async
     def update_trophies(self, winner, loser):
