@@ -79,6 +79,26 @@ services:
       - ./backend/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./frontend/Dockerfile
+    container_name: frontend
+    depends_on:
+      user_management:
+        condition: service_started
+      matchmaking:
+        condition: service_started
+      pong_game:
+        condition: service_started
+    networks:
+      - transcendence
+    ports:
+      - 8000:8080
+    restart: always
+    volumes:
+      - ./frontend:/app # TODO: remove this on prod and use COPY instead
+
 
   postgres_db:
     image: postgres:15

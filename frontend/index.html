@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+
+    <link rel="stylesheet" href="src/styles.css">
+
+    <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="libs/font-awesome-4.7.0/css/font-awesome.min.css">
+
+    <!-- JQUERY -->
+    <script src="libs/jquery-3.7.1/jquery-3.7.1.min.js"></script>
+
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="libs/bootstrap-5.3.3/css/bootstrap.min.css">
+    <script src="libs/bootstrap-5.3.3/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CLDR -->
+    <script src="libs/CLDRPluralRuleParser/CLDRPluralRuleParser.js"></script>
+    <!-- JQUERY I18N -->
+    <script src="libs/jquery.i18n/jquery.i18n.js"></script>
+    <script src="libs/jquery.i18n/jquery.i18n.messagestore.js"></script>
+    <script src="libs/jquery.i18n/jquery.i18n.fallbacks.js"></script>
+    <script src="libs/jquery.i18n/jquery.i18n.parser.js"></script>
+    <script src="libs/jquery.i18n/jquery.i18n.emitter.js"></script>
+    <script src="libs/jquery.i18n/jquery.i18n.language.js"></script>
+    <script src="libs/jquery.i18n/languages/he.js"></script>
+    <script src="libs/jquery.i18n/languages/fi.js"></script>
+    <script src="libs/jquery.i18n/languages/uk.js"></script>
+
+    
+</head>
+
+<body class="d-flex flex-column">
+<header id="header" class="navbar navbar-expand-md navbar-dark bg-dark flex-shrink-0 p-2">
+    <div class="container-fluid">
+        <div>
+            <a class="navbar-brand" href="#">
+                <img src="assets/logo.png" alt="Logo" width="30" height="30">
+            </a>
+
+            <!-- LANGUAGE SWITCHER -->
+            <div class="btn-group">
+                <div id="locale-switch" class="btn-group">
+                    <button
+                        type="button" class="btn d-flex justify-content-center align-items-center"
+                        data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static"
+                    >
+                        <img class="d-none selected-flag-img object-fit-scale" src="assets/flags/us.png" alt="US Flag">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark user-select-none" style="min-width: auto;">
+                        <li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="en">
+                            <img id="flag-en" class="object-fit-scale" src="assets/flags/us.png" alt="US Flag">
+                            EN
+                        </li>
+                        <li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="it">
+                            <img id="flag-it" class="object-fit-scale" src="assets/flags/it.png" alt="IT Flag">
+                            IT
+                        </li>
+                        <li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="uk">
+                            <img id="flag-ua" class="object-fit-scale" src="assets/flags/ua.png" alt="UA Flag">
+                            UA
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <button
+            class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="#home">
+                        <i class="fa fa-home fa-lg" aria-hidden="true"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#pongAI">
+                        <i class="fa fa-gamepad fa-lg" aria-hidden="true"></i> Pong AI
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="d-flex align-items-center flex-shrink-0">
+            <div id="logout-button" class="d-none" style="cursor:pointer;">
+                <i class="fa fa-sign-out" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!--PAGES CONTENT STARTS HERE-->
+<main id="app" class="flex-grow-1 grid-bg"></main>
+<!--PAGES CONTENT ENDS HERE-->
+
+<script src="app.js" type="module" defer></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	height: 100vh;
+	height: 100dvh;
+}
+
+
+/* GRID DARK BG WITH ANIMATION */
+.grid-bg {
+	color: #999;
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAGpJREFUeJzt2bENwDAMxEAVmsABnAUF2PtPEKdPwyoqePgB2H+stTNzzrvPTk8cVRWdvD1jXH9nfDGLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMAtq+Cc+TmscZbJ40zAAAAAASUVORK5CYII=") repeat 0 0;
+
+	animation: bg-scrolling-reverse 2s infinite;
+
+	animation-timing-function: linear;
+}
+
+@keyframes bg-scrolling-reverse {
+	100% {
+		background-position: 50px 50px;
+	}
+}
+
+@keyframes bg-scrolling {
+	0% {
+		background-position: 50px 50px;
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animate-heartbeat {
+	animation: heartbeat 2.5s infinite;
+}
+
+@keyframes heartbeat {
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animate-pulse {
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(.9);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animate-pulse-heartbeat-slow {
+	animation: pulse-heartbeat 5s infinite, heartbeat 5s infinite;
+}
+
+.animation-duration-1s {
+	animation-duration: 1s;
+}
+.animation-duration-3s {
+	animation-duration: 3s;
+}
+.animation-duration-5s {
+	animation-duration: 5s;
+}
+/* ----------------------------------------------------------------------------- */
+
+@font-face
+{
+    font-family: 'pong-score';
+    src: url('fonts/pong-score.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* -------------------------------------------------------------------------- */
+/* General styles for the Pong AI game */
+#menu {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#menu h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+#menu button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+#menu button#easy {
+    background-color: #28a745;
+    color: #fff;
+}
+
+#menu button#medium {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+#menu button#hard {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+#menu button#impossible {
+    background-color: #343a40;
+    color: #fff;
+}
+
+#gameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #000;
+}
+
+#gameCanvas {
+    border: 5px solid #fff;
+    border-radius: 10px;
+}
