@@ -58,8 +58,8 @@ class Match(models.Model):
     player_1 = models.ForeignKey('PongUser', related_name='matches_as_player1', on_delete=models.CASCADE)
     player_2 = models.ForeignKey('PongUser', related_name='matches_as_player2', on_delete=models.CASCADE)
 
-    points_player_1 = models.IntegerField(null=True, blank=True)
-    points_player_2 = models.IntegerField(null=True, blank=True)
+    player_1 = models.ForeignKey('PongUser', related_name='matches_as_player1', null=True, blank=True, on_delete=models.CASCADE)
+    player_2 = models.ForeignKey('PongUser', related_name='matches_as_player2', null=True, blank=True, on_delete=models.CASCADE)
 
     winner = models.ForeignKey('PongUser', related_name='wins', on_delete=models.SET_NULL, null=True)
     loser = models.ForeignKey('PongUser', related_name='losses', on_delete=models.SET_NULL, null=True)

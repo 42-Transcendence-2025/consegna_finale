@@ -31,8 +31,9 @@ class Match(models.Model):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='created') 
 
-    player_1 = models.ForeignKey('PongUser', related_name='matches_as_player1', on_delete=models.CASCADE)
-    player_2 = models.ForeignKey('PongUser', related_name='matches_as_player2', on_delete=models.CASCADE)
+    player_1 = models.ForeignKey('PongUser', related_name='matches_as_player1', null=True, blank=True, on_delete=models.CASCADE)
+    player_2 = models.ForeignKey('PongUser', related_name='matches_as_player2', null=True, blank=True, on_delete=models.CASCADE)
+
 
     points_player_1 = models.IntegerField(null=True, blank=True)
     points_player_2 = models.IntegerField(null=True, blank=True)
