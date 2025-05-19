@@ -23,11 +23,49 @@ class PongGame:
         self.left_player = None
         self.right_player = None
         self.game_over = False
+        self.winner = None
+        self.loser = None
+
+        self.ready = {
+            "left": False,
+            "right": False
+        }
+
+    async def wait_players(self):
+        """
+        Wait for both players to be ready.
+        """
+        timeout = 60  # seconds
+        for i in range(timeout * 10):
+            if self.ready["left"] and self.ready["right"]:
+                return "start"
+            await asyncio.sleep(0.1)
+        
+        if not self.ready["left"] or not self.ready["right"]:
+            self.game_over = True
+            return "aborted"
+        if self.ready["left"] or self.ready["right"]:
+            self.winner = self.left_player if self.ready["left"] else self.right_player
+            self.loser = self.right_player if self.ready["left"] else self.left_player
+            self.game_over = True
+            return "finished_walkover"
+        
+
 
     async def process_input(self, client, input_data):
         """
         Process input from a player.
         """
+        if not self.game_loop_running:
+            print(f"Processing input from {client}: {input_data}")
+            if input_data.get("action") == "move":
+                if client == "left":
+                    self.ready["left"] = True
+                    print("Left player is ready.")
+                elif client == "right":
+                    self.ready["right"] = True
+                    print("Right player is ready.")
+            return
 
         paddle_speed = 5
         if input_data.get("action") == "move":
@@ -83,6 +121,12 @@ class PongGame:
             self.state["left_score"] += 1
             self.reset_ball()
         if self.state["left_score"] >= self.WINNING_SCORE or self.state["right_score"] >= self.WINNING_SCORE:
+            if self.state["left_score"] >= self.WINNING_SCORE:
+                self.winner = self.left_player
+                self.loser = self.right_player
+            else:
+                self.winner = self.right_player
+                self.loser = self.left_player
             self.game_over = True
 
     def reset_ball(self):

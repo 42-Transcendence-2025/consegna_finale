@@ -104,25 +104,24 @@ class GameConsumer(AsyncWebsocketConsumer):
             "player_side": self.player_side,
         })
 
-        # Invia un messaggio a tutti i client nel gruppo con i dettagli dei giocatori
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "players_update",
-                "pippo": "player_update",
-                "left_player": self.game.left_player.username if self.game.left_player else None,
-                "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
-                "right_player": self.game.right_player.username if self.game.right_player else None,
-                "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
-            }
-        )
 
         # Avvia il game loop se non è già in esecuzione e entrambi i giocatori sono connessi
         if len(self.game.clients) == 2 and not self.game.game_loop_running:
-            self.game.game_loop_running = True
-            if self.match_id:
-                await self.update_match_status('in_game')
-            asyncio.create_task(self.game_loop())
+
+            # Invia un messaggio a tutti i client nel gruppo con i dettagli dei giocatori
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "players_update",
+                    "left_player": self.game.left_player.username if self.game.left_player else None,
+                    "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
+                    "right_player": self.game.right_player.username if self.game.right_player else None,
+                    "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
+                }
+            )
+            
+            asyncio.create_task(self.wait_for_ready())
+                
 
     async def leave_game(self):
         """
@@ -135,7 +134,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         )
 
         # Rimuovi il client dall'istanza del gioco
-        game = GameConsumer.games.get(self.game_id)
+        game = self.game
         if game:
             if self in game.clients:
                 game.clients.remove(self)
@@ -143,19 +142,49 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(5)  # Attendere 5 secondi prima di eliminare il gioco
                 del GameConsumer.games[self.game_id]
 
+    async def wait_for_ready(self):
+        print(f"Waiting for players to be ready in game {self.game_id}")
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "wait_ready",
+                "message": "Waiting for players to be ready"
+            }
+        )
+
+        outcome = await self.game.wait_players()
+        print(f"Outcome of waiting for players: {outcome}")
+
+        if outcome != "start":
+            await self.update_match_status(outcome)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "game_over",
+                    "by": outcome,
+                    "winner": self.game.winner.username if self.game.winner else None,
+                }
+            )
+        else:
+            self.game.game_loop_running = True
+            await self.update_match_status('in_game')
+            asyncio.create_task(self.game_loop())
+
+
+
     async def game_loop(self):
         """
         Aggiorna periodicamente lo stato del gioco e lo trasmette ai client.
         """
-        game = GameConsumer.games.get(self.game_id)
+        game = self.game
         if not game:
             return
 
         print(f"Starting game loop for game {self.game_id}")
         while game.clients:  # Esegui il ciclo finché ci sono client connessi
             if game.game_over:
-                winner = self.game.left_player if game.state["left_score"] >= game.WINNING_SCORE else self.game.right_player
-                loser = self.game.right_player if winner == self.game.left_player else self.game.left_player
+                winner = self.game.winner
+                loser = self.game.loser
 
                 # Aggiorna i trofei
                 await self.update_trophies(winner, loser)
@@ -166,12 +195,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                         points_player_2=self.game.state["right_score"]
                     )
 
-
                 # Invia un messaggio di fine gioco ai client
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
-                        "type": "game.over",
+                        "type": "game_over",
+                        "by": "points",
                         "winner": winner.username,
                     }
                 )
@@ -189,6 +218,22 @@ class GameConsumer(AsyncWebsocketConsumer):
         """
         await self.send(text_data=json.dumps(content))
 
+    async def wait_ready(self, event):
+        await self.send_json({
+            "type": "wait_ready",
+            "message": event["message"]
+        })
+
+    async def game_over(self, event):
+        """
+        Gestisce la fine del gioco inviando un messaggio ai client.
+        """
+        await self.send_json({
+            "type": "game_over",
+            "by": event["by"],
+            "winner": event["winner"],
+        })
+
     async def players_update(self, event):
         """
         Gestisce l'aggiornamento dei giocatori inviando un messaggio ai client.
@@ -200,15 +245,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             "right_player": event["right_player"],
             "right_player_trophies": event["right_player_trophies"],
         })
-    
-    async def game_over(self, event):
-        """
-        Gestisce la fine del gioco inviando un messaggio ai client.
-        """
-        await self.send_json({
-            "type": "game_over",
-            "winner": event["winner"],
-        })
+
 
     @database_sync_to_async
     def get_match_id(self):
