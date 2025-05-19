@@ -8,6 +8,7 @@ export class PongAIController {
     }
 
     init() {
+		console.log("Pong AI Controller");		
 		const menu = document.getElementById("menu");
 		const gameContainer = document.getElementById("gameContainer");
 		const game = new PongGame();

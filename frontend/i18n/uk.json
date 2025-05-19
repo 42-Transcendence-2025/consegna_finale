@@ -1,4 +1,13 @@
 {
 	"homepage-welcome": "Ласкаво просимо до Pong Game",
-	"play-casual-game": "Мультиплеєр Казуальна"
+	"get-started": "Почати",
+	"profile": "Профіль",
+	"match-history": "Історія Ігор",
+	"play-casual-game": "Мультиплеєр Казуальна",
+	"play-menu": "Грати",
+	"online-game": "Онлайн Гра",
+	"pong-ai": "Pong AI",
+	"ranked": "Ранговий",
+	"private-match": "Приватна Гра",
+	"tournament": "Турнір"
 }

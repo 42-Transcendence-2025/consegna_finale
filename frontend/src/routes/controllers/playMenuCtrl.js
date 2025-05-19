@@ -1,9 +1,9 @@
 /** @type {Controller} */
-export class CasualGameController {
+export class PlayMenuController {
 	titleSuffix = "";
 
 	init() {
-		console.log("Landing Page Controller");
+		console.log("Play Menu Controller");
 		this.#bindEvents();
 	};
 

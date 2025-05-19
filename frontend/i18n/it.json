@@ -1,4 +1,13 @@
 {
 	"homepage-welcome": "Benvenuto al Pong Game",
-	"play-casual-game": "Partita Casuale"
+	"get-started": "Inizia",
+	"profile": "Profilo",
+	"match-history": "Cronologia Partite",
+	"play-casual-game": "Partita Casuale",
+	"play-menu": "Gioca",
+	"online-game": "Gioco Online",
+	"pong-ai": "Pong AI",
+	"ranked": "Competitiva",
+	"private-match": "Partita Privata",
+	"tournament": "Torneo"
 }

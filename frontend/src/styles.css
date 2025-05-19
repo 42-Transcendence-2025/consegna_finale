@@ -146,3 +146,60 @@ body {
     border: 5px solid #fff;
     border-radius: 10px;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Contenitore della piramide */
+.pyramid-container {
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Bottone in cima alla piramide */
+.pyramid-top {
+    margin-bottom: 30px; /* Aumenta lo spazio tra il bottone in cima e la riga inferiore */
+    text-align: center;
+}
+
+/* Riga inferiore della piramide */
+.pyramid-bottom {
+    display: flex;
+    justify-content: center; /* Centra i bottoni */
+    gap: 20px; /* Riduce lo spazio tra i bottoni alla base */
+    width: 100%;
+}
+
+/* Bottone della piramide */
+.pyramid-container .btn {
+    min-width: 250px; /* Aumenta la larghezza minima dei bottoni */
+    font-size: 1.5rem; /* Aumenta la dimensione del testo */
+    padding: 20px 30px; /* Aumenta il padding dei bottoni */
+    border-radius: 10px; /* Arrotonda leggermente i bordi */
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+/* Stile per il riquadro */
+.card {
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+/* Bottone tondo per generare password */
+#generatePassword {
+    width: 50px; /* Larghezza del bottone */
+    height: 46px; /* Altezza del bottone */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%; /* Rende il bottone tondo */
+    margin-left: 10px; /* Distanza dal textbox */
+    position: relative; /* Necessario per posizionare le icone */
+}
+
+/* Stile per il bottone Play */
+#playButton {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+}

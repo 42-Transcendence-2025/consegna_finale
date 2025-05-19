@@ -1,7 +1,9 @@
 import {CONFIG} from "./config.js";
 import {AuthManager} from "./src/authManager.js";
+import {MatchManager} from "./src/matchManager.js";
 import {HashUtils} from "./src/utils/hashUtils.js";
 import {I18nUtils} from "./src/utils/i18nUtils.js";
+import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js";
 
 //-----------------------------------------------------------------------------
 
@@ -90,6 +92,10 @@ import {I18nUtils} from "./src/utils/i18nUtils.js";
 		const route = HashUtils.stripHash(newHash);
 		loadView(route);
 
+		// update profile menu
+		const profileMenuController = new ProfileMenuController(window.tools.authManager);
+    	profileMenuController.update();
+
 		// update header `active` link state
 		const headerLinks = $(`#header`).find(`a.nav-link`);
 		headerLinks.each((idx, element) => {
@@ -104,6 +110,7 @@ import {I18nUtils} from "./src/utils/i18nUtils.js";
 	 */
 	function loadTools(){
 		window.tools.authManager = new AuthManager(CONFIG.apiRoutes.userApiUrl);
+		window.tools.matchManager = new MatchManager(CONFIG.apiRoutes.matchApiUrl);
 	}
 
 	/**
@@ -124,6 +131,12 @@ import {I18nUtils} from "./src/utils/i18nUtils.js";
 		document.title = CONFIG.baseTitle;
 		loadTools();
 		setupAjax();
+
+		// ────── PROFILE ICON SETUP ──────
+		const auth = window.tools.authManager;
+		const profileMenuController = new ProfileMenuController(auth);
+		profileMenuController.init();
+		// ────────────────────────────────
 
 		$(window).trigger("hashchange");
 		const hash = HashUtils.stripHash(window.location.hash);

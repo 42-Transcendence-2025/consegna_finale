@@ -1,0 +1,19 @@
+<div class="container d-flex flex-column align-items-center justify-content-center vh-100">
+    <!-- Riquadro con il messaggio -->
+    <div class="card text-center p-4 shadow" style="max-width: 500px; width: 100%;">
+        <h5 class="card-title mb-3">Private Match</h5>
+        <p class="card-text text-muted">
+            Here you can use a shared password to enjoy playing with people you know
+        </p>
+        <!-- Text box e bottone per generare password -->
+        <div class="d-flex align-items-center gap-3">
+            <input type="text" id="passwordInput" class="form-control" placeholder="Enter or generate a password" />
+            <button id="generatePassword" class="btn btn-outline-secondary rounded-circle" type="button">
+                <i class="bi bi-shuffle position-absolute top-50 start-50 translate-middle fs-5 text-white"></i>
+			</button>
+        </div>
+    </div>
+
+    <!-- Bottone Play sotto il riquadro -->
+    <button id="playButton" class="btn btn-primary mt-4 px-5">Play!</button>
+</div>

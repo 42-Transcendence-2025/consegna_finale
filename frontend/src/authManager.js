@@ -111,7 +111,6 @@ export class AuthManager {
 				this.logout(false);
 			} else {
 				this.startPollingAccessToken();
-				this.#showLogoutButton();
 			}
 			return this.#jwt;
 		}
@@ -171,7 +170,6 @@ export class AuthManager {
 
 					this.#updateJwt(response.access, response.refresh);
 					this.startPollingAccessToken();
-					this.#showLogoutButton();
 
 					if (response.access && response.refresh) {
 						window.location.href = `#${CONFIG.routes.home.view}`;
@@ -221,7 +219,6 @@ export class AuthManager {
 					}
 					this.#updateJwt(response.access, response.refresh);
 					this.startPollingAccessToken();
-					this.#showLogoutButton();
 
 					if (response.access && response.refresh) {
 						window.location.href = `#${CONFIG.routes.home.view}`;
@@ -265,7 +262,6 @@ export class AuthManager {
 				this.#lastResponse = response;
 				this.#updateJwt(response.access, response.refresh);
 				this.startPollingAccessToken();
-				this.#showLogoutButton();
 
 				this.#user = response.user;
 				this.#otpRequired = false;
@@ -291,7 +287,6 @@ export class AuthManager {
 		this.#otpRequired = false;
 		this.#otpRequiredUsername = null;
 		this.#clearJwtFromStorage();
-		this.#hideLogoutButton();
 		clearInterval(this.#pollingInterval);
 		if (redirect) {
 			window.location.href = `#${CONFIG.routes.login.view}`;
@@ -397,10 +392,4 @@ export class AuthManager {
 
 	//-----------------------------------------------------------------------------------------------------------------
 
-	#showLogoutButton(){
-		$(`#logout-button`).removeClass(`d-none`);
-	}
-	#hideLogoutButton(){
-		$(`#logout-button`).addClass(`d-none`);
-	}
 }

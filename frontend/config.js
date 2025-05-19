@@ -1,9 +1,12 @@
 import {HomeController} from "./src/routes/controllers/homeCtrl.js";
 import {LoginController} from "./src/routes/controllers/loginCtrl.js";
 import {LandingPageController} from "./src/routes/controllers/landingPageCtrl.js";
-import {CasualGameController} from "./src/routes/controllers/casualGameCtrl.js";
+import {OnlineGameController} from "./src/routes/controllers/onlineGameCtrl.js";
 import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
 import {PongAIController} from "./src/routes/controllers/pongAICtrl.js";
+import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js";
+import {PlayMenuController} from "./src/routes/controllers/playMenuCtrl.js";
+import { PrivateMatchController } from "./src/routes/controllers/privateMatchCtrl.js";
 
 /**
  * @typedef {Object} Tools
@@ -57,6 +60,7 @@ export const CONFIG = {
 
 	apiRoutes: {
 		userApiUrl: `${BASE_URL}:8003`,
+		matchApiUrl: `${BASE_URL}:8001`,
 	},
 
 	/**
@@ -75,9 +79,19 @@ export const CONFIG = {
 			controller: HomeController,
 			authRequired: true,
 		},
-		casualGame: {
-			view: "casualGame",
-			controller: CasualGameController,
+		playMenu: {
+			view: "playMenu",
+			controller: PlayMenuController,
+			authRequired: true,
+		},
+		onlineGame: {
+			view: "onlineGame",
+			controller: OnlineGameController,
+			authRequired: true,
+		},
+		privateMatch: {
+			view: "privateMatch",
+			controller: PrivateMatchController,
 			authRequired: true,
 		},
 		login: {
@@ -92,6 +106,11 @@ export const CONFIG = {
 			view: "pongAI", // Nome del file HTML (senza estensione)
 			controller: PongAIController, // Controller associato
 			authRequired: false, // Imposta su `true` se l'accesso richiede autenticazione
+		},
+		profileMenu: {
+			view: "",
+			controller: ProfileMenuController,
+			authRequired: false,
 		},
 	},
 	// Default route if the hash is not found.
