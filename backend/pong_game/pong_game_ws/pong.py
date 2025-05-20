@@ -142,7 +142,10 @@ class PongGame:
         disconnected_clients = []
         for client in self.clients:
             try:
-                await client.send_json(self.state)
+                await client.send_json({
+                "type": "game_state",
+                "state": self.state
+            })
             except:
                 print(f"Client {client} disconnected.")
                 disconnected_clients.append(client)
