@@ -1,6 +1,7 @@
 import {CONFIG} from "./config.js";
 import {AuthManager} from "./src/authManager.js";
 import {MatchManager} from "./src/matchManager.js";
+import {createPongManager} from "./src/pongManager.js";
 import {HashUtils} from "./src/utils/hashUtils.js";
 import {I18nUtils} from "./src/utils/i18nUtils.js";
 import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js";
@@ -111,6 +112,7 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 	function loadTools(){
 		window.tools.authManager = new AuthManager(CONFIG.apiRoutes.userApiUrl);
 		window.tools.matchManager = new MatchManager(CONFIG.apiRoutes.matchApiUrl);
+		window.tools.pongManager = createPongManager();
 	}
 
 	/**
