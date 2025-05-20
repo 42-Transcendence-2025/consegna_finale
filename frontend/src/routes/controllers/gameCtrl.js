@@ -2,6 +2,7 @@
 export class GameController {
     titleSuffix = "Game";
 
+
     init() {
         console.log("Game Controller");
         this.canvas = document.getElementById("onlineGameCanvas");
@@ -11,48 +12,91 @@ export class GameController {
 		this.paddleWidth = 20;
         this.paddleHeight = 70;
         this.ballRadius = 10;
+		this.gameOver = false;
+		this.winner = null;
 
-        this.#bindEvents();
-        this.#connectWebSocket();
-        this.#drawInitialState();
-    }
+		this.state = {
+            ball: { x: 400, y: 300, dx: 1, dy: 1 },
+            leftPaddle: { y: 250 },
+            rightPaddle: { y: 250 },
+            leftScore: 0,
+            rightScore: 0,
 
-    #bindEvents() {
-        // Eventuali eventi per interazioni future
-    }
+			updateFromServer(gameState) {
+				this.ball = gameState.ball;
+				this.leftPaddle = gameState.leftPaddle;
+				console.log(gameState.leftPaddle);
+				
+				this.rightPaddle = gameState.rightPaddle;
+				this.leftScore = gameState.leftScore;
+				this.rightScore = gameState.rightScore;
+			}
+        };
 
-    #connectWebSocket() {
+		this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.draw();
+		// Recupera il game_id dal localStorage
 		const gameId = localStorage.getItem("game_id");
 		if (!gameId) {
 			console.error("Game ID not found!");
 			return;
 		}
-        this.socket = new WebSocket("ws://localhost:8002/ws/game/" + gameId + "/");
+		this.pongManager = window.tools.pongManager;
+		this.pongManager.connect(gameId);
+		this.pongManager.on("onGameState", (gameState) => {
+			this.state.updateFromServer(gameState);
+		});
 
-        this.socket.onopen = () => {
-            console.log("WebSocket connection established");
-        };
-
-        this.socket.onmessage = (event) => {
-            const gameState = JSON.parse(event.data);
-            this.#updateCanvas(gameState);
-        };
-
-        this.socket.onclose = () => {
-            console.log("WebSocket connection closed");
-        };
-
-        this.socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+		this.pongManager.on("onGameOver", (gameState) => {
+			this.gameOver = true;
+			this.winner = gameState.winner;
+		});
+		this.initInputListeners();
+		this.gameLoop();
     }
 
-    #drawInitialState() {
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-		this.drawNet();
-		// this.drawScores();
+	gameLoop() {
+		if (this.gameOver) {
+			this.gameOverScreen();
+			return;
+		}
+		this.draw();
+		requestAnimationFrame(this.gameLoop.bind(this)); // Recursive call for animation
+	}
 
+
+
+	draw() {
+        this.clearCanvas();
+        this.drawBall();
+        this.drawPaddles();
+        this.drawScores();
+        this.drawNet();
+        // this.drawStartMessage();
+    }
+
+	clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+	drawBall() {
+        const ball = this.state.ball;
+        this.ctx.fillStyle = "white";
+        this.ctx.beginPath();
+        this.ctx.arc(ball.x, ball.y, this.ballRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+
+	drawPaddles() {
+        this.ctx.fillStyle = "white";
+        this.ctx.fillRect(0, this.state.leftPaddle.y, this.paddleWidth, this.paddleHeight);
+        this.ctx.fillRect(
+            this.canvas.width - this.paddleWidth,
+            this.state.rightPaddle.y,
+            this.paddleWidth,
+            this.paddleHeight
+        );
     }
 
 	drawNet() {
@@ -71,48 +115,92 @@ export class GameController {
         this.ctx.fillText(this.state.rightScore, 600, 50);
     }
 
-    #updateCanvas(gameState) {
-		console.log("Game state received:", gameState);
-		
-        // Pulizia del canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Sfondo
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Linea centrale
-        this.ctx.strokeStyle = "#fff";
-        this.ctx.setLineDash([10, 10]);
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.canvas.width / 2, 0);
-        this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
-        this.ctx.stroke();
-
-        // Paddles
-        this.ctx.fillStyle = "#fff";
-        this.ctx.fillRect(
-            10,
-            gameState.leftPaddle.y,
-            20,
-            70
-        ); // Sinistra
-        this.ctx.fillRect(
-            this.canvas.width - 30,
-            gameState.rightPaddle.y,
-            20,
-            70
-        ); // Destra
-
-        // Ball
-        this.ctx.beginPath();
-        this.ctx.arc(
-            gameState.ball.x,
-            gameState.ball.y,
-            10,
-            0,
-            2 * Math.PI
-        );
-        this.ctx.fill();
+	drawStartMessage() {
+        if (this.waitingToStart) {
+            this.ctx.font = "25px Arial";
+            this.ctx.fillStyle = "grey";
+            if (Math.floor(Date.now() / 1000) % 2 === 0) {
+                this.ctx.fillText("Press an arrow to start the game", 228, 250);
+            }
+        }
     }
+
+    initInputListeners()
+	{
+        document.addEventListener("keydown", (event) =>
+		{
+            if (event.key === "ArrowUp")
+			{
+				this.pongManager.sendMove("up");
+				console.log("up");
+            }
+			else if (event.key === "ArrowDown")
+			{
+				this.pongManager.sendMove("down");
+				console.log("down");
+            }
+        });
+    }
+
+	gameOverScreen()
+	{
+		// let start = null;
+		// let duration = 1500; // durata animazione in ms
+
+		// let canvas = this.canvas;
+		
+		// // Posizioni iniziali
+		// let scoreStartY = 50;
+	
+		// // Posizione finale (verticale)
+		// let targetY = canvas.height / 2 - 100;
+		
+		// // Dimensioni del font
+		// let startFontSize = 30;
+		// let endFontSize = 80;
+
+		// function animate(timestamp)
+		// {
+		// 	if (!start) start = timestamp;
+		// 	let progress = Math.min((timestamp - start) / duration, 1);
+		// 	let ctx = game.ctx;
+			
+		// 	// 2. Score animati
+		// 	let currentY = scoreStartY + (targetY - scoreStartY) * progress;
+		// 	let fontSize = startFontSize + (endFontSize - startFontSize) * progress;
+			
+		// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+		// 	ctx.textAlign = "center";
+		// 	ctx.fillStyle = "white";
+		// 	ctx.font = `${fontSize}px 'pong-score', sans-serif`;
+	
+		// 	// Sinistra
+		// 	ctx.fillText(game.state.leftScore, canvas.width / 4, currentY);
+		// 	// Destra
+		// 	ctx.fillText(game.state.rightScore, 3 * canvas.width / 4, currentY);
+	
+		// 	// 3. Testo centrale
+		// 	if (progress >= 1)
+		// 	{
+		// 		ctx.font = "60px Arial";
+		// 		ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
+	
+		// 		ctx.font = "40px Arial";
+		// 		ctx.fillText(`${this.winner}!`, canvas.width / 2, canvas.height / 2 + 80);
+		// 	}
+	
+		// 	if (progress < 1)
+		// 	{
+		// 		requestAnimationFrame(animate);
+		// 	}
+		// 	else
+		// 	{
+		// 		ctx.font = "25px Arial";
+		// 		ctx.fillStyle = "grey";
+		// 		ctx.fillText("Press r to restart the game", 400, 500);
+		// 	}
+		// }
+	
+		// requestAnimationFrame(animate);
+	}
 }

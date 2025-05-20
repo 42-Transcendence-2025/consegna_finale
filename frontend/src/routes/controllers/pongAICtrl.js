@@ -46,7 +46,7 @@ export class PongAIController {
 			startGame("impossible");
 		});
 	
-		function gameLoop() 
+		function gameLoop()
 		{
 			if (game.gameOver)
 			{

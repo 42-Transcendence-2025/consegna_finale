@@ -17,13 +17,16 @@ export function createPongManager() {
 	 */
 	function connect(_gameId) {
 	  gameId = _gameId;
-	  accessToken = window.localStorage.getItem("accessToken");
+	  accessToken = localStorage.getItem("access_token");
+	  
   
 	  socket = new WebSocket(`ws://localhost:8002/ws/game/${gameId}/`);
   
 	  socket.onopen = () => {
 		console.log("[PongManager] Connessione aperta");
 		// Autenticazione: invia il token come semplice stringa
+		console.log("[PongManager] Inviando accessToken:", accessToken);
+		
 		socket.send(accessToken);
 	  };
   
