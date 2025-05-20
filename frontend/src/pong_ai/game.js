@@ -7,7 +7,7 @@ export class PongGame {
 
     // Initialize the canvas and its context
     initializeCanvas() {
-        this.canvas = document.getElementById("gameCanvas");
+        this.canvas = document.getElementById("AIgameCanvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.width = 800;
         this.canvas.height = 600;

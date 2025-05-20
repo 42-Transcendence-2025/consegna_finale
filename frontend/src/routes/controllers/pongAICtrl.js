@@ -10,7 +10,7 @@ export class PongAIController {
     init() {
 		console.log("Pong AI Controller");		
 		const menu = document.getElementById("menu");
-		const gameContainer = document.getElementById("gameContainer");
+		const AIgameContainer = document.getElementById("AIgameContainer");
 		const game = new PongGame();
 		const player = new Player(game);
 		let ai = null;
@@ -18,7 +18,7 @@ export class PongAIController {
 		const startGame = (difficulty) => {
 			ai = new AI(game, difficulty);
 			menu.classList.add("visually-hidden");
-			gameContainer.classList.remove("visually-hidden");
+			AIgameContainer.classList.remove("visually-hidden");
 			game.setupStartListener();
 			game.setupDebugStatListener();
 			game.setupPauseListener();

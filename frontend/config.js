@@ -6,7 +6,8 @@ import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
 import {PongAIController} from "./src/routes/controllers/pongAICtrl.js";
 import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js";
 import {PlayMenuController} from "./src/routes/controllers/playMenuCtrl.js";
-import { PrivateMatchController } from "./src/routes/controllers/privateMatchCtrl.js";
+import {PrivateMatchController} from "./src/routes/controllers/privateMatchCtrl.js";
+import {GameController} from "./src/routes/controllers/gameCtrl.js";
 
 /**
  * @typedef {Object} Tools
@@ -105,12 +106,17 @@ export const CONFIG = {
 		pongAI: {
 			view: "pongAI", // Nome del file HTML (senza estensione)
 			controller: PongAIController, // Controller associato
-			authRequired: false, // Imposta su `true` se l'accesso richiede autenticazione
+			authRequired: true,
 		},
 		profileMenu: {
 			view: "",
 			controller: ProfileMenuController,
 			authRequired: false,
+		},
+		game: {
+			view: "game",
+			controller: GameController,
+			authRequired: true,
 		},
 	},
 	// Default route if the hash is not found.

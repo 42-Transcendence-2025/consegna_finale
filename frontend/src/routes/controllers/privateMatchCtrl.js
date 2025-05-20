@@ -5,6 +5,12 @@ export class PrivateMatchController {
     init() {
         console.log("Private Match Controller");
         this.#bindEvents();
+
+		// Inizializza i tooltip di Bootstrap
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     }
 
     #bindEvents() {
@@ -27,6 +33,8 @@ export class PrivateMatchController {
 
                     if (response) {
                         console.log("Match found:", response);
+
+						localStorage.setItem("game_id", response.game_id); // Salva l'ID del gioco in localStorage
                         // Reindirizza o esegui altre azioni
                         window.location.hash = "#game"; // Esempio: reindirizza alla pagina del gioco
                     } else {

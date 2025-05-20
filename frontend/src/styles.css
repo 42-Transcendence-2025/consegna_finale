@@ -134,7 +134,7 @@ body {
     color: #fff;
 }
 
-#gameContainer {
+#AIgameContainer {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -142,7 +142,7 @@ body {
     background-color: #000;
 }
 
-#gameCanvas {
+#AIgameCanvas {
     border: 5px solid #fff;
     border-radius: 10px;
 }
@@ -202,4 +202,36 @@ body {
     font-size: 1.2rem;
     padding: 10px 20px;
     border-radius: 8px;
+}
+
+/* Stile personalizzato per il tooltip */
+.tooltip {
+    background-color: #343a40; /* Colore di sfondo scuro */
+    border-radius: 8px; /* Riduci i bordi arrotondati */
+    padding: 6px 10px; /* Riduci la spaziatura interna */
+    font-size: 0.8rem; /* Riduci la dimensione del testo */
+    color: #fff; /* Colore del testo */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Riduci l'ombra */
+}
+
+/* Freccia del tooltip */
+.tooltip .tooltip-arrow {
+    display: none; /* Nasconde la freccia del tooltip */
+}
+
+
+/* --------------------------------------------------------------------------- */
+
+/* Canvas gioco online  */
+#onlineGameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #000;
+}
+
+#onlineGameCanvas {
+    border: 5px solid #fff;
+    border-radius: 10px;
 }
