@@ -30,8 +30,8 @@ class PongUser(AbstractUser):
             return True  # OTP richiesto
 
         # Se il dispositivo è cambiato
-        if self.last_login_device != new_device:
-            return True  # OTP richiesto
+        """ if self.last_login_device != new_device:
+            return True """
 
         # Se l'OTP non è stato verificato negli ultimi 30 giorni
         from datetime import timedelta
