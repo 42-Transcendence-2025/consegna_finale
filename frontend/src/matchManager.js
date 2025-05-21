@@ -1,51 +1,88 @@
 export class MatchManager {
 
-	/** @type {string}*/
-	#matchApiUrl;
+    /** @type {string}*/
+    #matchApiUrl;
 
-	#id = new Date().getTime();
+    #id = new Date().getTime();
+    #isLoading = false;
+    /** @type {{[key:string]: string} | null} */
+    #matchErrors = null;
+    /** @type {JQuery.jqXHR | null} */
+    #currentJqXHR = null; // Per memorizzare la richiesta AJAX corrente
 
-	#isLoading = false;
+    constructor(matchApiUrl) {
+        this.#matchApiUrl = matchApiUrl;
 
-	/** @type {{[key:string]: string} | null} */
-	#matchErrors = null;
+        if (window.tools.matchManager) {
+            window.tools.matchManager.destroy();
+        }
+        window.tools.matchManager = this;
+        console.debug(`MatchManager created. #${this.#id}`);
+    }
 
-	constructor(matchApiUrl) {
-		this.#matchApiUrl = matchApiUrl;
+    async matchPassword(password) {
+        this.#isLoading = true;
+        this.#matchErrors = {};
 
-		if (window.tools.matchManager) {
-			window.tools.matchManager.destroy();
-		}
-		window.tools.matchManager = this;
-		console.debug(`MatchManager created. #${this.#id}`);
+        // Se c'è già una richiesta in corso, annullala (opzionale, dipende dal comportamento desiderato)
+        if (this.#currentJqXHR) {
+            this.#currentJqXHR.abort();
+        }
 
-	}
+        return new Promise((resolve, reject) => {
+            this.#currentJqXHR = $.ajax({
+                url: `${this.#matchApiUrl}/match/private-password/`,
+                method: "POST",
+                data: {
+                    password: password,
+                },
+            })
+            .done((data) => {
+                this.#matchErrors = null;
+                resolve(data); // Risolve la Promise con i dati
+            })
+            .fail((jqXHR, textStatus, errorThrown) => {
+                if (textStatus === 'abort') {
+                    console.log('MatchManager: AJAX request aborted.');
+                    // Rigetta la Promise con un errore specifico per l'annullamento
+                    reject({ name: 'AbortError', message: 'Request aborted by user via MatchManager' });
+                } else {
+                    if (jqXHR.responseJSON) {
+                        this.#matchErrors = jqXHR.responseJSON;
+                    } else if (jqXHR.responseText) {
+                        try { this.#matchErrors = JSON.parse(jqXHR.responseText); }
+                        catch (e) { this.#matchErrors = { error: "Error parsing server response" }; }
+                    } else {
+                        this.#matchErrors = { error: errorThrown || "Unknown AJAX error" };
+                    }
+                    console.error('Match password failed:', textStatus, this.#matchErrors);
+                    // Rigetta la Promise con l'errore
+                    reject(new Error(this.#matchErrors.error?.toString() || errorThrown || 'Match request failed'));
+                }
+            })
+            .always(() => {
+                this.#isLoading = false;
+                this.#currentJqXHR = null; // Pulisci la richiesta memorizzata
+            });
+        });
+    }
 
-	async matchPassword(password) {
-		this.#isLoading = true;
-		this.#matchErrors = {};
-		return $.ajax({
-			url: `${this.#matchApiUrl}/match/private-password/`,
-			method: "POST",
-			data: {
-				password: password,
-			},
-		})
-			.done((data) => {
-				this.#matchErrors = null;
-				this.#isLoading = false;
-				return data;
-			})
-			.fail((error) => {
-				if (error.response) {
-					this.#matchErrors = error.response;
-				} else {
-					console.error('Match password failed:', error);
-				}
-				return false;
-			})
-			.always(() => {
-				this.#isLoading = false;
-			});
-	}
+    // Nuovo metodo per annullare la richiesta corrente dall'esterno
+    abortCurrentMatchRequest() {
+        if (this.#currentJqXHR) {
+            console.log("MatchManager: Aborting current request via abortCurrentMatchRequest()");
+            this.#currentJqXHR.abort(); // Questo attiverà .fail() con textStatus 'abort'
+            return true;
+        }
+        return false;
+    }
+
+    destroy() {
+        // Potresti voler annullare una richiesta in corso anche qui
+        this.abortCurrentMatchRequest();
+        console.debug(`MatchManager destroyed. #${this.#id}`);
+        if (window.tools.matchManager === this) {
+            window.tools.matchManager = null;
+        }
+    }
 }

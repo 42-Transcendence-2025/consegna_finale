@@ -17,6 +17,17 @@ export class GameController {
 		this.moveUp = false;
 		this.moveDown = false;
 
+		// Caricamento immagini giocatore
+        this.leftPlayerImage = new Image();
+        this.leftPlayerImage.src = "/assets/default_icons/vegeta.png"; // Assicurati che questo percorso sia corretto dal server
+        this.leftPlayerImage.onerror = () => console.error("Failed to load vegeta.png. Check path and server config.");
+
+
+        this.rightPlayerImage = new Image();
+        this.rightPlayerImage.src = "/assets/default_icons/goku.png"; // Assicurati che questo percorso sia corretto dal server
+        this.rightPlayerImage.onerror = () => console.error("Failed to load goku.png. Check path and server config.");
+
+
 		this.state = {
             ball: { x: 400, y: 300, dx: 1, dy: 1 },
             leftPaddle: { y: 250 },
@@ -52,6 +63,13 @@ export class GameController {
 			this.gameOver = true;
 			this.winner = gameState.winner;
 		});
+
+		this.pongManager.on("onPlayersUpdate", (gameState) => {
+			this.leftPlayer = gameState.left_player;
+			this.rightPlayer = gameState.right_player;
+			this.leftPlayerThropies = gameState.left_player_trophies;
+			this.rightPlayerThropies = gameState.right_player_trophies;
+		});
 		this.initInputListeners();
 		this.gameLoop();
     }
@@ -84,6 +102,7 @@ export class GameController {
         this.drawPaddles();
         this.drawScores();
         this.drawNet();
+		this.drawPlayerInfo();
         // this.drawStartMessage();
     }
 
@@ -133,6 +152,73 @@ export class GameController {
             if (Math.floor(Date.now() / 1000) % 2 === 0) {
                 this.ctx.fillText("Press an arrow to start the game", 228, 250);
             }
+        }
+    }
+
+	drawPlayerInfo() {
+        const iconSize = 40;
+        const padding = 15;
+        const textOffsetY = 15; // Distanza verticale tra icona e username
+        const usernameFont = "14px 'Arial', sans-serif";
+        const usernameColor = "white";
+		const radius = iconSize / 2;
+		
+        this.ctx.font = usernameFont;
+        this.ctx.textAlign = "center";
+
+        // Giocatore Sinistro
+        if (this.leftPlayer) {
+            const iconCenterX = padding + radius;
+            const iconCenterY = padding + radius;
+
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(iconCenterX, iconCenterY, radius, 0, Math.PI * 2);
+            this.ctx.closePath();
+            this.ctx.clip();
+
+            if (this.leftPlayerImage && this.leftPlayerImage.complete && this.leftPlayerImage.naturalHeight !== 0) {
+                this.ctx.drawImage(this.leftPlayerImage, padding, padding, iconSize, iconSize);
+            } else {
+                this.ctx.fillStyle = "rgba(0, 150, 255, 0.7)"; // Blu placeholder
+                this.ctx.fill(); // Riempi il cerchio clippato
+            }
+            this.ctx.restore();
+
+            this.ctx.fillStyle = usernameColor;
+            this.ctx.fillText(
+                this.leftPlayer,
+                iconCenterX,
+                padding + iconSize + textOffsetY
+            );
+        }
+
+        // Giocatore Destro
+        if (this.rightPlayer) {
+            const rightPlayerIconX = this.canvas.width - padding - iconSize;
+            const iconCenterX = rightPlayerIconX + radius;
+            const iconCenterY = padding + radius;
+
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(iconCenterX, iconCenterY, radius, 0, Math.PI * 2);
+            this.ctx.closePath();
+            this.ctx.clip();
+
+            if (this.rightPlayerImage && this.rightPlayerImage.complete && this.rightPlayerImage.naturalHeight !== 0) {
+                this.ctx.drawImage(this.rightPlayerImage, rightPlayerIconX, padding, iconSize, iconSize);
+            } else {
+                this.ctx.fillStyle = "rgba(255, 50, 50, 0.7)"; // Rosso placeholder
+                this.ctx.fill(); // Riempi il cerchio clippato
+            }
+            this.ctx.restore();
+
+            this.ctx.fillStyle = usernameColor;
+            this.ctx.fillText(
+                this.rightPlayer,
+                iconCenterX,
+                padding + iconSize + textOffsetY
+            );
         }
     }
 
