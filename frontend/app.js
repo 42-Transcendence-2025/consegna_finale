@@ -112,7 +112,7 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 	function loadTools(){
 		window.tools.authManager = new AuthManager(CONFIG.apiRoutes.userApiUrl);
 		window.tools.matchManager = new MatchManager(CONFIG.apiRoutes.matchApiUrl);
-		window.tools.pongManager = createPongManager();
+		window.tools.pongManager = createPongManager(CONFIG.apiRoutes.pongApiUrl);
 	}
 
 	/**

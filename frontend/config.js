@@ -34,6 +34,9 @@ window.tools = {};
 //------------------------------------------------------------------------------
 
 const BASE_URL = window.location.origin.split(/(http[s]?:\/\/.*):/)[1];
+const WS_URL = window.location.origin.split(/(http[s]?:\/\/.*):/)[1].replace("http", "ws");
+
+
 
 
 
@@ -62,7 +65,9 @@ export const CONFIG = {
 	apiRoutes: {
 		userApiUrl: `${BASE_URL}:8003`,
 		matchApiUrl: `${BASE_URL}:8001`,
+		pongApiUrl: `${WS_URL}:8002`,
 	},
+	
 
 	/**
 	 *  Routing map. The key is the hash (without the #) name. The value is an object with the following properties:

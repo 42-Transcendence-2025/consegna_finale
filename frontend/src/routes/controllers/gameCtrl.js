@@ -24,12 +24,10 @@ export class GameController {
 
 			updateFromServer(gameState) {
 				this.ball = gameState.ball;
-				this.leftPaddle = gameState.leftPaddle;
-				console.log(gameState.leftPaddle);
-				
-				this.rightPaddle = gameState.rightPaddle;
-				this.leftScore = gameState.leftScore;
-				this.rightScore = gameState.rightScore;
+				this.leftPaddle = gameState.left_paddle;
+				this.rightPaddle = gameState.right_paddle;
+				this.leftScore = gameState.left_score;
+				this.rightScore = gameState.right_score;
 			}
         };
 
@@ -142,65 +140,132 @@ export class GameController {
         });
     }
 
-	gameOverScreen()
-	{
-		// let start = null;
-		// let duration = 1500; // durata animazione in ms
-
-		// let canvas = this.canvas;
-		
-		// // Posizioni iniziali
-		// let scoreStartY = 50;
+	gameOverScreen() {
+		let duration = 1500; // durata animazione in ms
+		let canvas = this.canvas;
 	
-		// // Posizione finale (verticale)
-		// let targetY = canvas.height / 2 - 100;
-		
-		// // Dimensioni del font
-		// let startFontSize = 30;
-		// let endFontSize = 80;
-
-		// function animate(timestamp)
-		// {
-		// 	if (!start) start = timestamp;
-		// 	let progress = Math.min((timestamp - start) / duration, 1);
-		// 	let ctx = game.ctx;
-			
-		// 	// 2. Score animati
-		// 	let currentY = scoreStartY + (targetY - scoreStartY) * progress;
-		// 	let fontSize = startFontSize + (endFontSize - startFontSize) * progress;
-			
-		// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-		// 	ctx.textAlign = "center";
-		// 	ctx.fillStyle = "white";
-		// 	ctx.font = `${fontSize}px 'pong-score', sans-serif`;
+		// Posizioni iniziali
+		let scoreStartY = 50;
 	
-		// 	// Sinistra
-		// 	ctx.fillText(game.state.leftScore, canvas.width / 4, currentY);
-		// 	// Destra
-		// 	ctx.fillText(game.state.rightScore, 3 * canvas.width / 4, currentY);
+		// Posizione finale (verticale)
+		let targetY = canvas.height / 2 - 100;
 	
-		// 	// 3. Testo centrale
-		// 	if (progress >= 1)
-		// 	{
-		// 		ctx.font = "60px Arial";
-		// 		ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
+		// Dimensioni del font
+		let startFontSize = 30;
+		let endFontSize = 80;
 	
-		// 		ctx.font = "40px Arial";
-		// 		ctx.fillText(`${this.winner}!`, canvas.width / 2, canvas.height / 2 + 80);
-		// 	}
+		const context = {
+			start: null,
+			duration,
+			canvas,
+			scoreStartY,
+			targetY,
+			startFontSize,
+			endFontSize,
+			game: this,
+			winner: this.winner,
+		};
 	
-		// 	if (progress < 1)
-		// 	{
-		// 		requestAnimationFrame(animate);
-		// 	}
-		// 	else
-		// 	{
-		// 		ctx.font = "25px Arial";
-		// 		ctx.fillStyle = "grey";
-		// 		ctx.fillText("Press r to restart the game", 400, 500);
-		// 	}
-		// }
-	
-		// requestAnimationFrame(animate);
+		requestAnimationFrame((timestamp) => animateGameOver(timestamp, context));
 	}
 }
+
+function animateGameOver(timestamp, context) {
+	const { start, duration, canvas, scoreStartY, targetY, startFontSize, endFontSize, game, winner } = context;
+
+	if (!context.start) context.start = timestamp;
+	let progress = Math.min((timestamp - context.start) / duration, 1);
+	let ctx = game.ctx;
+
+	// 2. Score animati
+	let currentY = scoreStartY + (targetY - scoreStartY) * progress;
+	let fontSize = startFontSize + (endFontSize - startFontSize) * progress;
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.textAlign = "center";
+	ctx.fillStyle = "white";
+	ctx.font = `${fontSize}px 'pong-score', sans-serif`;
+
+	// Sinistra
+	ctx.fillText(game.state.leftScore, canvas.width / 4, currentY);
+	// Destra
+	ctx.fillText(game.state.rightScore, 3 * canvas.width / 4, currentY);
+
+	// 3. Testo centrale
+	if (progress >= 1) {
+		ctx.font = "60px Arial";
+		ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
+
+		ctx.font = "40px Arial";
+		ctx.fillText(`${winner} wins!`, canvas.width / 2, canvas.height / 2 + 80);
+	}
+
+	if (progress < 1) {
+		requestAnimationFrame((timestamp) => animateGameOver(timestamp, context));
+	} else {
+		ctx.font = "25px Arial";
+		ctx.fillStyle = "grey";
+		ctx.fillText("Press r to restart the game", 400, 500);
+	}
+}
+// gameOverScreen()
+// {
+// 	let start = null;
+// 	let duration = 1500; // durata animazione in ms
+
+// 	let canvas = this.canvas;
+	
+// 	// Posizioni iniziali
+// 	let scoreStartY = 50;
+
+// 	// Posizione finale (verticale)
+// 	let targetY = canvas.height / 2 - 100;
+	
+// 	// Dimensioni del font
+// 	let startFontSize = 30;
+// 	let endFontSize = 80;
+
+// 	function animate(timestamp)
+// 	{
+// 		if (!start) start = timestamp;
+// 		let progress = Math.min((timestamp - start) / duration, 1);
+// 		let ctx = game.ctx;
+		
+// 		// 2. Score animati
+// 		let currentY = scoreStartY + (targetY - scoreStartY) * progress;
+// 		let fontSize = startFontSize + (endFontSize - startFontSize) * progress;
+		
+// 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+// 		ctx.textAlign = "center";
+// 		ctx.fillStyle = "white";
+// 		ctx.font = `${fontSize}px 'pong-score', sans-serif`;
+
+// 		// Sinistra
+// 		ctx.fillText(game.state.leftScore, canvas.width / 4, currentY);
+// 		// Destra
+// 		ctx.fillText(game.state.rightScore, 3 * canvas.width / 4, currentY);
+
+// 		// 3. Testo centrale
+// 		if (progress >= 1)
+// 		{
+// 			ctx.font = "60px Arial";
+// 			ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
+
+// 			ctx.font = "40px Arial";
+// 			ctx.fillText(`${this.winner}!`, canvas.width / 2, canvas.height / 2 + 80);
+// 		}
+
+// 		if (progress < 1)
+// 		{
+// 			requestAnimationFrame(animate);
+// 		}
+// 		else
+// 		{
+// 			ctx.font = "25px Arial";
+// 			ctx.fillStyle = "grey";
+// 			ctx.fillText("Press r to restart the game", 400, 500);
+// 		}
+// 	}
+
+// 	requestAnimationFrame(animate);
+// }

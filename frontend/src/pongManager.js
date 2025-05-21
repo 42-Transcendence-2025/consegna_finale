@@ -1,5 +1,6 @@
 // pongManager.js
-export function createPongManager() {
+export function createPongManager(pongApiUrl) {
+
 	let socket = null;
 	let gameId = null;
 	let accessToken = null;
@@ -19,8 +20,9 @@ export function createPongManager() {
 	  gameId = _gameId;
 	  accessToken = localStorage.getItem("access_token");
 	  
-  
-	  socket = new WebSocket(`ws://localhost:8002/ws/game/${gameId}/`);
+	  console.log("[PongManager] PongAPI URL:", pongApiUrl);
+	  
+	  socket = new WebSocket(`${pongApiUrl}/ws/game/${gameId}/`);
   
 	  socket.onopen = () => {
 		console.log("[PongManager] Connessione aperta");
@@ -42,6 +44,8 @@ export function createPongManager() {
 		// Gestione messaggi ricevuti
 		switch (data.type) {
 		  case "game_state":
+			// console.log("[PongManager] Stato del gioco ricevuto:", data);
+			
 			listeners.onGameState?.(data.state);
 			break;
   
