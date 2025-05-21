@@ -31,26 +31,6 @@ class PongGame:
             "right": False
         }
 
-    async def wait_players(self):
-        """
-        Wait for both players to be ready.
-        """
-        timeout = 60  # seconds
-        for i in range(timeout * 10):
-            if self.ready["left"] and self.ready["right"]:
-                return "start"
-            await asyncio.sleep(0.1)
-        
-        if not self.ready["left"] and not self.ready["right"]:
-            self.game_over = True
-            return "aborted"
-        if self.ready["left"] or self.ready["right"]:
-            self.winner = self.left_player if self.ready["left"] else self.right_player
-            self.loser = self.right_player if self.ready["left"] else self.left_player
-            self.game_over = True
-            return "finished_walkover"
-        
-
 
     async def process_input(self, client, input_data):
         """
