@@ -67,7 +67,7 @@ class PongGame:
                     print("Right player is ready.")
             return
 
-        paddle_speed = 5
+        paddle_speed = 8
         if input_data.get("action") == "move":
             direction = input_data.get("direction")
             if client == "left" and direction == "up" and self.state["left_paddle"]["y"] > 0:
