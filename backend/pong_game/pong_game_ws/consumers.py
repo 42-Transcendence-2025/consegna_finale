@@ -5,7 +5,8 @@ import asyncio
 import json
 from .pong import PongGame  # Assumendo che la classe PongGame sia in un file separato
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.core.cache import cache
+from .db_utils import get_match_id, update_match_status, update_match_finished, update_trophies
+
 
 class GameConsumer(AsyncWebsocketConsumer):
     games = {}  # Dizionario condiviso per memorizzare le istanze del gioco per ogni `game_id`
@@ -13,7 +14,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.room_group_name = f"game_{self.game_id}"
-        self.match_id = await self.get_match_id()
+        self.match_id = await get_match_id()
         self.player_side = None  # Sarà assegnato come "left" o "right" dopo l'autenticazione
         self.user = None  # Utente autenticato
         self.game = None  # Istanza del gioco
@@ -144,6 +145,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def wait_for_ready(self):
         print(f"Waiting for players to be ready in game {self.game_id}")
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -152,9 +154,37 @@ class GameConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        outcome = await self.game.wait_players()
+        # loop per attendere readiness
+        timeout = 60
+        already_sent_left = False
+        already_sent_right = False
+        for _ in range(timeout * 10):  # ogni 100ms per 60s
+            # Controlla se entrambi i giocatori sono pronti e invia un messaggio al gruppo
+            if (self.game.ready["left"] and not already_sent_left) or (self.game.ready["right"] and not already_sent_right):
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "players_ready",
+                        "left_ready": self.game.ready["left"],
+                        "right_ready": self.game.ready["right"],
+                    }
+                )
+                already_sent_left = self.game.ready["left"]
+                already_sent_right = self.game.ready["right"]
+            if self.game.ready["left"] and self.game.ready["right"]:
+                outcome = "start"
+                break
+            await asyncio.sleep(0.1)
+            if not self.game.ready["left"] and not self.game.ready["right"]:
+                outcome = "aborted"
+            if self.game.ready["left"] or self.game.ready["right"]:
+                outcome = "finished_walkover"
+                self.game.winner = self.game.left_player if self.game.ready["left"] else self.game.right_player
+                self.game.loser = self.game.right_player if self.game.ready["left"] else self.game.left_player
+                await update_trophies(self.game.winner, self.game.loser)
+
         if outcome != "start":
-            await self.update_match_status(outcome)
+            await update_match_status(outcome, self.game.winner, self.game.loser)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -165,8 +195,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
         else:
             self.game.game_loop_running = True
-            await self.update_match_status('in_game')
+            await update_match_status('in_game')
             asyncio.create_task(self.game_loop())
+
 
 
 
@@ -185,10 +216,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                 loser = self.game.loser
 
                 # Aggiorna i trofei
-                await self.update_trophies(winner, loser)
+                await update_trophies(winner, loser)
                 # Aggiorna lo stato della partita nel database
 
-                await self.update_match_finished(
+                await update_match_finished(
                     points_player_1=self.game.state["left_score"],
                     points_player_2=self.game.state["right_score"]
                 )
@@ -229,13 +260,19 @@ class GameConsumer(AsyncWebsocketConsumer):
             "type": "wait_ready",
             "message": event["message"]
         })
+    
+    async def players_ready(self, event):
+        await self.send_json({
+            "type": "players_ready",
+            "left_ready": event["left_ready"],
+            "right_ready": event["right_ready"],
+        })
 
     async def game_state(self, event):
         await self.send_json({
             "type": "game_state",
             "state": event["state"]
         })
-
 
     async def game_over(self, event):
         """
@@ -258,45 +295,3 @@ class GameConsumer(AsyncWebsocketConsumer):
             "right_player": event["right_player"],
             "right_player_trophies": event["right_player_trophies"],
         })
-
-
-    @database_sync_to_async
-    def get_match_id(self):
-        return cache.get(f"match_id_for_game_{self.game_id}")
-    
-    @database_sync_to_async
-    def update_match_status(self, status):
-        from .models import Match
-        try:
-            match = Match.objects.get(id=self.match_id)
-            match.status = status
-            match.save()
-        except Exception as e:
-            print(f"[ERROR] Match update failed: {e}")
-
-    @database_sync_to_async
-    def update_match_finished(self, points_player_1, points_player_2):
-        from .models import Match
-        try:
-            match = Match.objects.get(id=self.match_id)
-            match.points_player_1 = points_player_1
-            match.points_player_2 = points_player_2
-            match.status = 'finished'
-            match.save()
-        except Exception as e:
-            print(f"[ERROR] Final match update failed: {e}")
-
-
-    @database_sync_to_async
-    def update_trophies(self, winner, loser):
-        """
-        Aggiorna i trofei dei giocatori dopo la partita.
-        """
-        try:
-            winner.trophies += 3  # Aggiungi trofei al vincitore
-            loser.trophies = max(loser.trophies - 1, 0)  # Rimuovi trofei dal perdente (ma non scendere sotto zero)
-
-            winner.save()
-            loser.save()
-        except Exception as e:
-            print(f"Errore durante l'aggiornamento dei trofei: {e}")
