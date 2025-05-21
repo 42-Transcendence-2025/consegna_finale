@@ -5,8 +5,8 @@ import asyncio
 import json
 from .pong import PongGame  # Assumendo che la classe PongGame sia in un file separato
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .db_utils import get_match_id, update_match_status, update_match_finished, update_trophies
-
+from django.core.cache import cache
+from .models import Match
 
 class GameConsumer(AsyncWebsocketConsumer):
     games = {}  # Dizionario condiviso per memorizzare le istanze del gioco per ogni `game_id`
@@ -14,7 +14,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.room_group_name = f"game_{self.game_id}"
-        self.match_id = await get_match_id()
+        self.match_id = await self.get_match_id()
         self.player_side = None  # Sarà assegnato come "left" o "right" dopo l'autenticazione
         self.user = None  # Utente autenticato
         self.game = None  # Istanza del gioco
@@ -181,10 +181,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 outcome = "finished_walkover"
                 self.game.winner = self.game.left_player if self.game.ready["left"] else self.game.right_player
                 self.game.loser = self.game.right_player if self.game.ready["left"] else self.game.left_player
-                await update_trophies(self.game.winner, self.game.loser)
 
         if outcome != "start":
-            await update_match_status(outcome, self.game.winner, self.game.loser)
+            await self.update_match_status(outcome, self.game.winner, self.game.loser)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -195,7 +194,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
         else:
             self.game.game_loop_running = True
-            await update_match_status('in_game')
+            await self.update_match_status('in_game')
             asyncio.create_task(self.game_loop())
 
 
@@ -216,10 +215,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                 loser = self.game.loser
 
                 # Aggiorna i trofei
-                await update_trophies(winner, loser)
+                await self.update_trophies(winner, loser)
                 # Aggiorna lo stato della partita nel database
 
-                await update_match_finished(
+                await self.update_match_finished(
                     points_player_1=self.game.state["left_score"],
                     points_player_2=self.game.state["right_score"]
                 )
@@ -295,3 +294,47 @@ class GameConsumer(AsyncWebsocketConsumer):
             "right_player": event["right_player"],
             "right_player_trophies": event["right_player_trophies"],
         })
+
+
+    @database_sync_to_async
+    def get_match_id(self):
+        return cache.get(f"match_id_for_game_{self.game_id}")
+    
+    @database_sync_to_async
+    def update_match_status(self, status, winner=None, loser=None):
+        try:
+            match = Match.objects.get(id=self.match_id)
+            match.status = status
+            if winner:
+                match.winner = winner
+            if loser:
+                match.loser = loser
+            match.save()
+        except Exception as e:
+            print(f"[ERROR] Match update failed: {e}")
+
+    @database_sync_to_async
+    def update_match_finished(self, points_player_1, points_player_2):
+        try:
+            match = Match.objects.get(id=self.match_id)
+            match.points_player_1 = points_player_1
+            match.points_player_2 = points_player_2
+            match.status = 'finished'
+            match.save()
+        except Exception as e:
+            print(f"[ERROR] Final match update failed: {e}")
+
+
+    @database_sync_to_async
+    def update_trophies(self, winner, loser):
+        """
+        Aggiorna i trofei dei giocatori dopo la partita.
+        """
+        try:
+            winner.trophies += 3  # Aggiungi trofei al vincitore
+            loser.trophies = max(loser.trophies - 1, 0)  # Rimuovi trofei dal perdente (ma non scendere sotto zero)
+
+            winner.save()
+            loser.save()
+        except Exception as e:
+            print(f"Errore durante l'aggiornamento dei trofei: {e}")
