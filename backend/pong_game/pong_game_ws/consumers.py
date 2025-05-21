@@ -153,8 +153,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         )
 
         outcome = await self.game.wait_players()
-        print(f"Outcome of waiting for players: {outcome}")
-
         if outcome != "start":
             await self.update_match_status(outcome)
             await self.channel_layer.group_send(
@@ -189,11 +187,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 # Aggiorna i trofei
                 await self.update_trophies(winner, loser)
                 # Aggiorna lo stato della partita nel database
-                if self.match_id:
-                    await self.update_match_finished(
-                        points_player_1=self.game.state["left_score"],
-                        points_player_2=self.game.state["right_score"]
-                    )
+
+                await self.update_match_finished(
+                    points_player_1=self.game.state["left_score"],
+                    points_player_2=self.game.state["right_score"]
+                )
 
                 # Invia un messaggio di fine gioco ai client
                 await self.channel_layer.group_send(
@@ -205,8 +203,16 @@ class GameConsumer(AsyncWebsocketConsumer):
                     }
                 )
                 break
+
+            # Aggiorna lo stato del gioco e invia i dati ai client
             await game.update_game_state()
-            await game.broadcast_state()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "game_state",  # chiama .game_state(event) nel consumer
+                    "state": self.game.state
+                }
+            )
             await asyncio.sleep(1 / 60)  # Ciclo a 60 FPS
 
         # Una volta che non ci sono più giocatori connessi, ferma il loop
@@ -223,6 +229,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             "type": "wait_ready",
             "message": event["message"]
         })
+
+    async def game_state(self, event):
+        await self.send_json({
+            "type": "game_state",
+            "state": event["state"]
+        })
+
 
     async def game_over(self, event):
         """

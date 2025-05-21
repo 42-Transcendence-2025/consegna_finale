@@ -4,7 +4,7 @@ import json
 class PongGame:
     GAME_WIDTH = 800
     GAME_HEIGHT = 600
-    PADDLE_HEIGHT = 100
+    PADDLE_HEIGHT = 70
     PADDLE_WIDTH = 20
     BALL_RADIUS = 10
     WINNING_SCORE = 5
@@ -41,7 +41,7 @@ class PongGame:
                 return "start"
             await asyncio.sleep(0.1)
         
-        if not self.ready["left"] or not self.ready["right"]:
+        if not self.ready["left"] and not self.ready["right"]:
             self.game_over = True
             return "aborted"
         if self.ready["left"] or self.ready["right"]:
@@ -61,10 +61,8 @@ class PongGame:
             if input_data.get("action") == "move":
                 if client == "left":
                     self.ready["left"] = True
-                    print("Left player is ready.")
                 elif client == "right":
                     self.ready["right"] = True
-                    print("Right player is ready.")
             return
 
         paddle_speed = 8
@@ -135,21 +133,3 @@ class PongGame:
         """
         self.state["ball"] = {"x": self.GAME_WIDTH // 2, "y": self.GAME_HEIGHT // 2, "dx": 6, "dy": 0}
 
-    async def broadcast_state(self):
-        """
-        Broadcast the updated game state to all connected clients.
-        """
-        disconnected_clients = []
-        for client in self.clients:
-            try:
-                await client.send_json({
-                "type": "game_state",
-                "state": self.state
-            })
-            except:
-                print(f"Client {client} disconnected.")
-                disconnected_clients.append(client)
-
-        # Rimuove i client disconnessi dalla lista
-        for client in disconnected_clients:
-            self.clients.remove(client)
