@@ -259,13 +259,19 @@ export class PongGame {
 
 		// Player Icon
 		const playerIcon = document.getElementById("playerIcon");
-		playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">`;
+		playerIcon.innerHTML = `
+			<img src="${playerImgPath}" alt="Player">
+			<div class="icon-label">Player</div>
+		`;
 		playerIcon.classList.remove("visually-hidden");
 
 
 		// AI Icon
 		const aiIcon = document.getElementById("aiIcon");
-		aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">`;
+		aiIcon.innerHTML = `
+			<img src="${aiImgPath}" alt="AI">
+			<div class="icon-label">Matt</div>
+		`;
 		aiIcon.classList.remove("visually-hidden");
 	}
 }

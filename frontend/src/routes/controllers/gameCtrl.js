@@ -7,6 +7,7 @@ export class GameController {
         console.log("Game Controller");
         this.canvas = document.getElementById("onlineGameCanvas");
         this.ctx = this.canvas.getContext("2d");
+		const gameContainer = document.getElementById("onlineGameContainer");
         this.canvas.width = 800;
         this.canvas.height = 600;
 		this.paddleWidth = 20;
@@ -16,17 +17,6 @@ export class GameController {
 		this.winner = null;
 		this.moveUp = false;
 		this.moveDown = false;
-
-		// Caricamento immagini giocatore
-        this.leftPlayerImage = new Image();
-        this.leftPlayerImage.src = "/assets/default_icons/vegeta.png"; // Assicurati che questo percorso sia corretto dal server
-        this.leftPlayerImage.onerror = () => console.error("Failed to load vegeta.png. Check path and server config.");
-
-
-        this.rightPlayerImage = new Image();
-        this.rightPlayerImage.src = "/assets/default_icons/goku.png"; // Assicurati che questo percorso sia corretto dal server
-        this.rightPlayerImage.onerror = () => console.error("Failed to load goku.png. Check path and server config.");
-
 
 		this.state = {
             ball: { x: 400, y: 300, dx: 1, dy: 1 },
@@ -42,8 +32,9 @@ export class GameController {
 				this.leftScore = gameState.left_score;
 				this.rightScore = gameState.right_score;
 			}
-        };
+		};
 
+		gameContainer.classList.remove("visually-hidden");
 		this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.draw();
@@ -156,70 +147,31 @@ export class GameController {
     }
 
 	drawPlayerInfo() {
-        const iconSize = 40;
-        const padding = 15;
-        const textOffsetY = 15; // Distanza verticale tra icona e username
-        const usernameFont = "14px 'Arial', sans-serif";
-        const usernameColor = "white";
-		const radius = iconSize / 2;
-		
-        this.ctx.font = usernameFont;
-        this.ctx.textAlign = "center";
+        const leftPlayerImgPath = "./assets/default_icons/goku.png";
+		const rightPlayerImgPath = "./assets/default_icons/vegeta.png";
 
-        // Giocatore Sinistro
-        if (this.leftPlayer) {
-            const iconCenterX = padding + radius;
-            const iconCenterY = padding + radius;
+		const leftPlayerIcon = document.getElementById("leftPlayerIcon");
+		const rightPlayerIcon = document.getElementById("rightPlayerIcon");
 
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.arc(iconCenterX, iconCenterY, radius, 0, Math.PI * 2);
-            this.ctx.closePath();
-            this.ctx.clip();
+		leftPlayerIcon.innerHTML = `
+		<img src="${leftPlayerImgPath}" 
+		alt="Left Player">
+		<div class="icon-label">${this.leftPlayer}</div>
+		<div class="trophy-label">
+			<i class="bi bi-trophy-fill" style="color: gold;"></i> ${this.leftPlayerThropies}
+		</div>
+		`;
+		leftPlayerIcon.classList.remove("visually-hidden");
 
-            if (this.leftPlayerImage && this.leftPlayerImage.complete && this.leftPlayerImage.naturalHeight !== 0) {
-                this.ctx.drawImage(this.leftPlayerImage, padding, padding, iconSize, iconSize);
-            } else {
-                this.ctx.fillStyle = "rgba(0, 150, 255, 0.7)"; // Blu placeholder
-                this.ctx.fill(); // Riempi il cerchio clippato
-            }
-            this.ctx.restore();
-
-            this.ctx.fillStyle = usernameColor;
-            this.ctx.fillText(
-                this.leftPlayer,
-                iconCenterX,
-                padding + iconSize + textOffsetY
-            );
-        }
-
-        // Giocatore Destro
-        if (this.rightPlayer) {
-            const rightPlayerIconX = this.canvas.width - padding - iconSize;
-            const iconCenterX = rightPlayerIconX + radius;
-            const iconCenterY = padding + radius;
-
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.arc(iconCenterX, iconCenterY, radius, 0, Math.PI * 2);
-            this.ctx.closePath();
-            this.ctx.clip();
-
-            if (this.rightPlayerImage && this.rightPlayerImage.complete && this.rightPlayerImage.naturalHeight !== 0) {
-                this.ctx.drawImage(this.rightPlayerImage, rightPlayerIconX, padding, iconSize, iconSize);
-            } else {
-                this.ctx.fillStyle = "rgba(255, 50, 50, 0.7)"; // Rosso placeholder
-                this.ctx.fill(); // Riempi il cerchio clippato
-            }
-            this.ctx.restore();
-
-            this.ctx.fillStyle = usernameColor;
-            this.ctx.fillText(
-                this.rightPlayer,
-                iconCenterX,
-                padding + iconSize + textOffsetY
-            );
-        }
+		rightPlayerIcon.innerHTML = `
+		<img src="${rightPlayerImgPath}"
+		alt="Right Player"
+		<div class="icon-label">${this.rightPlayer}</div>
+		<div class="trophy-label">
+			<i class="bi bi-trophy-fill" style="color: gold;"></i> ${this.rightPlayerThropies}
+		</div>
+		`;
+		rightPlayerIcon.classList.remove("visually-hidden");
     }
 
     initInputListeners()
