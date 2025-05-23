@@ -7,7 +7,6 @@
 }
 
 body {
-	height: 100vh;
 	height: 100dvh;
 	overflow: hidden;
 }
@@ -140,12 +139,38 @@ body {
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: #000;
+    background-color: transparent;
 }
 
 #AIgameCanvas {
     border: 5px solid #fff;
     border-radius: 10px;
+}
+
+/* Layout orizzontale icone + canvas */
+.game-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    margin-top: 30px;
+    gap: 100px;
+}
+
+#playerIcon, #aiIcon {
+    display: flex;
+    align-items: flex-start;
+    height: 60px;
+}
+
+#playerIcon img, #aiIcon img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: #222;
+    object-fit: cover;
+    box-shadow: 0 0 8px #000a;
 }
 
 /* -------------------------------------------------------------------------- */

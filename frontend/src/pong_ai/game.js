@@ -186,6 +186,7 @@ export class PongGame {
     // Draw the game state
     draw(preciseSpot, aimedSpot) {
         this.clearCanvas();
+		this.drawPlayerInfo();
         this.drawBall();
         this.drawPaddles();
         this.drawScores();
@@ -251,4 +252,20 @@ export class PongGame {
             }
         }
     }
+
+	drawPlayerInfo() {
+		const playerImgPath = "./assets/default_icons/goku.png";
+		const aiImgPath = "./assets/default_icons/matt.png";
+
+		// Player Icon
+		const playerIcon = document.getElementById("playerIcon");
+		playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">`;
+		playerIcon.classList.remove("visually-hidden");
+
+
+		// AI Icon
+		const aiIcon = document.getElementById("aiIcon");
+		aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">`;
+		aiIcon.classList.remove("visually-hidden");
+	}
 }
