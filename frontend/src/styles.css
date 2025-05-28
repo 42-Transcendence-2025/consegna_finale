@@ -147,6 +147,18 @@ body {
     border-radius: 10px;
 }
 
+#AIvsAIContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: transparent;
+}
+#AIvsAICanvas {
+    border: 5px solid #fff;
+    border-radius: 10px;
+}
+
 /* Layout orizzontale icone + canvas */
 .game-row {
     display: flex;
@@ -158,7 +170,8 @@ body {
 }
 
 #playerIcon, #aiIcon,
-#leftPlayerIcon, #rightPlayerIcon {
+#leftPlayerIcon, #rightPlayerIcon,
+#AILeftIcon, #AIRightIcon {
     display: flex;
     flex-direction: column;      /* Dispone immagine e testo in colonna */
     align-items: center;         /* Centra orizzontalmente il testo sotto l'immagine */
@@ -168,7 +181,9 @@ body {
 #playerIcon img,
 #aiIcon img,
 #leftPlayerIcon img,
-#rightPlayerIcon img {
+#rightPlayerIcon img,
+#AILeftIcon img,
+#AIRightIcon img {
 	width: 90px;
 	height: 90px;
 	border-radius: 50%;
@@ -181,7 +196,9 @@ body {
 #playerIcon .icon-label,
 #aiIcon .icon-label,
 #leftPlayerIcon .icon-label,
-#rightPlayerIcon .icon-label
+#rightPlayerIcon .icon-label,
+#AILeftIcon .icon-label,
+#AIRightIcon .icon-label
 {
     color: #fff;
     font-size: 1rem;
@@ -292,4 +309,21 @@ body {
     /* Le classi Bootstrap .d-none, .flex-column, .align-items-center, .justify-content-center 
        gestiranno la visualizzazione e il layout del contenuto interno.
        Vengono aggiunte/tolte dinamicamente via JavaScript. */
+}
+
+.game-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.game-column .play-btn-row {
+    margin-top: 2px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }

@@ -93,7 +93,7 @@ export class PongGame {
         }
     }
 
-    handlePaddleCollisions(ai) {
+    handlePaddleCollisions() {
         const ball = this.state.ball;
 
         // Left paddle collision

@@ -1,8 +1,18 @@
-<div class="d-flex flex-column justify-content-center align-items-center gap-5 h-100 bg-transparent">
-	<h1 data-i18n="homepage-welcome" class="text-warning animate-pulse-heartbeat-slow text-center">Welcome \</h1>
-	<div class="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center font-monospace">
-		<a href="#playMenu" class="btn btn-outline-info btn-lg p-3 fw-bolder" style="min-width: 320px;" data-i18n="play-menu">
-			Play
-		</a>
-	</div>
+<div class="game-column" id="AIvsAIColumn">
+	<h1 data-i18n="homepage-welcome" class="welcome-title text-warning animate-pulse-heartbeat-slow text-center">Welcome </h1>
+    <div class="game-row" id="AIvsAIRow">
+        <div id="AILeftIcon"></div>
+        <div id="AIvsAIContainer">
+            <canvas id="AIvsAICanvas"></canvas>
+        </div>
+        <div id="AIRightIcon"></div>
+    </div>
+    <div class="play-btn-row">
+        <a href="#playMenu" class="btn btn-outline-info btn-lg p-3 fw-bolder" style="min-width: 320px;" data-i18n="play-menu">
+            Play
+        </a>
+    </div>
 </div>
+
+
+
