@@ -2,7 +2,7 @@ export class PongGame {
     constructor() {
         this.initializeCanvas();
         this.initializeGameState();
-        this.setupListeners();
+        this.inputListeners();
     }
 
     // Initialize the canvas and its context
@@ -29,109 +29,120 @@ export class PongGame {
 
         this.paddleSpeed = 8;
         this.gameOver = false;
-        this.pointsToWin = 7;
+        this.pointsToWin = 5;
         this.lastScored = 0;
         this.waitingToStart = true;
-        this.gamePaused = false;
         this.debugStat = false;
     }
 
     // Setup all event listeners
-    setupListeners() {
-        this.setupStartListener();
-        this.setupPauseListener();
-        this.setupDebugStatListener();
-    }
-
-    setupStartListener() {
+    inputListeners() {
         document.addEventListener("keydown", (event) => {
             if (this.waitingToStart && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
                 this.waitingToStart = false; // Start the game
             }
-        });
-    }
-
-    setupPauseListener() {
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                this.gamePaused = !this.gamePaused; // Toggle pause
-            }
-        });
-    }
-
-    setupDebugStatListener() {
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "d") {
+            else if (event.key === "d") {
                 this.debugStat = !this.debugStat; // Toggle debug mode
             }
+            else if (event.key === "Escape" && !this.waitingToStart && this.gameOver) {
+                window.location.reload(); // Reload the page to reset the game
+            }
+        });
+        document.addEventListener("keyup", (event) => {
+            if (event.key === "Escape" && !this.waitingToStart && this.gameOver) {
+                window.location.reload(); // Reload the page to reset the game
+            }
         });
     }
 
-    // Update the game state
     update(ai) {
-        if (this.gameOver || this.gamePaused) return;
-
-        this.updateBallPosition();
-        this.handleWallCollisions();
-        this.handlePaddleCollisions(ai);
-        this.handleScoring(ai);
+        if (this.gameOver) return;
+        this.updateBall(ai);
     }
 
-    updateBallPosition() {
+    updateBall(ai) {
         const ball = this.state.ball;
-        ball.x += ball.dx;
-        ball.y += ball.dy;
-    }
+        const steps = Math.ceil(Math.max(Math.abs(ball.dx), Math.abs(ball.dy)) / this.ballRadius);
+        const dxStep = ball.dx / steps;
+        const dyStep = ball.dy / steps;
 
-    handleWallCollisions() {
-        const ball = this.state.ball;
+        for (let i = 0; i < steps; i++) {
+            const prevX = ball.x;
+            const prevY = ball.y;
 
-        // Top and bottom wall collisions
-        if (ball.y - this.ballRadius <= 0 || ball.y + this.ballRadius >= this.canvas.height) {
-            ball.dy = -ball.dy;
-            ball.y = Math.max(this.ballRadius, Math.min(this.canvas.height - this.ballRadius, ball.y));
+            ball.x += dxStep;
+            ball.y += dyStep;
+
+            this.handleInterpolatedPaddleCollision(prevX, ball.x, ball.y);
+            this.handleWallCollisions();
+            this.checkScoreInterpolated(prevX, ball.x, ai);
         }
     }
 
-    handlePaddleCollisions() {
+    handleInterpolatedPaddleCollision(prevX, currX, y) {
         const ball = this.state.ball;
 
-        // Left paddle collision
-        if (this.isBallCollidingWithLeftPaddle(ball)) {
+        // Left paddle
+        if (
+            prevX - this.ballRadius > this.paddleWidth &&
+            currX - this.ballRadius <= this.paddleWidth &&
+            this.isYOverlappingWithPaddle(y, this.state.leftPaddle.y)
+        ) {
+            ball.x = this.paddleWidth + this.ballRadius;
             this.handlePaddleBounce(ball, this.state.leftPaddle.y);
         }
 
-        // Right paddle collision
-        if (this.isBallCollidingWithRightPaddle(ball)) {
+        // Right paddle
+        if (
+            prevX + this.ballRadius < this.canvas.width - this.paddleWidth &&
+            currX + this.ballRadius >= this.canvas.width - this.paddleWidth &&
+            this.isYOverlappingWithPaddle(y, this.state.rightPaddle.y)
+        ) {
+            ball.x = this.canvas.width - this.paddleWidth - this.ballRadius;
             this.handlePaddleBounce(ball, this.state.rightPaddle.y);
         }
 
-        // Limit ball speed
         this.limitBallSpeed();
     }
 
-    isBallCollidingWithLeftPaddle(ball) {
+    isYOverlappingWithPaddle(ballY, paddleY) {
         return (
-            ball.dx < 0 &&
-            ball.x - this.ballRadius <= this.paddleWidth &&
-            ball.y + this.ballRadius >= this.state.leftPaddle.y &&
-            ball.y - this.ballRadius <= this.state.leftPaddle.y + this.paddleHeight
-        );
-    }
-
-    isBallCollidingWithRightPaddle(ball) {
-        return (
-            ball.dx > 0 &&
-            ball.x + this.ballRadius >= this.canvas.width - this.paddleWidth &&
-            ball.y + this.ballRadius >= this.state.rightPaddle.y &&
-            ball.y - this.ballRadius <= this.state.rightPaddle.y + this.paddleHeight
+            ballY + this.ballRadius >= paddleY &&
+            ballY - this.ballRadius <= paddleY + this.paddleHeight
         );
     }
 
     handlePaddleBounce(ball, paddleY) {
-        ball.dx = -ball.dx * 1.05; // Increase speed slightly
-        const offset = (ball.y - paddleY) - this.paddleHeight / 2;
-        ball.dy = offset / 10;
+        const paddleCenter = paddleY + this.paddleHeight / 2;
+        const relativeIntersectY = ball.y - paddleCenter;
+
+        // Normalizza la posizione d'impatto da -1 a 1
+        let normalizedIntersectY = relativeIntersectY / (this.paddleHeight / 2);
+
+        // Limita leggermente la normalizzazione per evitare angoli troppo estremi
+        normalizedIntersectY = Math.max(Math.min(normalizedIntersectY, 0.7), -0.7);
+
+        // Angolo massimo di rimbalzo (in radianti) - 30 gradi
+        const maxBounceAngle = Math.PI / 6;
+
+        // Calcola angolo di rimbalzo proporzionale alla posizione d'impatto
+        const bounceAngle = normalizedIntersectY * maxBounceAngle;
+
+        // Calcola velocità totale della palla (modulo)
+        const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy) * 1.10; // aumenta leggermente la velocità
+
+        // Direzione orizzontale invertita (la palla rimbalza)
+        const direction = ball.dx > 0 ? -1 : 1;
+
+        // Imposta nuova velocità con angolo calcolato
+        ball.dx = direction * speed * Math.cos(bounceAngle);
+        ball.dy = speed * Math.sin(bounceAngle);
+
+        // Assicura un valore minimo assoluto di dy per evitare traiettorie quasi orizzontali
+        const minDy = 1.0;
+        if (Math.abs(ball.dy) < minDy) {
+            ball.dy = ball.dy < 0 ? -minDy : minDy;
+        }
     }
 
     limitBallSpeed() {
@@ -141,38 +152,53 @@ export class PongGame {
         ball.dy = Math.sign(ball.dy) * Math.min(Math.abs(ball.dy), maxSpeed);
     }
 
-    handleScoring(ai) {
+    handleWallCollisions() {
         const ball = this.state.ball;
 
-        if (ball.x < 0) {
+        if (ball.y - this.ballRadius < 0) {
+            ball.y = this.ballRadius;
+            ball.dy = Math.abs(ball.dy);
+        }
+
+        if (ball.y + this.ballRadius > this.canvas.height) {
+            ball.y = this.canvas.height - this.ballRadius;
+            ball.dy = -Math.abs(ball.dy);
+        }
+    }
+
+    checkScoreInterpolated(prevX, currX, ai) {
+        if (prevX >= 0 && currX < 0) {
             this.state.rightScore++;
+            this.lastScored = 1;
             this.checkGameOver(ai, 1);
-        } else if (ball.x > this.canvas.width) {
+        } else if (prevX <= this.canvas.width && currX > this.canvas.width) {
             this.state.leftScore++;
+            this.lastScored = 0;
             this.checkGameOver(ai, 2);
         }
     }
 
     checkGameOver(ai, scorer) {
-        if (this.state.rightScore >= this.pointsToWin || this.state.leftScore >= this.pointsToWin) {
+        if (this.state.rightScore >= this.pointsToWin
+            || this.state.leftScore >= this.pointsToWin) {
             this.gameOver = true;
         } else {
             this.lastScored = scorer;
-            this.resetBall(ai);
+            this.resetBall();
+            ai.predction = ai.paddle.y + (this.paddleHeight / 2); // Reset AI prediction
+            this.adjustAIDifficulty(ai);
         }
     }
 
-    resetBall(ai) {
+    resetBall() {
         const ball = this.state.ball;
         ball.x = this.canvas.width / 2;
         ball.y = this.canvas.height / 2;
         ball.dx = this.lastScored === 1 ? -6 : 6; // Direction based on scorer
-        ball.dy = Math.random() * 4 - 2; // Random angle
+        ball.dy = 1; // Random angle
 
         this.state.leftPaddle.y = this.canvas.height / 2 - this.paddleHeight / 2;
         this.state.rightPaddle.y = this.canvas.height / 2 - this.paddleHeight / 2;
-
-        this.adjustAIDifficulty(ai);
     }
 
     adjustAIDifficulty(ai) {

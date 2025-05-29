@@ -11,7 +11,6 @@ export class HomeController {
 		this.game = new AIvsAIGame();
 		this.leftAI = new AIvsAI(this.game, "left");
 		this.rightAI = new AIvsAI(this.game, "right");
-
 		this.gameLoop();
 	}
 

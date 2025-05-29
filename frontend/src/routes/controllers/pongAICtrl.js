@@ -19,9 +19,6 @@ export class PongAIController {
 			ai = new AI(game, difficulty);
 			menu.classList.add("visually-hidden");
 			AIgameContainer.classList.remove("visually-hidden");
-			game.setupStartListener();
-			game.setupDebugStatListener();
-			game.setupPauseListener();
 			gameLoop();
 		};
 
@@ -53,7 +50,7 @@ export class PongAIController {
 				gameOverScreen();
 				return;
 			}
-			if (!game.waitingToStart && !game.gamePaused)
+			if (!game.waitingToStart)
 			{
 				player.update();
 				ai.update();
@@ -119,7 +116,7 @@ export class PongAIController {
 				{
 					ctx.font = "25px Arial";
 					ctx.fillStyle = "grey";
-					ctx.fillText("Press r to restart the game", 400, 500);
+					ctx.fillText("Press esc to go back.", 400, 500);
 				}
 			}
 		

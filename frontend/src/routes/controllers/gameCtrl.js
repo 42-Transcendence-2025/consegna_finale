@@ -188,7 +188,7 @@ export class GameController {
             }
 			else if (event.key === "Escape" && this.gameOver)
 			{
-				window.location.href = "/";
+				window.location.href = "/#privateMatch";
 			}
         });
 
@@ -204,7 +204,7 @@ export class GameController {
 			}
 			else if (event.key === "Escape" && this.gameOver)
 			{
-				window.location.href = "/";
+				window.location.href = "/#privateMatch";
 			}
 		});
     }

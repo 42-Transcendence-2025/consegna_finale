@@ -148,7 +148,7 @@ export class AIvsAIGame {
         const bounceAngle = normalizedIntersectY * maxBounceAngle;
 
         // Calcola velocità totale della palla (modulo)
-        const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy) * 1.05; // aumenta leggermente la velocità
+        const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy) * 1.10; // aumenta leggermente la velocità
 
         // Direzione orizzontale invertita (la palla rimbalza)
         const direction = ball.dx > 0 ? -1 : 1;
@@ -221,14 +221,20 @@ export class AIvsAIGame {
     drawPlayerInfo() {
         // Left AI (Lucia)
         const leftIcon = document.getElementById("AILeftIcon");
+        
+        if (leftIcon){
         leftIcon.innerHTML = `<img src="./assets/default_icons/lucia.png" alt="Lucia">
             <div class="icon-label">Lucia (Pro)</div>
         `;
+        }
 
         // Right AI (Matt)
         const rightIcon = document.getElementById("AIRightIcon");
-        rightIcon.innerHTML = `<img src="./assets/default_icons/matt.png" alt="Matt">
-            <div class="icon-label">Matt (Pro)</div>
-        `;
+
+        if (rightIcon) {
+            rightIcon.innerHTML = `<img src="./assets/default_icons/matt.png" alt="Matt">
+                <div class="icon-label">Matt (Pro)</div>
+            `;
+        }
     }
 }

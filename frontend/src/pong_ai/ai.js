@@ -5,11 +5,12 @@ export class AI
         this.game = game;
 		this.ball = game.state.ball;
 		this.paddle = game.state.rightPaddle;
-		this.prediction = 400;
-		this.exactPrediction = 400;
+		this.prediction = game.canvas.height / 2; // Default prediction to center of canvas height
+		this.exactPrediction = game.canvas.height / 2; // Exact prediction for AI
 		this.lastAIUpdate = Date.now();
 		this.lastPrediction = Date.now();
 		this.previousBallDir = game.state.ball.dx;
+		this.predictionLocked = false;
 		const difficultyLevels = {
             easy: { AILevel: 120, maxLevel: 120, minLevel: 180 },
             medium: { AILevel: 100, maxLevel: 80, minLevel: 140 },
@@ -27,46 +28,46 @@ export class AI
 	{
 		const currentTime = Date.now();
 		this.paddle = this.game.state.rightPaddle;
+
+		if (this.previousBallDir !== this.ball.dx)
+		{
+			this.predictionLocked = false; // Unlock prediction for new trajectory
+			this.previousBallDir = this.ball.dx;
+		}
+
 		if (currentTime - this.lastAIUpdate >= 1000)
 		{
 			this.ball = this.game.state.ball;
 			this.lastAIUpdate = currentTime;
 		}
-
-		/* // se la palla è in movimento verso il paddle sinistro si sposta al centro
-		if (this.ball.dx < 0 && this.AILevel <= 100)
-		{
-			const paddleCenter = this.paddle.y + this.game.paddleHeight / 2;
-			const tolerance = this.game.paddleHeight / 2;
-			if (paddleCenter > (this.game.canvas.height / 2) + tolerance)
-			{
-				this.moveUp();
-			}
-			else if (paddleCenter < (this.game.canvas.height / 2) - tolerance)
-			{
-				this.moveDown();
-			}
-		}
-		else  */
+		
+		let paddleCenter = this.paddle.y + (this.game.paddleHeight / 2);
 		if (this.ball.dx > 0)
 		{
-			if (currentTime - this.lastPrediction >= 1000)
+			if (currentTime - this.lastPrediction >= 1000 && !this.predictionLocked)
 			{
 				this.predictBallPosition();
 				this.lastPrediction = currentTime;
-			}
-			const paddleCenter = this.paddle.y + this.game.paddleHeight / 2;
-			const tolerance = 5;
-			if (this.prediction < (paddleCenter - tolerance))
-			{
-				this.moveUp();
-			}
-			else if (this.prediction > (paddleCenter + tolerance))
-			{
-				this.moveDown();
+				this.predictionLocked = true; // Lock prediction for the current trajectory
+			
+				if (this.AILevel < 40){
+						// Palla verso l'IA: mira agli angoli estremi
+						const hitTop = Math.random() < 0.5;
+						paddleCenter = hitTop
+							? this.paddle.y + (this.game.paddleHeight / 4)
+							: this.paddle.y + (this.game.paddleHeight * 3 / 4);
+				}
 			}
 		}
-		this.previousBallDir = this.ball.dx;
+		const tolerance = 5;
+		if (this.prediction < (paddleCenter - tolerance))
+		{
+			this.moveUp();
+		}
+		else if (this.prediction > (paddleCenter + tolerance))
+		{
+			this.moveDown();
+		}
     }
 
 	moveUp()
