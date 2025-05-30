@@ -26,7 +26,7 @@ export class AIvsAI {
             // Ball is coming towards AI
             if (!this.predictionLocked) {
                 this.predictBallPosition(); // Sets this.prediction to ball's impact Y
-                this.offset = this.computeStrategicOffset(); // Sets this.offset for strategic hit
+				this.prediction += ((this.game.paddleHeight / 2) - 10) * (Math.random() < 0.5 ? -1 : 1);
                 this.predictionLocked = true;
             }
             // If predictionLocked is true, AI continues to use the existing (strategic) prediction and offset
@@ -35,41 +35,17 @@ export class AIvsAI {
             // Ball is moving away from AI (or stationary horizontally)
             // AI should target center of the canvas to return to a neutral position.
             this.prediction = this.game.canvas.height / 2;
-            this.offset = this.game.paddleHeight / 2; // Aim with the center of the paddle
-            // predictionLocked is not changed here; it's reset when ball direction changes towards AI again.
         }
 
         // Movement logic: AI tries to align (this.paddle.y + this.offset) with this.prediction
-        const currentHitPointY = this.paddle.y + this.offset;
+        const paddleCenter = this.paddle.y + (this.game.paddleHeight / 2);
         const tolerance = 5; 
 
-        if (this.prediction < (currentHitPointY - tolerance)) {
+        if (this.prediction < (paddleCenter - tolerance)) {
             this.moveUp();
-        } else if (this.prediction > (currentHitPointY + tolerance)) {
+        } else if (this.prediction > (paddleCenter + tolerance)) {
             this.moveDown();
         }
-    }
-
-    computeStrategicOffset() {
-        const opponentPaddle = this.side === 'left'
-            ? this.game.state.rightPaddle
-            : this.game.state.leftPaddle;
-
-        const opponentY = opponentPaddle.y + this.game.paddleHeight / 2;
-        const canvasCenter = this.game.canvas.height / 2;
-
-        // Obiettivo: mirare dalla parte opposta rispetto all'avversario
-        const aimHigh = opponentY > canvasCenter;
-
-        // Determina l'offset per colpire la palla in alto o in basso
-        const impactZone = aimHigh
-            ? this.game.paddleHeight * 0.25   // colpisci in basso per mandarla in alto
-            : this.game.paddleHeight * 0.75;  // colpisci in alto per mandarla in basso
-
-        // Aggiungi un piccolo random per evitare che sia sempre esattamente uguale
-        const jitter = (Math.random() - 0.5) * 10; // ±5 pixel
-
-        return Math.max(0, Math.min(this.game.paddleHeight, impactZone + jitter));
     }
 
 

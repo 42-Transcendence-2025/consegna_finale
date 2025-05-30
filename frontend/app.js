@@ -44,7 +44,7 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 			window.location.hash = CONFIG.routes.login.view;
 			return;
 		}
-		if (selectedRoute.view === CONFIG.routes.login.view && window.tools.authManager.isLoggedIn()) {
+		if ((selectedRoute.view === CONFIG.routes.login.view || selectedRoute.view === CONFIG.routes.register.view) && window.tools.authManager.isLoggedIn()) {
 			// TODO: add a message to the user that they are already logged in
 			console.warn(`User is already logged in. Redirecting to "#${CONFIG.routes.home.view}"`);
 			window.location.hash = CONFIG.routes.home.view;

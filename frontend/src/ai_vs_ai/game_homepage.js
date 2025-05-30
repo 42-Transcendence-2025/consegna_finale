@@ -223,9 +223,12 @@ export class AIvsAIGame {
         const leftIcon = document.getElementById("AILeftIcon");
         
         if (leftIcon){
-        leftIcon.innerHTML = `<img src="./assets/default_icons/lucia.png" alt="Lucia">
-            <div class="icon-label">Lucia (Pro)</div>
-        `;
+            leftIcon.innerHTML = `<img src="./assets/default_icons/lucia.png" alt="Lucia">
+                <div class="icon-label">Lucia (Pro)</div>
+                <div class="trophy-label">
+                    <i class="bi bi-trophy-fill" style="color: gold;"></i> 1000
+                </div>
+            `;
         }
 
         // Right AI (Matt)
@@ -234,6 +237,9 @@ export class AIvsAIGame {
         if (rightIcon) {
             rightIcon.innerHTML = `<img src="./assets/default_icons/matt.png" alt="Matt">
                 <div class="icon-label">Matt (Pro)</div>
+                <div class="trophy-label">
+                    <i class="bi bi-trophy-fill" style="color: gold;"></i> 1000
+                </div>
             `;
         }
     }

@@ -67,6 +67,7 @@ export class PrivateMatchController {
 
             generatePasswordButton.addEventListener("click", () => {
                 this.#generatePIN(passwordInput);
+                generatePasswordButton.blur(); 
             });
         } else {
             if (!loadingScreen) console.error("Loading screen element (loadingScreen) not found!");
@@ -80,30 +81,6 @@ export class PrivateMatchController {
         const pin = Math.floor(100000 + Math.random() * 900000).toString();
         inputElement.value = "";
         inputElement.value = pin;
-
-        navigator.clipboard.writeText(pin)
-            .then(() => {
-                this.#showTemporaryMessage(`PIN ${pin} copied to clipboard`);
-            })
-            .catch(err => {
-                console.error("Clipboard copy failed:", err);
-                this.#showTemporaryMessage(`Clipboard copy failed. PIN: ${pin}`, true);
-            });
-    }
-
-    #showTemporaryMessage(message, isError = false) {
-        let msgDiv = document.createElement("div");
-        msgDiv.textContent = message;
-        msgDiv.className = `position-fixed bottom-0 start-50 translate-middle-x px-4 py-2 rounded shadow text-white ${
-            isError ? "bg-danger" : "bg-success"
-        }`;
-        msgDiv.style.zIndex = "9999";
-
-        document.body.appendChild(msgDiv);
-
-        setTimeout(() => {
-            msgDiv.remove();
-        }, 3000);
     }
 
     #initializeTooltips() {
