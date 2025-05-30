@@ -20,7 +20,7 @@ export class PongGame {
     // Initialize the game state
     initializeGameState() {
         this.state = {
-            ball: { x: 400, y: 300, dx: -6, dy: 1 },
+            ball: { x: 400, y: 300, dx: -6, dy: 0.1 },
             leftPaddle: { y: 250 },
             rightPaddle: { y: 250 },
             leftScore: 0,
@@ -185,8 +185,10 @@ export class PongGame {
         } else {
             this.lastScored = scorer;
             this.resetBall();
-            ai.predction = ai.paddle.y + (this.paddleHeight / 2); // Reset AI prediction
-            this.adjustAIDifficulty(ai);
+            ai.prediction = this.canvas.height / 2; // Reset AI prediction
+            ai.exactPrediction = this.canvas.height / 2; // Reset AI exact prediction
+            ai.predictionLocked = false; // Unlock AI prediction
+            this.adjustAIDifficulty(ai);            
         }
     }
 
@@ -195,7 +197,7 @@ export class PongGame {
         ball.x = this.canvas.width / 2;
         ball.y = this.canvas.height / 2;
         ball.dx = this.lastScored === 1 ? -6 : 6; // Direction based on scorer
-        ball.dy = 1; // Random angle
+        ball.dy = 0.1;
 
         this.state.leftPaddle.y = this.canvas.height / 2 - this.paddleHeight / 2;
         this.state.rightPaddle.y = this.canvas.height / 2 - this.paddleHeight / 2;
@@ -212,7 +214,6 @@ export class PongGame {
     // Draw the game state
     draw(preciseSpot, aimedSpot) {
         this.clearCanvas();
-		this.drawPlayerInfo();
         this.drawBall();
         this.drawPaddles();
         this.drawScores();
@@ -266,6 +267,11 @@ export class PongGame {
             this.ctx.fillRect(this.canvas.width - this.paddleWidth - 10, preciseSpot - 5, 10, 10);
             this.ctx.fillStyle = "yellow";
             this.ctx.fillRect(this.canvas.width - this.paddleWidth - 10, aimedSpot - 5, 10, 10);
+            this.ctx.font = "16px Arial";
+            this.ctx.fillStyle = "red";
+            this.ctx.fillText("Precise Spot", this.canvas.width - this.paddleWidth - 120, preciseSpot + 5);
+            this.ctx.fillStyle = "yellow";
+            this.ctx.fillText("Aimed Spot", this.canvas.width - this.paddleWidth - 120, aimedSpot + 5);
         }
     }
 
@@ -278,24 +284,4 @@ export class PongGame {
             }
         }
     }
-
-	drawPlayerInfo() {
-		const playerImgPath = "./assets/default_icons/goku.png";
-		const aiImgPath = "./assets/default_icons/matt.png";
-
-		// Player Icon
-		const playerIcon = document.getElementById("playerIcon");
-		playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">
-			<div class="icon-label">Player</div>
-		`;
-		playerIcon.classList.remove("visually-hidden");
-
-
-		// AI Icon
-		const aiIcon = document.getElementById("aiIcon");
-		aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">
-			<div class="icon-label">Matt</div>
-		`;
-		aiIcon.classList.remove("visually-hidden");
-	}
 }

@@ -14,8 +14,8 @@ export class AI
 		const difficultyLevels = {
             easy: { AILevel: 120, maxLevel: 120, minLevel: 180 },
             medium: { AILevel: 100, maxLevel: 80, minLevel: 140 },
-            hard: { AILevel: 70, maxLevel: 40, minLevel: 100 },
-            impossible: { AILevel: 10, maxLevel: 11, minLevel: -11 },
+            hard: { AILevel: 50, maxLevel: 40, minLevel: 70 },
+            impossible: { AILevel: 0, maxLevel: 11, minLevel: -11 },
         };
 
         const level = difficultyLevels[difficulty] || difficultyLevels.easy;
@@ -51,13 +51,14 @@ export class AI
 				this.predictionLocked = true; // Lock prediction for the current trajectory
 			
 				if (this.AILevel < 40){
-						// Palla verso l'IA: mira agli angoli estremi
-						const hitTop = Math.random() < 0.5;
-						paddleCenter = hitTop
-							? this.paddle.y + (this.game.paddleHeight / 4)
-							: this.paddle.y + (this.game.paddleHeight * 3 / 4);
+						this.prediction += ((this.game.paddleHeight / 2) - 10) * (Math.random() < 0.5 ? -1 : 1);
 				}
 			}
+		}
+		else if (this.ball.dx < 0 && this.AILevel < 40)
+		{
+			this.prediction = this.game.canvas.height / 2;
+			this.exactPrediction = this.game.canvas.height / 2;
 		}
 		const tolerance = 5;
 		if (this.prediction < (paddleCenter - tolerance))

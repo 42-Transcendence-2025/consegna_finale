@@ -15,34 +15,35 @@ export class PongAIController {
 		const player = new Player(game);
 		let ai = null;
 
-		const startGame = (difficulty) => {
+		const startGame = (difficulty, aiImgPath, aiName, aiTrophy) => {
 			ai = new AI(game, difficulty);
 			menu.classList.add("visually-hidden");
 			AIgameContainer.classList.remove("visually-hidden");
+			drawPlayerInfo(aiImgPath, aiName, aiTrophy);
 			gameLoop();
 		};
 
 	
 		document.getElementById("easy").addEventListener("click", () =>
 		{
-			startGame("easy");	
+			startGame("easy", "./assets/default_icons/cole(easy).png", "Cole", 10);
 		});
 	
 		document.getElementById("medium").addEventListener("click", () =>
 		{
-			startGame("medium");
+			startGame("medium", "./assets/default_icons/nick(medium).png", "Nick", 70);
 		});
-	
+
 		document.getElementById("hard").addEventListener("click", () =>
 		{
-			startGame("hard");
+			startGame("hard", "./assets/default_icons/rin(hard).png", "Rin", 300);
 		});
 	
 		document.getElementById("impossible").addEventListener("click", () =>
 		{
-			startGame("impossible");
+			startGame("impossible", "./assets/default_icons/matt.png", "Matt (Pro)", 1000);
 		});
-	
+
 		function gameLoop()
 		{
 			if (game.gameOver)
@@ -58,6 +59,28 @@ export class PongAIController {
 			}
 			game.draw(ai.exactPrediction, ai.prediction);
 			requestAnimationFrame(gameLoop); // Recursive call for animation
+		}
+
+		function drawPlayerInfo(aiImgPath, aiName, aiTrophy) {
+			const playerImgPath = "./assets/default_icons/goku.png";
+
+			// Player Icon
+			const playerIcon = document.getElementById("playerIcon");
+			playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">
+				<div class="icon-label">Player</div>
+			`;
+			playerIcon.classList.remove("visually-hidden");
+
+
+			// AI Icon
+			const aiIcon = document.getElementById("aiIcon");
+			aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">
+				<div class="icon-label">${aiName}</div>
+				<div class="trophy-label">
+					<i class="bi bi-trophy-fill" style="color: gold;"></i> ${aiTrophy}
+				</div>
+			`;
+			aiIcon.classList.remove("visually-hidden");
 		}
 	
 		function gameOverScreen()
