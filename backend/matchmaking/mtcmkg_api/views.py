@@ -5,8 +5,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .serializers import MatchSerializer
-from .models import Match, PongUser
+from .serializers import MatchSerializer, TournamentCreateSerializer, TournamentListSerializer
+from .models import Match, PongUser, Tournament
+from rest_framework.generics import ListCreateAPIView, GenericAPIView
+from django.db import transaction
 
 
 conditions = {}
@@ -69,4 +71,115 @@ class PongPrivatePasswordMatchView(APIView):
         cache.delete(game_id_key)
         return Response({"detail": "Game not found"}, status=404)
 
+class TournamentListCreateView(ListCreateAPIView):
+    """
+    POST /match/tournament/
+    Richiede 'name', crea il torneo e restituisce:
+        { "tournament_id": 42 }
+    """
+    permission_classes = [IsAuthenticated]
+    
 
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return TournamentCreateSerializer
+        return TournamentListSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)   # name nel body
+        serializer.is_valid(raise_exception=True)
+        tournament = serializer.save()                        # dentro al serializer crea + aggiunge il player
+        return Response({"tournament_id": tournament.id}, status=status.HTTP_201_CREATED)
+    
+    def get_queryset(self):
+        """
+        Restituisce tutti i tornei con lo stato 'created'
+        """
+        qs = Tournament.objects.filter(status=Tournament.Status.CREATED).order_by("created_at")
+        return qs
+        
+class TournamentView(GenericAPIView):
+    """
+    /match/tournament/<pk>/
+
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+       """
+       Aggiunge l'utente al torneo se:
+         • il torneo è ancora in lobby ('created')
+         • non è già pieno
+         • l'utente non è già iscritto
+       Se, dopo l'aggiunta, i player = 8 ⇒ cambia status in 'full'
+       Restituisce lo stato aggiornato del torneo.
+       """
+       with transaction.atomic():
+           try:
+               # lock riga per evitare over-booking
+               tournament = (
+                   Tournament.objects.select_for_update()
+                   .get(pk=pk, status=Tournament.Status.CREATED)
+               )
+           except Tournament.DoesNotExist:
+               return Response(
+                   {"detail": "Tournament not found or already started"},
+                   status=status.HTTP_404_NOT_FOUND,
+               )
+           if request.user in tournament.players.all():
+               return Response(
+                   {"detail": "You have already joined this tournament"},
+                   status=status.HTTP_400_BAD_REQUEST,
+               )
+           if tournament.players.count() >= 8:
+               return Response(
+                   {"detail": "Tournament is full"},
+                   status=status.HTTP_409_CONFLICT,
+               )
+           # aggiunge il giocatore
+           tournament.players.add(request.user)
+           # diventa “full” al raggiungimento di 8 player
+           if tournament.players.count() == 8:
+               tournament.status = "full"
+               tournament.save(update_fields=["status"])
+               # TODO: creare i match del bracket qui
+       # serializza lo stato corrente del torneo
+       return Response({"detail": "Joined tournament"}, status=status.HTTP_200_OK)
+
+
+    def delete(self, request, pk, *args, **kwargs):
+        """
+        1. Recupera il torneo in stato *created* (404 se non esiste o già iniziato)
+        2. Verifica che l’utente faccia parte dei `players` (403 altrimenti)
+        3. Rimuove l’utente; se era l’ultimo, cancella il torneo
+        """
+        with transaction.atomic():
+            try:
+                # lock ottimistico: seleziona la riga in write-lock mentre la modifichiamo
+                tournament = (
+                    Tournament.objects.select_for_update()
+                    .get(pk=pk, status=Tournament.Status.CREATED)
+                )
+            except Tournament.DoesNotExist:
+                return Response(
+                    {"detail": "Tournament not found or already started"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            if request.user not in tournament.players.all():
+                return Response(
+                    {"detail": "You are not in this tournament"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # rimuove il player
+            tournament.players.remove(request.user)
+
+            # se non rimane più nessuno → elimina l’intero torneo
+            if tournament.players.count() == 0:
+                tournament.delete()
+                return Response({"detail": "Left tournament and delete"}, status=status.HTTP_204_NO_CONTENT)
+
+        # risposta “ok, sei uscito ma il torneo resta vivo”
+        return Response({"detail": "Left tournament"}, status=status.HTTP_200_OK)
+    

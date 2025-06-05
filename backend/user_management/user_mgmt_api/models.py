@@ -85,13 +85,19 @@ class Match(models.Model):
 
 
 class Tournament(models.Model):
-    STATUS_CHOICES = [
-        ('created', 'Created'),
-        ('finished', 'Finished'),
-        ('aborted', 'Aborted')
-    ]
+    class Meta:
+        managed = False  # Evita che Django gestisca questa tabella
+        db_table = 'user_mgmt_api_tournament'
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='created')
+    class Status(models.TextChoices):
+        CREATED  = "created",  "Created"
+        FULL     = "full",     "Full"
+        FINISHED = "finished", "Finished"
+        ABORTED  = "aborted",  "Aborted"
+
+    name = models.CharField(max_length=150, null=True, blank=True)  # Nome del torneo
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.CREATED)
 
     players = models.ManyToManyField('PongUser', related_name='tournaments')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,7 +106,3 @@ class Tournament(models.Model):
 
     def __str__(self):
         return f"Tournament #{self.pk}"
-
-
-
-# Create your models here.

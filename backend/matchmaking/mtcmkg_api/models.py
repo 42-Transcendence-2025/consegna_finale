@@ -66,13 +66,15 @@ class Tournament(models.Model):
         managed = False  # Evita che Django gestisca questa tabella
         db_table = 'user_mgmt_api_tournament'
 
-    STATUS_CHOICES = [
-        ('created', 'Created'),
-        ('finished', 'Finished'),
-        ('aborted', 'Aborted')
-    ]
+    class Status(models.TextChoices):
+        CREATED  = "created",  "Created"
+        FULL     = "full",     "Full"
+        FINISHED = "finished", "Finished"
+        ABORTED  = "aborted",  "Aborted"
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='created')
+    name = models.CharField(max_length=150, null=True, blank=True)  # Nome del torneo
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.CREATED)
 
     players = models.ManyToManyField('PongUser', related_name='tournaments')
     created_at = models.DateTimeField(auto_now_add=True)
