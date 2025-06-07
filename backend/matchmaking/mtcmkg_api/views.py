@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .serializers import MatchSerializer, TournamentCreateSerializer, TournamentListSerializer
+from .serializers import MatchCreateSerializer, TournamentCreateSerializer, TournamentListSerializer, TournamentDetailSerializer
 from .models import Match, PongUser, Tournament
 from rest_framework.generics import ListCreateAPIView, GenericAPIView
 from django.db import transaction
@@ -46,7 +46,7 @@ class PongPrivatePasswordMatchView(APIView):
                     "player_2": player_2.id,
                     "status": "created"
                 }
-                serializer = MatchSerializer(data=match_data)
+                serializer = MatchCreateSerializer(data=match_data)
                 serializer.is_valid(raise_exception=True)
                 match = serializer.save()
                 
@@ -104,6 +104,7 @@ class TournamentView(GenericAPIView):
 
     """
     permission_classes = [IsAuthenticated]
+    serializer_class = TournamentDetailSerializer
 
     def post(self, request, pk, *args, **kwargs):
        """
@@ -183,3 +184,20 @@ class TournamentView(GenericAPIView):
         # risposta “ok, sei uscito ma il torneo resta vivo”
         return Response({"detail": "Left tournament"}, status=status.HTTP_200_OK)
     
+    def get_queryset(self):
+        """
+        Restituisce il torneo con lo stato 'created' o 'full' con player e match
+        """
+        return Tournament.objects.filter(
+            id=self.kwargs['pk'],
+            status__in=[Tournament.Status.CREATED, Tournament.Status.FULL]
+        ).prefetch_related('players', 'matches')
+    
+    def get(self, request, pk, *args, **kwargs):
+        """
+        Restituisce i dettagli del torneo con i player e i match
+        """
+        tournament = self.get_object()
+        serializer = self.get_serializer(tournament)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        

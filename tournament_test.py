@@ -128,6 +128,18 @@ def delete_tournament(tid: int, token: str) -> None:
     else:
         print("Errore nell'uscire dal torneo", r.status_code, r.json())
 
+def tournament_detail(tid: int, token: str) -> None:
+    r = requests.get(f"{TOURN_URL}{tid}/", headers=_auth_headers(token))
+    if r.status_code == 200:
+        data = r.json()
+        print(f"Torneo {data['id']}: {data['name']} ({data['status']})")
+        print("Giocatori:")
+        for player in data["players"]:
+            print(f"  - {player['username']} (slot: {player['slot']})")
+        print("Partite:", data["matches"])
+    else:
+        print("Errore dettagli torneo:", r.status_code, r.json())
+
 
 # ───────────────────────────────────────────────────────────────
 #  CLI LOOP
@@ -154,6 +166,7 @@ def main() -> None:
         "  tournament list        → lista lobby\n"
         "  tournament join <id>   → entra in un torneo\n"
         "  tournament delete <id> → esci da un torneo\n"
+        "  tournament detail <id> → mostra dettagli torneo\n"
         "  refresh                → rinnova access token\n"
         "  exit                   → esci\n"
     )
@@ -177,6 +190,8 @@ def main() -> None:
                     join_tournament(int(cmd[2]), access)
                 elif sub == "delete" and len(cmd) == 3 and cmd[2].isdigit():
                     delete_tournament(int(cmd[2]), access)
+                elif sub == "detail" and len(cmd) == 3 and cmd[2].isdigit():
+                    tournament_detail(int(cmd[2]), access)
                 else:
                     print("Uso: tournament join <id>")
             case "refresh":
