@@ -9,6 +9,7 @@ from .serializers import MatchCreateSerializer, TournamentCreateSerializer, Tour
 from .models import Match, PongUser, Tournament
 from rest_framework.generics import ListCreateAPIView, GenericAPIView
 from django.db import transaction
+from .bracket import current_slot
 
 
 conditions = {}
@@ -143,8 +144,7 @@ class TournamentView(GenericAPIView):
            if tournament.players.count() == 8:
                tournament.status = "full"
                tournament.save(update_fields=["status"])
-               # TODO: creare i match del bracket qui
-       # serializza lo stato corrente del torneo
+
        return Response({"detail": "Joined tournament"}, status=status.HTTP_200_OK)
 
 
@@ -202,5 +202,59 @@ class TournamentView(GenericAPIView):
         serializer = self.get_serializer(tournament)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def post(self, request, pk, *args, **kwargs):
+        """
+        Creazione di un nuovo match nel torneo e response di game_id
+        """
+        user = request.user
+        tournament = self.get_object()
+        if tournament.status != Tournament.Status.FULL:
+            return Response({"detail": "Tournament is not full"}, status=status.HTTP_400_BAD_REQUEST)
+        if user not in tournament.players.all():
+            return Response({"detail": "You are not in this tournament"}, status=status.HTTP_403_FORBIDDEN)
+        
+        slot = current_slot(user, tournament)
+        m_num = slot // 2
+        wait_key = f"wait_{tournament.id}_{m_num}"
+        cond = get_condition(wait_key)
+
+        cached = cache.get(wait_key)
+
+        # Giocatore 2 trova il match
+        if cached:
+            if cached and cached["username"] != user.username:
+                game_id = cached["game_id"]
+                player_1_username = cached["username"]
+            
+            match = Match.objects.create(
+                player_1 = PongUser.objects.get(username=player_1_username),
+                player_2 = user,
+                status = "created",
+                match_number = m_num,
+                tournament = tournament
+            )
+            cache.set(f"match_id_for_game_{game_id}", match.id, timeout=3600)
+            cache.delete(wait_key)
+            with cond:
+                cond.notify()
+            return Response({"game_id": game_id}, status=status.HTTP_200_OK)
+        
+        # Giocatore 1 crea una condizione e aspetta
+        game_id = str(uuid.uuid4())
+        cache.set(wait_key, {"game_id": game_id, "username": user.username}, timeout=60)
+        with cond:
+            cond.wait(timeout=60)
+        if not cache.get(wait_key):
+            return Response({"game_id": game_id}, status=status.HTTP_200_OK)
+        cache.delete(wait_key)
+        # Giocatore il vince il match a tavolino
+        match = Match.objects.create(
+            player_1 = user,
+            status = "finished_walkover",
+            match_number = m_num,
+            tournament = tournament,
+            winner = user
+        )
+        return Response({"detail": "win by walk_over"}, status=200)
 
         
