@@ -98,6 +98,22 @@ class TournamentListCreateView(ListCreateAPIView):
         """
         qs = Tournament.objects.filter(status=Tournament.Status.CREATED).order_by("created_at")
         return qs
+    
+    def list(self, request, *args, **kwargs):
+       # c’è già un torneo in cui l’utente è presente?
+       my_tournament = (
+           self.get_queryset()
+           .filter(players=request.user)      # M2M lookup
+           .first()
+       )
+       if my_tournament:
+           # risposta “singola” invece della lista
+           return Response(
+               {"tournament_id": my_tournament.id},
+               status=status.HTTP_200_OK,
+           )
+       # altrimenti comportamento standard → lista lobby
+       return super().list(request, *args, **kwargs)
         
 class TournamentView(GenericAPIView):
     """
@@ -214,6 +230,8 @@ class TournamentView(GenericAPIView):
             return Response({"detail": "You are not in this tournament"}, status=status.HTTP_403_FORBIDDEN)
         
         slot = current_slot(user, tournament)
+        if slot is None:
+            return Response({"detail": "You have lost in this tournament"}, status=status.HTTP_403_FORBIDDEN)
         m_num = slot // 2
         wait_key = f"wait_{tournament.id}_{m_num}"
         cond = get_condition(wait_key)
