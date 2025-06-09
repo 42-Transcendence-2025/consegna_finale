@@ -109,7 +109,7 @@ def list_tournaments(token: str) -> None:
 
 
 def join_tournament(tid: int, token: str) -> None:
-    r = requests.post(f"{TOURN_URL}{tid}/", headers=_auth_headers(token))
+    r = requests.put(f"{TOURN_URL}{tid}/", headers=_auth_headers(token))
     match r.status_code:
         case 200:
             data = r.json()

@@ -65,7 +65,7 @@ class TournamentDetailSerializer(serializers.ModelSerializer):
         slot_map = {p.id: idx for idx, p in enumerate(ordered)}
 
         # 2. propaga le vittorie (solo se il match ha winner)
-        matches = obj.matches.order_by("id")     # index 0..6 salvato a creazione
+        matches = obj.matches.order_by("match_number")     # index 0..6 salvato a creazione
         for m in matches:
             if m.winner_id is None:
                 continue
@@ -83,7 +83,7 @@ class TournamentDetailSerializer(serializers.ModelSerializer):
 
     # ---- matches --------------------------------------------------
     def get_matches(self, obj: Tournament):
-        qs = obj.matches.order_by("id")
+        qs = obj.matches.order_by("match_number")
         return [
             {
                 "player_1": m.player_1.username if m.player_1 else None,

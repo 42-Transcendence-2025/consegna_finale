@@ -106,7 +106,7 @@ class TournamentView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TournamentDetailSerializer
 
-    def post(self, request, pk, *args, **kwargs):
+    def put(self, request, pk, *args, **kwargs):
        """
        Aggiunge l'utente al torneo se:
          • il torneo è ancora in lobby ('created')
@@ -180,6 +180,7 @@ class TournamentView(GenericAPIView):
             if tournament.players.count() == 0:
                 tournament.delete()
                 return Response({"detail": "Left tournament and delete"}, status=status.HTTP_204_NO_CONTENT)
+            
 
         # risposta “ok, sei uscito ma il torneo resta vivo”
         return Response({"detail": "Left tournament"}, status=status.HTTP_200_OK)
@@ -200,4 +201,6 @@ class TournamentView(GenericAPIView):
         tournament = self.get_object()
         serializer = self.get_serializer(tournament)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
         
