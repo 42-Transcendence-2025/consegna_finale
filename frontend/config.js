@@ -8,6 +8,9 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 import {PlayMenuController} from "./src/routes/controllers/playMenuCtrl.js";
 import {PrivateMatchController} from "./src/routes/controllers/privateMatchCtrl.js";
 import {GameController} from "./src/routes/controllers/gameCtrl.js";
+import {TournamentMenuController} from "./src/routes/controllers/tournamentMenuCtrl.js";
+import {TournamentController} from "./src/routes/controllers/tournamentCtrl.js";
+
 
 /**
  * @typedef {Object} Tools
@@ -121,6 +124,16 @@ export const CONFIG = {
 		game: {
 			view: "game",
 			controller: GameController,
+			authRequired: true,
+		},
+		tournamentMenu: {
+			view: "tournamentMenu",
+			controller: TournamentMenuController,
+			authRequired: true,
+		},
+		tournament: {
+			view: "tournament",
+			controller: TournamentController,
 			authRequired: true,
 		},
 	},

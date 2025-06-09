@@ -159,7 +159,7 @@ body {
     border-radius: 10px;
 }
 
-/* Layout orizzontale icone + canvas */
+/* Layout oizzontale icone + canvas */
 .game-row {
     display: flex;
     align-items: flex-start;
@@ -326,4 +326,38 @@ body {
     display: flex;
     justify-content: center;
     width: 100%;
+}
+
+.tournament-pyramid {
+    display: flex;
+    flex-direction: column-reverse; /* Base in basso */
+    align-items: center;
+    gap: 40px;
+    padding: 40px 0;
+}
+
+.pyramid-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+}
+
+.pyramid-block {
+    min-width: 120px;
+    min-height: 60px;
+    background-color: #444;
+    color: white;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 0 6px #0008;
+}
+
+.pyramid-block.winner {
+    background-color: gold;
+    color: black;
+    font-weight: bold;
 }

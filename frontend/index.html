@@ -105,9 +105,22 @@
 	</header>
 
 <!--PAGES CONTENT STARTS HERE-->
-<main id="app" class="flex-grow-1 grid-bg"></main>
+<main id="app" class="flex-grow-1 grid-bg">
+    <h1 class="text-warning animate-pulse-heartbeat-slow text-center" data-i18n="homepage-welcome">Welcome</h1>
+    <div id="welcome-username" class="text-center text-white fs-4 mb-4"></div>
+</main>
 <!--PAGES CONTENT ENDS HERE-->
 
 <script src="app.js" type="module" defer></script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        // Mostra il nome utente se disponibile
+        if (window.tools && window.tools.authManager && window.tools.authManager.username) {
+            const username = window.tools.authManager.username;
+            const el = document.getElementById('welcome-username');
+            if (el) el.textContent = username;
+        }
+    });
+</script>
 </body>
 </html>

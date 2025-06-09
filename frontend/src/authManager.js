@@ -375,6 +375,14 @@ export class AuthManager {
 		return this.#jwt?.refresh?.trim() ?? null;
 	}
 
+	get username() {
+		if (this.#user && this.#user.username)
+			return this.#user.username;
+		if (this.#user && this.#user.email)
+			return this.#user.email;
+		return null;
+	}
+
 	// SETTERS ---------------------------------------------------------------------------------------------------------
 
 	/**
