@@ -53,9 +53,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'pong_game_ws',
-    'corsheaders',
-    'pong_game_ws.apps.PongGameWsConfig'
+    'pong_game_ws.apps.PongGameWsConfig',
+    'corsheaders'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True

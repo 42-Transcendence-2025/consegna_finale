@@ -50,9 +50,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'mtcmkg_api',
-    'corsheaders',
-    'mtcmkg_api.apps.MtcmkgApiConfig'
+    'mtcmkg_api.apps.MtcmkgApiConfig',
+    'corsheaders'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
