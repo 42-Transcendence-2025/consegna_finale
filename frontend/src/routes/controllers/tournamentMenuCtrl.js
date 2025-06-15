@@ -35,8 +35,9 @@ export class TournamentMenuController {
                 });
                 // Chiudi il modal
                 window.bootstrap.Modal.getInstance(document.getElementById('createTournamentModal')).hide();
-                // Aggiorna la lista
-                this.#fetchAndRenderTournaments();
+                // reinderizza alla pagina del torneo
+                localStorage.setItem('currentTournamentId', created.id);
+                window.location.hash = "#tournament";
             } catch (err) {
                 alert("Failed to create tournament");
             }
@@ -140,28 +141,47 @@ export class TournamentMenuController {
         const modal = new window.bootstrap.Modal(document.getElementById('tournamentDetailsModal'));
         modal.show();
         // Gestisci il click su Subscribe
-        $("#subscribeTournamentBtn").off("click").on("click", async () => {
-            try {
-                await $.ajax({
-                    url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournament.id + "/",
-                    method: "PUT",
-                    contentType: "application/json",
-                    data: JSON.stringify({ id: tournament.id })
-                });
-                // Salva l'ID torneo per la bracket view
+        const authManager = window.tools.authManager;
+        const currentUser = authManager?.username;
+        const isSubscribed = tournament.players.some(p => p.username === currentUser);
+
+        // Mostra il pulsante giusto
+        const $footer = $("#tournamentDetailsModal .modal-footer");
+        $footer.empty();
+
+        if (isSubscribed) {
+            const $btn = $(`<button class="btn btn-success flex-grow-1" id="goToTournamentBtn">Go to Tournament</button>`);
+            $footer.append($btn);
+            $btn.on("click", () => {
                 localStorage.setItem('currentTournamentId', tournament.id);
                 modal.hide();
                 window.location.hash = "#tournament";
-            } catch (err) {
-                let msg = "Subscription failed.";
-                if (err.responseJSON && err.responseJSON.detail) {
-                    msg = err.responseJSON.detail;
-                } else if (err.responseText) {
-                    msg = err.responseText;
+            });
+        } else {
+            const $btn = $(`<button class="btn btn-primary flex-grow-1" id="subscribeTournamentBtn">Subscribe</button>`);
+            $footer.append($btn);
+            $btn.on("click", async () => {
+                try {
+                    await $.ajax({
+                        url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournament.id + "/",
+                        method: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify({ id: tournament.id })
+                    });
+                    localStorage.setItem('currentTournamentId', tournament.id);
+                    modal.hide();
+                    window.location.hash = "#tournament";
+                } catch (err) {
+                    let msg = "Subscription failed.";
+                    if (err.responseJSON?.detail) {
+                        msg = err.responseJSON.detail;
+                    } else if (err.responseText) {
+                        msg = err.responseText;
+                    }
+                    this.#showTemporaryMessage(msg, true);
                 }
-                this.#showTemporaryMessage(msg, true);
-            }
-        });
+            });
+        }
     }
 
     #showTemporaryMessage(message, isError = false) {

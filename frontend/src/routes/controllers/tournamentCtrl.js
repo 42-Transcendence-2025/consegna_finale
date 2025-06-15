@@ -16,6 +16,7 @@ export class TournamentController {
                 dataType: "json"
             });
             this.#renderPyramid(data);
+            this.#bindQuitButton(tournamentId);
         } catch (err) {
             this.#showError("Failed to load tournament data");
         }
@@ -59,6 +60,26 @@ export class TournamentController {
                 row.appendChild(block);
             }
             pyramid.appendChild(row);
+        });
+    }
+
+    #bindQuitButton(tournamentId) {
+        const quitBtn = document.getElementById("quitTournamentBtn");
+        if (!quitBtn) return;
+
+        quitBtn.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to quit this tournament?")) return;
+
+            try {
+                await $.ajax({
+                    url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournamentId + "/",
+                    method: "DELETE"
+                });
+                localStorage.removeItem("currentTournamentId");
+                window.location.hash = "#tournamentMenu";
+            } catch (err) {
+                alert("Failed to quit tournament");
+            }
         });
     }
 

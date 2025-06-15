@@ -87,6 +87,12 @@ class TournamentListCreateView(ListCreateAPIView):
         return TournamentListSerializer
 
     def create(self, request, *args, **kwargs):
+        # se l'utente è già iscritto a un torneo in stato 'created', non può crearne un altro
+        if request.user.tournaments.filter(status=Tournament.Status.CREATED).exists():
+            return Response(
+                {"detail": "You are already registered in a tournament"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = self.get_serializer(data=request.data)   # name nel body
         serializer.is_valid(raise_exception=True)
         tournament = serializer.save()                        # dentro al serializer crea + aggiunge il player
@@ -101,17 +107,17 @@ class TournamentListCreateView(ListCreateAPIView):
     
     def list(self, request, *args, **kwargs):
        # c’è già un torneo in cui l’utente è presente?
-       my_tournament = (
-           self.get_queryset()
-           .filter(players=request.user)      # M2M lookup
-           .first()
-       )
-       if my_tournament:
-           # risposta “singola” invece della lista
-           return Response(
-               {"tournament_id": my_tournament.id},
-               status=status.HTTP_200_OK,
-           )
+    #    my_tournament = (
+    #        self.get_queryset()
+    #        .filter(players=request.user)      # M2M lookup
+    #        .first()
+    #    )
+    #    if my_tournament:
+    #        # risposta “singola” invece della lista
+    #        return Response(
+    #            {"tournament_id": my_tournament.id},
+    #            status=status.HTTP_200_OK,
+    #        )
        # altrimenti comportamento standard → lista lobby
        return super().list(request, *args, **kwargs)
         
@@ -124,44 +130,50 @@ class TournamentView(GenericAPIView):
     serializer_class = TournamentDetailSerializer
 
     def put(self, request, pk, *args, **kwargs):
-       """
-       Aggiunge l'utente al torneo se:
-         • il torneo è ancora in lobby ('created')
-         • non è già pieno
-         • l'utente non è già iscritto
-       Se, dopo l'aggiunta, i player = 8 ⇒ cambia status in 'full'
-       Restituisce lo stato aggiornato del torneo.
-       """
-       with transaction.atomic():
-           try:
-               # lock riga per evitare over-booking
-               tournament = (
-                   Tournament.objects.select_for_update()
-                   .get(pk=pk, status=Tournament.Status.CREATED)
-               )
-           except Tournament.DoesNotExist:
-               return Response(
-                   {"detail": "Tournament not found or already started"},
-                   status=status.HTTP_404_NOT_FOUND,
-               )
-           if request.user in tournament.players.all():
-               return Response(
-                   {"detail": "You have already joined this tournament"},
-                   status=status.HTTP_400_BAD_REQUEST,
-               )
-           if tournament.players.count() >= 8:
-               return Response(
-                   {"detail": "Tournament is full"},
-                   status=status.HTTP_409_CONFLICT,
-               )
-           # aggiunge il giocatore
-           tournament.players.add(request.user)
-           # diventa “full” al raggiungimento di 8 player
-           if tournament.players.count() == 8:
-               tournament.status = "full"
-               tournament.save(update_fields=["status"])
+        """
+        Aggiunge l'utente al torneo se:
+          • il torneo è ancora in lobby ('created')
+          • non è già pieno
+          • l'utente non è già iscritto
+        Se, dopo l'aggiunta, i player = 8 ⇒ cambia status in 'full'
+        Restituisce lo stato aggiornato del torneo.
+        """
 
-       return Response({"detail": "Joined tournament"}, status=status.HTTP_200_OK)
+        with transaction.atomic():
+            try:
+                # lock riga per evitare over-booking
+                tournament = (
+                    Tournament.objects.select_for_update()
+                    .get(pk=pk, status=Tournament.Status.CREATED)
+                )
+            except Tournament.DoesNotExist:
+                return Response(
+                    {"detail": "Tournament not found or already started"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            if request.user in tournament.players.all():
+                return Response(
+                    {"detail": "You have already joined this tournament"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if request.user.tournaments.filter(status=Tournament.Status.CREATED).exists():
+                return Response(
+                    {"detail": "You are already registered in a tournament"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if tournament.players.count() >= 8:
+                return Response(
+                    {"detail": "Tournament is full"},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            # aggiunge il giocatore
+            tournament.players.add(request.user)
+            # diventa “full” al raggiungimento di 8 player
+            if tournament.players.count() == 8:
+                tournament.status = "full"
+                tournament.save(update_fields=["status"])
+
+        return Response({"detail": "Joined tournament"}, status=status.HTTP_200_OK)
 
 
     def delete(self, request, pk, *args, **kwargs):

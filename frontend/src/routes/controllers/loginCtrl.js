@@ -91,6 +91,7 @@ export class LoginController {
 			}
 			return;
 		}
+		await window.tools.authManager.getUserInfo();
 		window.location.href = `#${CONFIG.routes.home.view}`;
 	}
 }
