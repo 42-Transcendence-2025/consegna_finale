@@ -6,8 +6,16 @@ import { AIvsAI } from "../../ai_vs_ai/ai_homepage.js";
 export class HomeController {
 	titleSuffix = "Home";
 
-	init() {
+	async init() {
 		console.log("Home Controller");
+
+		if (window.tools?.authManager?.isLoggedIn()) {
+			await window.tools.authManager.getUserInfo();
+			console.log("User info loaded:", window.tools.authManager.username);
+		} else {
+			console.warn("User not logged in.");
+		}
+		
 		this.game = new AIvsAIGame();
 		this.leftAI = new AIvsAI(this.game, "left");
 		this.rightAI = new AIvsAI(this.game, "right");

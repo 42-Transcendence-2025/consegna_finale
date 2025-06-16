@@ -113,7 +113,6 @@ export class RegisterController {
 			}
 			return;
 		}
-		await window.tools.authManager.getUserInfo();
 		window.location.href = `#${CONFIG.routes.home.view}`;
 	}
 }

@@ -77,6 +77,41 @@ export class MatchManager {
         return false;
     }
 
+    async fetchTournaments() {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/`,
+            method: "GET",
+            dataType: "json"
+        });
+    }
+    
+    async createTournament(name) {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/`,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ name })
+        });
+    }
+    
+    async getTournamentDetails(tournamentId) {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/${tournamentId}/`,
+            method: "GET",
+            dataType: "json"
+        });
+    }
+    
+    async subscribeToTournament(tournamentId) {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/${tournamentId}/`,
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({ id: tournamentId })
+        });
+    }
+
+
     destroy() {
         // Potresti voler annullare una richiesta in corso anche qui
         this.abortCurrentMatchRequest();

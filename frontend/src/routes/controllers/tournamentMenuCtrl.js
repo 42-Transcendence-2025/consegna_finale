@@ -27,12 +27,7 @@ export class TournamentMenuController {
             }
             $("#tournamentNameInput").removeClass("is-invalid");
             try {
-                await $.ajax({
-                    url: window.config.apiRoutes.matchApiUrl + "/match/tournament/",
-                    method: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ name }),
-                });
+                const created = await window.tools.matchManager.createTournament(name);
                 // Chiudi il modal
                 window.bootstrap.Modal.getInstance(document.getElementById('createTournamentModal')).hide();
                 // reinderizza alla pagina del torneo
@@ -66,11 +61,7 @@ export class TournamentMenuController {
             currentTournaments[id] = $(this);
         });
         try {
-            const response = await $.ajax({
-                url: window.config.apiRoutes.matchApiUrl + "/match/tournament/",
-                method: "GET",
-                dataType: "json"
-            });
+            const response =  await window.tools.matchManager.fetchTournaments();
             if (Array.isArray(response)) {
                 const newIds = new Set();
                 for (const t of response) {
@@ -110,11 +101,7 @@ export class TournamentMenuController {
         $(".tournament-card").off("click").on("click", async (event) => {
             const tournamentId = $(event.currentTarget).data("tournament-id");
             try {
-                const result = await $.ajax({
-                    url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournamentId + "/",
-                    method: "GET",
-                    dataType: "json"
-                });
+                const result = await window.tools.matchManager.getTournamentDetails(tournamentId);
                 this.#showTournamentDetailsModal(result);
             } catch (err) {
                 console.error("Failed to fetch tournament details", err);
@@ -162,12 +149,7 @@ export class TournamentMenuController {
             $footer.append($btn);
             $btn.on("click", async () => {
                 try {
-                    await $.ajax({
-                        url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournament.id + "/",
-                        method: "PUT",
-                        contentType: "application/json",
-                        data: JSON.stringify({ id: tournament.id })
-                    });
+                    await  window.tools.matchManager.subscribeToTournament(tournament.id);
                     localStorage.setItem('currentTournamentId', tournament.id);
                     modal.hide();
                     window.location.hash = "#tournament";
