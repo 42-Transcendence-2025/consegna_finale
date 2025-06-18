@@ -111,6 +111,13 @@ export class MatchManager {
         });
     }
 
+    async quitTournament(tournamentId) {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/${tournamentId}/`,
+            method: "DELETE"
+        });
+    }
+
 
     destroy() {
         // Potresti voler annullare una richiesta in corso anche qui

@@ -9,12 +9,19 @@ export class TournamentController {
             this.#showError("No tournament ID provided");
             return;
         }
+
+        if (this._tournamentInterval)
+            clearInterval(this._tournamentInterval);
+
+        this.#fetchAndRenderPyramid(tournamentId);
+        this._tournamentInterval = setInterval(() => this.#fetchAndRenderPyramid(tournamentId), 5000);
+
+        $(window).one("hashchange", () => clearInterval(this._tournamentInterval));
+    }
+
+    async #fetchAndRenderPyramid(tournamentId) {
         try {
-            const data = await $.ajax({
-                url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournamentId + "/",
-                method: "GET",
-                dataType: "json"
-            });
+            const data = await window.tools.matchManager.getTournamentDetails(tournamentId);
             this.#renderPyramid(data);
             this.#bindQuitButton(tournamentId);
         } catch (err) {
@@ -71,10 +78,8 @@ export class TournamentController {
             if (!confirm("Are you sure you want to quit this tournament?")) return;
 
             try {
-                await $.ajax({
-                    url: window.config.apiRoutes.matchApiUrl + "/match/tournament/" + tournamentId + "/",
-                    method: "DELETE"
-                });
+                await window.tools.matchManager.quitTournament(tournamentId);        // vedi nota ①
+                clearInterval(this._tournamentInterval);
                 localStorage.removeItem("currentTournamentId");
                 window.location.hash = "#tournamentMenu";
             } catch (err) {

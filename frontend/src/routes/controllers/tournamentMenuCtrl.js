@@ -7,7 +7,13 @@ export class TournamentMenuController {
         this.#fetchAndRenderTournaments();
         this.#bindCreateTournament();
         // Aggiorna la lista ogni 5 secondi
+
+        if (this._tournamentInterval)
+            clearInterval(this._tournamentInterval);
+
         this._tournamentInterval = setInterval(() => this.#fetchAndRenderTournaments(), 5000);
+
+        $(window).one("hashchange", () => clearInterval(this._tournamentInterval));
     }
 
     #bindCreateTournament() {
@@ -31,7 +37,7 @@ export class TournamentMenuController {
                 // Chiudi il modal
                 window.bootstrap.Modal.getInstance(document.getElementById('createTournamentModal')).hide();
                 // reinderizza alla pagina del torneo
-                localStorage.setItem('currentTournamentId', created.id);
+                localStorage.setItem('currentTournamentId', created.tournament_id);
                 window.location.hash = "#tournament";
             } catch (err) {
                 alert("Failed to create tournament");
