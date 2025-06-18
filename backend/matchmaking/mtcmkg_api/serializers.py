@@ -46,10 +46,25 @@ class TournamentListSerializer(serializers.ModelSerializer):
 class TournamentDetailSerializer(serializers.ModelSerializer):
     players  = serializers.SerializerMethodField()
     matches  = serializers.SerializerMethodField()
+    ready = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model  = Tournament
-        fields = ("id", "name", "status", "players", "matches")
+        fields = ("id", "name", "status", "players", "matches", "ready")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        req  = self.context.get("request")
+        user = getattr(req, "user", None)
+        obj  = self.instance                     # è un singolo Tournament
+        include = (
+            obj
+            and obj.status == Tournament.Status.FULL
+            and user
+            and obj.players.filter(pk=user.pk).exists()
+        )
+        if not include:
+            self.fields.pop("ready")
 
     # ---- players --------------------------------------------------
     def get_players(self, obj: Tournament):
@@ -72,5 +87,17 @@ class TournamentDetailSerializer(serializers.ModelSerializer):
             }
             for m in qs
         ]
+    def get_ready(self, obj: Tournament):
+        """True se c’è un avversario nello slot opposto, altrimenti False."""
+        user = self.context["request"].user
+        my_slot = current_slot(obj, user)
+        if my_slot is None:          # safety, non dovrebbe accadere
+            return False
+
+        opponent_slot = my_slot ^ 1  # 0↔1, 2↔3, 4↔5, 6↔7
+        for p in obj.players.all():
+            if current_slot(obj, p) == opponent_slot:
+                return True
+        return False
 
     
