@@ -254,7 +254,7 @@ class TournamentView(GenericAPIView):
         if cached:
             if cached["username"] == user.username:
                 return Response(
-                    {"detail": "ancora in attesa di un avversario"},
+                    {"detail": "still waiting for opponent"},
                     status=status.HTTP_202_ACCEPTED
                 )
             
