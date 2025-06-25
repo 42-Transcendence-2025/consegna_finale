@@ -252,10 +252,15 @@ class TournamentView(GenericAPIView):
 
         # Giocatore 2 trova il match
         if cached:
-            if cached and cached["username"] != user.username:
-                game_id = cached["game_id"]
-                player_1_username = cached["username"]
+            if cached["username"] == user.username:
+                return Response(
+                    {"detail": "ancora in attesa di un avversario"},
+                    status=status.HTTP_202_ACCEPTED
+                )
             
+            game_id = cached["game_id"]
+            player_1_username = cached["username"]
+        
             match = Match.objects.create(
                 player_1 = PongUser.objects.get(username=player_1_username),
                 player_2 = user,
