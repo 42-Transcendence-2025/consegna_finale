@@ -19,8 +19,8 @@ def check_tournament_finished(sender, instance, **kwargs):
             return
 
         if not t.matches.filter(status="created").exists():
-            t.status = Tournament.Status.FINISHED
             final = t.matches.filter(match_number=6).first()
             if final and final.winner:
                 t.winner = final.winner
+                t.status = Tournament.Status.FINISHED
             t.save(update_fields=["status", "winner"])
