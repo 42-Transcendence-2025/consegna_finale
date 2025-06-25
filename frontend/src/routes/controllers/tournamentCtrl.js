@@ -24,6 +24,25 @@ export class TournamentController {
             const data = await window.tools.matchManager.getTournamentDetails(tournamentId);
             this.#renderPyramid(data);
             this.#bindQuitButton(tournamentId);
+            if (
+               data.status === "full" &&
+               data.ready === true &&
+               !this._matchStarted          // flag interno
+            ) {
+                this._matchStarted = true;   // evita richieste ogni 5 s
+                try {
+                    const res = await window.tools.matchManager.matchTournament(tournamentId);
+                    if (res && res.game_id) {
+                        localStorage.setItem("game_id", res.game_id);
+                        window.location.hash = "#game";
+                    } else {
+                        this._matchStarted = false; // fallback
+                    }
+                } catch (e) {
+                    console.error("Match start failed:", e);
+                    this._matchStarted = false;
+                }
+            }
         } catch (err) {
             this.#showError("Failed to load tournament data");
         }
