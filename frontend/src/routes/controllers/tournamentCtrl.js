@@ -40,34 +40,160 @@ export class TournamentController {
             });
         }
 
-        const pyramid = document.getElementById("bracket-container")
-                               .querySelector(".tournament-pyramid");
+        const pyramid = document.querySelector(".tournament-bracket-container");
         if (!pyramid) return;
-
-        // Rimuovo righe eventualmente generate
+        
+        // Pulisce il contenuto esistente
         pyramid.innerHTML = "";
-
-        const layers = [8, 4, 2, 1];
-        layers.forEach((count, layerIndex) => {
-            const row = document.createElement("div");
-            row.className = "pyramid-row";
-
-            for (let i = 0; i < count; i++) {
-                const block = document.createElement("div");
-                block.className = "pyramid-block";
-
-                let name = "-";
-                const baseStart = 0;
-
-                if (layerIndex === 0 && i < players.length) {
-                    name = players[i];
-                }
-
-                block.textContent = name;
-                row.appendChild(block);
-            }
-            pyramid.appendChild(row);
-        });
+        
+        // Sezione sinistra (primi 4 giocatori)
+        const leftSection = document.createElement("div");
+        leftSection.className = "bracket-section left-section";
+        
+        // Crea le coppie di giocatori
+        for (let i = 0; i < 4; i += 2) {
+            const matchGroup = document.createElement("div");
+            matchGroup.className = "match-group";
+            
+            const matchBlock = document.createElement("div");
+            matchBlock.className = "tournament-match-block";
+            
+            const player1Name = document.createElement("div");
+            player1Name.className = "player-name";
+            player1Name.textContent = players[i] || "-";
+            
+            const vsText = document.createElement("div");
+            vsText.className = "vs-text";
+            vsText.textContent = "VS";
+            
+            const player2Name = document.createElement("div");
+            player2Name.className = "player-name";
+            player2Name.textContent = players[i + 1] || "-";
+            
+            matchBlock.appendChild(player1Name);
+            matchBlock.appendChild(vsText);
+            matchBlock.appendChild(player2Name);
+            matchGroup.appendChild(matchBlock);
+            leftSection.appendChild(matchGroup);
+        }
+        
+        // Sezione destra (ultimi 4 giocatori)
+        const rightSection = document.createElement("div");
+        rightSection.className = "bracket-section right-section";
+        
+        // Crea le coppie di giocatori
+        for (let i = 4; i < 8; i += 2) {
+            const matchGroup = document.createElement("div");
+            matchGroup.className = "match-group";
+            
+            const matchBlock = document.createElement("div");
+            matchBlock.className = "tournament-match-block";
+            
+            const player1Name = document.createElement("div");
+            player1Name.className = "player-name";
+            player1Name.textContent = players[i] || "-";
+            
+            const vsText = document.createElement("div");
+            vsText.className = "vs-text";
+            vsText.textContent = "VS";
+            
+            const player2Name = document.createElement("div");
+            player2Name.className = "player-name";
+            player2Name.textContent = players[i + 1] || "-";
+            
+            matchBlock.appendChild(player1Name);
+            matchBlock.appendChild(vsText);
+            matchBlock.appendChild(player2Name);
+            matchGroup.appendChild(matchBlock);
+            rightSection.appendChild(matchGroup);
+        }
+        
+        // Sezione semifinale sinistra (tra quarti sinistri e finale)
+        const leftSemifinalSection = document.createElement("div");
+        leftSemifinalSection.className = "bracket-section semifinal-section";
+        
+        const semifinal1Group = document.createElement("div");
+        semifinal1Group.className = "match-group";
+        const semifinal1Block = document.createElement("div");
+        semifinal1Block.className = "tournament-match-block semifinal";
+        
+        const semi1Player1 = document.createElement("div");
+        semi1Player1.className = "player-name";
+        semi1Player1.textContent = "TBD";
+        
+        const semi1Vs = document.createElement("div");
+        semi1Vs.className = "vs-text";
+        semi1Vs.textContent = "VS";
+        
+        const semi1Player2 = document.createElement("div");
+        semi1Player2.className = "player-name";
+        semi1Player2.textContent = "TBD";
+        
+        semifinal1Block.appendChild(semi1Player1);
+        semifinal1Block.appendChild(semi1Vs);
+        semifinal1Block.appendChild(semi1Player2);
+        semifinal1Group.appendChild(semifinal1Block);
+        leftSemifinalSection.appendChild(semifinal1Group);
+        
+        // Sezione finale (centro assoluto)
+        const finalSection = document.createElement("div");
+        finalSection.className = "bracket-section final-section";
+        
+        const finalGroup = document.createElement("div");
+        finalGroup.className = "match-group final-match-group";
+        
+        // Primo rettangolo della finale
+        const finalPlayer1Block = document.createElement("div");
+        finalPlayer1Block.className = "tournament-player-block final-player";
+        finalPlayer1Block.textContent = "TBD";
+        
+        // Scritta VS centrale
+        const finalVsText = document.createElement("div");
+        finalVsText.className = "final-vs-text";
+        finalVsText.textContent = "VS";
+        
+        // Secondo rettangolo della finale
+        const finalPlayer2Block = document.createElement("div");
+        finalPlayer2Block.className = "tournament-player-block final-player";
+        finalPlayer2Block.textContent = "TBD";
+        
+        finalGroup.appendChild(finalPlayer1Block);
+        finalGroup.appendChild(finalVsText);
+        finalGroup.appendChild(finalPlayer2Block);
+        finalSection.appendChild(finalGroup);
+        
+        // Sezione semifinale destra (tra quarti destri e finale)
+        const rightSemifinalSection = document.createElement("div");
+        rightSemifinalSection.className = "bracket-section semifinal-section";
+        
+        const semifinal2Group = document.createElement("div");
+        semifinal2Group.className = "match-group";
+        const semifinal2Block = document.createElement("div");
+        semifinal2Block.className = "tournament-match-block semifinal";
+        
+        const semi2Player1 = document.createElement("div");
+        semi2Player1.className = "player-name";
+        semi2Player1.textContent = "TBD";
+        
+        const semi2Vs = document.createElement("div");
+        semi2Vs.className = "vs-text";
+        semi2Vs.textContent = "VS";
+        
+        const semi2Player2 = document.createElement("div");
+        semi2Player2.className = "player-name";
+        semi2Player2.textContent = "TBD";
+        
+        semifinal2Block.appendChild(semi2Player1);
+        semifinal2Block.appendChild(semi2Vs);
+        semifinal2Block.appendChild(semi2Player2);
+        semifinal2Group.appendChild(semifinal2Block);
+        rightSemifinalSection.appendChild(semifinal2Group);
+        
+        pyramid.appendChild(leftSection);
+        pyramid.appendChild(leftSemifinalSection);
+        pyramid.appendChild(finalSection);
+        pyramid.appendChild(rightSemifinalSection);
+        pyramid.appendChild(rightSection);
     }
 
     #bindQuitButton(tournamentId) {
