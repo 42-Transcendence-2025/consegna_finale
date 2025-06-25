@@ -188,7 +188,7 @@ export class GameController {
             }
 			else if (event.key === "Escape" && this.gameOver)
 			{
-				window.location.href = "/#privateMatch";
+				this.#goBack();
 			}
         });
 
@@ -204,7 +204,7 @@ export class GameController {
 			}
 			else if (event.key === "Escape" && this.gameOver)
 			{
-				window.location.href = "/#privateMatch";
+				this.#goBack();
 			}
 		});
     }
@@ -236,6 +236,14 @@ export class GameController {
 		};
 	
 		requestAnimationFrame((timestamp) => animateGameOver(timestamp, context));
+	}
+
+	#goBack() {
+    	const tId = localStorage.getItem("currentTournamentId");
+    	if (tId)
+    	    window.location.hash = "#tournament";      // torna al bracket
+    	else
+    	    window.location.hash = "#privateMatch";    // caso normale
 	}
 }
 
@@ -276,4 +284,5 @@ function animateGameOver(timestamp, context) {
 		ctx.fillStyle = "grey";
 		ctx.fillText("Press esc to go back", canvas.width / 2, canvas.height - 50);
 	}
+
 }

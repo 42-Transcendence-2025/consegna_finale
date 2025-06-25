@@ -118,6 +118,14 @@ export class MatchManager {
         });
     }
 
+    async matchTournamnet(tournamentId) {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/tournament/${tournamentId}/`,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ id: tournamentId })
+        });
+    }
 
     destroy() {
         // Potresti voler annullare una richiesta in corso anche qui
