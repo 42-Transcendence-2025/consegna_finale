@@ -26,10 +26,8 @@ export class TournamentController {
             this.#bindQuitButton(tournamentId);
             if (
                data.status === "full" &&
-               data.ready === true &&
-               !this._matchStarted          // flag interno
+               data.ready === true
             ) {
-                this._matchStarted = true;   // evita richieste ogni 5 s
                 try {
                     const res = await window.tools.matchManager.matchTournament(tournamentId);
                     if (res && res.game_id) {

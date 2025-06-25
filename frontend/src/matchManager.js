@@ -118,7 +118,7 @@ export class MatchManager {
         });
     }
 
-    async matchTournamnet(tournamentId) {
+    async matchTournament(tournamentId) {
         return $.ajax({
             url: `${this.#matchApiUrl}/match/tournament/${tournamentId}/`,
             method: "POST",
