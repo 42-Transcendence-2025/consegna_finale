@@ -241,7 +241,7 @@ class TournamentView(GenericAPIView):
         if user not in tournament.players.all():
             return Response({"detail": "You are not in this tournament"}, status=status.HTTP_403_FORBIDDEN)
         
-        slot = current_slot(user, tournament)
+        slot = current_slot(tournament, user)
         if slot is None:
             return Response({"detail": "You have lost in this tournament"}, status=status.HTTP_403_FORBIDDEN)
         m_num = slot // 2
