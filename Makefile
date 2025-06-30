@@ -2,7 +2,7 @@ PROJECT_NAME := transcendence
 
 DCOMPOSE := $(shell if command -v docker-compose > /dev/null 2>&1; then echo "docker-compose"; else echo "docker compose"; fi) -p $(PROJECT_NAME)
 
-all: up-detach
+all: up
 
 up:
 	$(DCOMPOSE) up
@@ -11,12 +11,14 @@ up-detach:
 	$(DCOMPOSE) up -d
 up-detach-%:
 	$(DCOMPOSE) up -d $*
+up-%:
+	$(DCOMPOSE) up $*
 
 stop:
 	$(DCOMPOSE) stop
 
 logs:
-	$(DCOMPOSE) logs
+	$(DCOMPOSE) logs 
 
 logs-%:
 	$(DCOMPOSE) logs $*
