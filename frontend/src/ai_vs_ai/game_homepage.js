@@ -24,7 +24,7 @@ export class AIvsAIGame {
         this.lastScored = 0;
         
         // Proprietà per l'effetto fuoco
-        this.fireThreshold = 12; // Velocità minima per attivare l'effetto fuoco
+        this.fireThreshold = 15; // Velocità minima per attivare l'effetto fuoco
         this.fireParticles = []; // Array per le particelle di fuoco
         this.fireAnimationTime = 0; // Timer per l'animazione
         this.wasOnFire = false; // Per tracciare quando l'effetto inizia
