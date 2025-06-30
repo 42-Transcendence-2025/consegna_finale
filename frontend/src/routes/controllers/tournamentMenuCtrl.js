@@ -4,6 +4,9 @@ export class TournamentMenuController {
     titleSuffix = "Tournaments";
 
     async init() {
+        // Assicurati che le informazioni dell'utente siano caricate
+        await this.#ensureUserInfoLoaded();
+        
         this.#fetchAndRenderTournaments();
         this.#bindCreateTournament();
         // Aggiorna la lista ogni 5 secondi
@@ -14,6 +17,17 @@ export class TournamentMenuController {
         this._tournamentInterval = setInterval(() => this.#fetchAndRenderTournaments(), 5000);
 
         $(window).one("hashchange", () => clearInterval(this._tournamentInterval));
+    }
+
+    async #ensureUserInfoLoaded() {
+        try {
+            // Se l'authManager è disponibile ma non ha ancora le informazioni utente, caricale
+            if (window.tools?.authManager?.isLoggedIn() && !window.tools.authManager.username) {
+                await window.tools.authManager.getUserInfo();
+            }
+        } catch (error) {
+            console.warn("Could not load user info:", error);
+        }
     }
 
     #bindCreateTournament() {
@@ -136,6 +150,12 @@ export class TournamentMenuController {
         // Gestisci il click su Subscribe
         const authManager = window.tools.authManager;
         const currentUser = authManager?.username;
+        
+        // Debug: verifica se l'utente è stato caricato correttamente
+        if (authManager?.isLoggedIn() && !currentUser) {
+            console.warn("User is logged in but username not available yet");
+        }
+        
         const isSubscribed = tournament.players.some(p => p.username === currentUser);
 
         // Mostra il pulsante giusto

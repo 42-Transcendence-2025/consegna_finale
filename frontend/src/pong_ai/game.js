@@ -33,6 +33,12 @@ export class PongGame {
         this.lastScored = 0;
         this.waitingToStart = true;
         this.debugStat = false;
+        
+        // Proprietà per l'effetto fuoco
+        this.fireThreshold = 12; // Velocità minima per attivare l'effetto fuoco (ridotta per più frequenza)
+        this.fireParticles = []; // Array per le particelle di fuoco
+        this.fireAnimationTime = 0; // Timer per l'animazione
+        this.wasOnFire = false; // Per tracciare quando l'effetto inizia
     }
 
     // Setup all event listeners
@@ -58,6 +64,7 @@ export class PongGame {
     update(ai) {
         if (this.gameOver) return;
         this.updateBall(ai);
+        this.updateFireParticles(); // Aggiorna l'effetto fuoco
     }
 
     updateBall(ai) {
@@ -211,6 +218,67 @@ export class PongGame {
         }
     }
 
+    // Calcola la velocità attuale della pallina
+    getBallSpeed() {
+        const ball = this.state.ball;
+        return Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+    }
+
+    // Verifica se la pallina è "infuocata"
+    isBallOnFire() {
+        return this.getBallSpeed() >= this.fireThreshold;
+    }
+
+    // Aggiorna le particelle di fuoco
+    updateFireParticles() {
+        this.fireAnimationTime += 0.1;
+        const currentlyOnFire = this.isBallOnFire();
+        
+        // Traccia quando l'effetto fuoco si attiva per la prima volta
+        if (currentlyOnFire && !this.wasOnFire) {
+            console.log("🔥 Ball is on fire! Speed:", this.getBallSpeed().toFixed(1));
+        }
+        this.wasOnFire = currentlyOnFire;
+        
+        if (currentlyOnFire) {
+            // Genera nuove particelle di fuoco
+            const ball = this.state.ball;
+            const speed = this.getBallSpeed();
+            const numParticles = Math.min(2 + Math.floor(speed / 8), 6); // Più veloce = più particelle (max 6)
+            
+            for (let i = 0; i < numParticles; i++) {
+                // Posiziona le particelle dietro la pallina
+                const angle = Math.atan2(ball.dy, ball.dx) + Math.PI; // Direzione opposta al movimento
+                const distance = this.ballRadius + Math.random() * 5;
+                const offsetAngle = (Math.random() - 0.5) * Math.PI * 0.5; // Dispersione
+                
+                this.fireParticles.push({
+                    x: ball.x + Math.cos(angle + offsetAngle) * distance,
+                    y: ball.y + Math.sin(angle + offsetAngle) * distance,
+                    dx: Math.cos(angle + offsetAngle) * (1 + Math.random()) - ball.dx * 0.05,
+                    dy: Math.sin(angle + offsetAngle) * (1 + Math.random()) - ball.dy * 0.05,
+                    life: 1.0, // Vita della particella (1.0 = appena creata, 0.0 = morta)
+                    size: Math.random() * 3 + 1.5
+                });
+            }
+        }
+        
+        // Aggiorna e rimuovi particelle morte
+        this.fireParticles = this.fireParticles.filter(particle => {
+            particle.x += particle.dx;
+            particle.y += particle.dy;
+            particle.dy += 0.1; // Leggera gravità verso l'alto (fuoco sale)
+            particle.life -= 0.04; // Le particelle si spengono gradualmente
+            particle.size *= 0.97; // Le particelle si rimpiccioliscono
+            return particle.life > 0 && particle.size > 0.5;
+        });
+        
+        // Limita il numero di particelle per performance
+        if (this.fireParticles.length > 80) {
+            this.fireParticles = this.fireParticles.slice(-80);
+        }
+    }
+
     // Draw the game state
     draw(preciseSpot, aimedSpot) {
         this.clearCanvas();
@@ -228,9 +296,75 @@ export class PongGame {
 
     drawBall() {
         const ball = this.state.ball;
-        this.ctx.fillStyle = "white";
+        
+        // Disegna le particelle di fuoco se la pallina è infuocata
+        if (this.isBallOnFire()) {
+            this.drawFireParticles();
+            this.drawFireGlow(ball);
+        }
+        
+        // Disegna la pallina
+        this.ctx.fillStyle = this.isBallOnFire() ? "#FFE4B5" : "white"; // Colore più caldo quando infuocata
         this.ctx.beginPath();
         this.ctx.arc(ball.x, ball.y, this.ballRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Bordo più luminoso se infuocata
+        if (this.isBallOnFire()) {
+            this.ctx.strokeStyle = "#FF6B35";
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+        }
+    }
+
+    drawFireParticles() {
+        for (const particle of this.fireParticles) {
+            // Calcola il colore basato sulla vita della particella
+            const life = particle.life;
+            let red, green, blue, alpha;
+            
+            if (life > 0.7) {
+                // Particelle giovani: giallo-bianco
+                red = 255;
+                green = Math.floor(255 * life);
+                blue = Math.floor(100 * life);
+                alpha = life;
+            } else if (life > 0.4) {
+                // Particelle medie: arancione
+                red = 255;
+                green = Math.floor(165 * (life / 0.7));
+                blue = 0;
+                alpha = life;
+            } else {
+                // Particelle vecchie: rosso
+                red = Math.floor(255 * (life / 0.4));
+                green = 0;
+                blue = 0;
+                alpha = life * 0.8;
+            }
+            
+            this.ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    drawFireGlow(ball) {
+        // Crea un effetto bagliore attorno alla pallina
+        const glowRadius = this.ballRadius + 15;
+        const gradient = this.ctx.createRadialGradient(
+            ball.x, ball.y, this.ballRadius,
+            ball.x, ball.y, glowRadius
+        );
+        
+        gradient.addColorStop(0, "rgba(255, 165, 0, 0.3)");
+        gradient.addColorStop(0.5, "rgba(255, 69, 0, 0.2)");
+        gradient.addColorStop(1, "rgba(255, 0, 0, 0.0)");
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.beginPath();
+        this.ctx.arc(ball.x, ball.y, glowRadius, 0, Math.PI * 2);
         this.ctx.fill();
     }
 

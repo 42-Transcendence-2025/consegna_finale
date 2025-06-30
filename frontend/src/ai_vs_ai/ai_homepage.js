@@ -26,7 +26,7 @@ export class AIvsAI {
             // Ball is coming towards AI
             if (!this.predictionLocked) {
                 this.predictBallPosition(); // Sets this.prediction to ball's impact Y
-				this.prediction += ((this.game.paddleHeight / 2) - 10) * (Math.random() < 0.5 ? -1 : 1);
+                this.prediction += ((this.game.paddleHeight / 2) - 20) * (Math.random() < 0.5 ? -1 : 1);
                 this.predictionLocked = true;
             }
             // If predictionLocked is true, AI continues to use the existing (strategic) prediction and offset
