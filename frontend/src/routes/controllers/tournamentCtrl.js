@@ -49,13 +49,20 @@ export class TournamentController {
 
     #renderPyramid(tournament) {
         const NUM_BASE_SLOTS = 8;
-        const players = Array(NUM_BASE_SLOTS).fill("-");
-        if (Array.isArray(tournament.players)) {
-            tournament.players.forEach(p => {
-                if (typeof p.slot === "number" && p.slot >= 0 && p.slot < NUM_BASE_SLOTS) {
-                    players[p.slot] = p.username;
-                }
-            });
+        let players = Array(NUM_BASE_SLOTS).fill("-");
+        
+        // Se abbiamo match (torneo iniziato), ricostruisci le posizioni dai match
+        if (tournament.matches && tournament.matches.length > 0) {
+            players = this.#reconstructPlayersFromMatches(tournament.matches, tournament.players);
+        } else {
+            // Se non ci sono match ancora, usa gli slot (fase di registrazione)
+            if (Array.isArray(tournament.players)) {
+                tournament.players.forEach(p => {
+                    if (typeof p.slot === "number" && p.slot >= 0 && p.slot < NUM_BASE_SLOTS) {
+                        players[p.slot] = p.username;
+                    }
+                });
+            }
         }
 
         // Ottieni i risultati dei match per aggiornare il bracket
@@ -362,31 +369,131 @@ export class TournamentController {
             final: null        // match 6 (finale)
         };
         
-        // Ordina i match per match_number (se disponibile) o per ordine di creazione
-        const sortedMatches = matches.sort((a, b) => {
-            // Se abbiamo match_number, usa quello
-            if (a.match_number !== undefined && b.match_number !== undefined) {
-                return a.match_number - b.match_number;
+        if (!matches || matches.length === 0) return results;
+        
+        // Filtra i match duplicati tenendo quelli con status più avanzato
+        const uniqueMatches = this.#filterUniqueMatches(matches);
+        
+        // Classifica i match per tipo
+        const quarterMatches = [];
+        const semiMatches = [];
+        const finalMatches = [];
+        
+        // Trova tutti i vincitori per classificare i match
+        const winners = new Set(uniqueMatches.filter(m => m.winner).map(m => m.winner));
+        
+        uniqueMatches.forEach(match => {
+            // Determina se è un quarto, semifinale o finale
+            const player1IsWinner = winners.has(match.player_1);
+            const player2IsWinner = winners.has(match.player_2);
+            
+            if (!(player1IsWinner && player2IsWinner)) {
+                // Almeno uno dei giocatori non è un vincitore -> probabilmente un quarto
+                quarterMatches.push(match);
+            } else if (player1IsWinner && player2IsWinner) {
+                // Entrambi sono vincitori -> semifinale o finale
+                if (this.#countPlayersInMatches([match]) === 2) {
+                    // Se ci sono solo 2 giocatori unici, è la finale
+                    finalMatches.push(match);
+                } else {
+                    semiMatches.push(match);
+                }
             }
-            // Altrimenti, usa l'ordine nell'array (dovrebbe essere già corretto)
-            return matches.indexOf(a) - matches.indexOf(b);
         });
         
-        // Assegna i match alle rispettive categorie
-        sortedMatches.forEach((match, index) => {
-            if (index < 4) {
-                // Primi 4 match sono i quarti di finale
-                results.quarterfinals[index] = match;
-            } else if (index < 6) {
-                // Match 4 e 5 sono le semifinali
-                results.semifinals[index - 4] = match;
-            } else if (index === 6) {
-                // Match 6 è la finale
-                results.final = match;
-            }
-        });
+        // Assegna ai risultati
+        results.quarterfinals = quarterMatches.slice(0, 4);
+        results.semifinals = semiMatches.slice(0, 2);
+        results.final = finalMatches[0] || null;
         
         return results;
+    }
+
+    #filterUniqueMatches(matches) {
+        const uniqueMap = new Map();
+        
+        matches.forEach(match => {
+            // Crea una chiave unica per il match (ordine indipendente)
+            const players = [match.player_1, match.player_2].sort();
+            const key = `${players[0]}_vs_${players[1]}`;
+            
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, match);
+            } else {
+                // Se esiste già, tieni quello con status più avanzato
+                const existing = uniqueMap.get(key);
+                if (this.#getMatchPriority(match) > this.#getMatchPriority(existing)) {
+                    uniqueMap.set(key, match);
+                }
+            }
+        });
+        
+        return Array.from(uniqueMap.values());
+    }
+
+    #getMatchPriority(match) {
+        switch (match.status) {
+            case 'finished': return 3;
+            case 'finished_walkover': return 2;
+            case 'created': return 1;
+            default: return 0;
+        }
+    }
+
+    #countPlayersInMatches(matches) {
+        const players = new Set();
+        matches.forEach(match => {
+            players.add(match.player_1);
+            players.add(match.player_2);
+        });
+        return players.size;
+    }
+
+    #reconstructPlayersFromMatches(matches, allPlayers) {
+        const NUM_BASE_SLOTS = 8;
+        const players = Array(NUM_BASE_SLOTS).fill("-");
+        
+        // Trova i primi 4 match (quarti di finale) basandoci sui giocatori che non sono vincitori di match precedenti
+        const quarterMatches = this.#findQuarterMatches(matches);
+        
+        // Se non riusciamo a identificare i quarti, usa i primi 4 match ordinati
+        if (quarterMatches.length === 0) {
+            const sortedMatches = matches.slice(0, 4);
+            sortedMatches.forEach((match, index) => {
+                if (match.player_1) players[index * 2] = match.player_1;
+                if (match.player_2) players[index * 2 + 1] = match.player_2;
+            });
+        } else {
+            // Usa i quarti identificati
+            quarterMatches.forEach((match, index) => {
+                if (match.player_1) players[index * 2] = match.player_1;
+                if (match.player_2) players[index * 2 + 1] = match.player_2;
+            });
+        }
+        
+        return players;
+    }
+
+    #findQuarterMatches(matches) {
+        // Trova tutti i vincitori dei match
+        const winners = new Set(matches.filter(m => m.winner).map(m => m.winner));
+        
+        // I quarti di finale sono match dove almeno uno dei giocatori non è un vincitore di un altro match
+        const quarterMatches = [];
+        
+        matches.forEach(match => {
+            // Un match è un quarto se almeno uno dei giocatori non ha vinto un match precedente
+            const player1IsWinner = winners.has(match.player_1);
+            const player2IsWinner = winners.has(match.player_2);
+            
+            // Se entrambi i giocatori sono vincitori di altri match, probabilmente non è un quarto
+            if (!(player1IsWinner && player2IsWinner)) {
+                quarterMatches.push(match);
+            }
+        });
+        
+        // Se abbiamo più di 4 quarti, prendi i primi 4
+        return quarterMatches.slice(0, 4);
     }
 
     #setupLanguageChangeListener(tournamentId) {
