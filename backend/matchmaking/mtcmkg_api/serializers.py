@@ -8,6 +8,15 @@ class MatchCreateSerializer(serializers.ModelSerializer):
         fields = ['player_1', 'player_2', 'tournament', 'status']
         read_only_fields = ['status']  # se vuoi settarlo tu nella view
 
+    def validate(self, data):
+        """Valida che il torneo non abbia più di 7 partite"""
+        tournament = data.get('tournament')
+        if tournament and tournament.matches.count() >= 7:
+            raise serializers.ValidationError(
+                "Il torneo ha già raggiunto il numero massimo di partite (7)"
+            )
+        return data
+
     def create(self, validated_data):
         return Match.objects.create(**validated_data)
     
