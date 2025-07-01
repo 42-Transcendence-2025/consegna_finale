@@ -53,6 +53,7 @@ export class GameController {
 		this.pongManager.on("onGameOver", (gameState) => {
 			this.gameOver = true;
 			this.winner = gameState.winner;
+			
 		});
 
 		this.pongManager.on("onPlayersUpdate", (gameState) => {
@@ -70,6 +71,8 @@ export class GameController {
 			this.gameOverScreen();
 			return;
 		}
+		// console.log("Game over:", this.gameOver);
+		
 		this.sendMoves();
 		this.draw();
 		requestAnimationFrame(this.gameLoop.bind(this)); // Recursive call for animation

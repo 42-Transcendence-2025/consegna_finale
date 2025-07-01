@@ -10,18 +10,28 @@ export class ProfileMenuController {
 
     update() {
         const profileDropdown = document.getElementById('profile-dropdown');
+        const navbarUsername = document.getElementById('navbar-username');
         const isLoggedIn = this.authManager.isLoggedIn();
 
         // Pulisci il contenuto del menu
         profileDropdown.innerHTML = '';
 
         if (!isLoggedIn) {
-            // Utente non loggato → Mostra solo "Log In"
+            // Utente non loggato → Nascondi il nome utente e mostra solo "Log In"
+            navbarUsername.classList.add('d-none');
+            navbarUsername.textContent = '';
+            
             const loginItem = document.createElement('li');
             loginItem.innerHTML = `<a class="dropdown-item" href="#login">Log In</a>`;
             profileDropdown.appendChild(loginItem);
         } else {
-            // Utente loggato → Mostra "Profile", "Match History" e "Log Out"
+            // Utente loggato → Mostra il nome utente al centro e i menu items
+            const username = this.authManager.username;
+            if (username) {
+                navbarUsername.textContent = username;
+                navbarUsername.classList.remove('d-none');
+            }
+            
             const profileItem = document.createElement('li');
             profileItem.innerHTML = `<a class="dropdown-item" href="#profile" data-i18n="profile">Profile</a>`;
             profileDropdown.appendChild(profileItem);
