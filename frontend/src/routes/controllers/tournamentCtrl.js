@@ -6,7 +6,7 @@ export class TournamentController {
             tournamentId = localStorage.getItem('currentTournamentId');
         }
         if (!tournamentId) {
-            this.#showError("No tournament ID provided");
+            this.#showError($.i18n('noTournamentId'));
             return;
         }
 
@@ -14,6 +14,7 @@ export class TournamentController {
             clearInterval(this._tournamentInterval);
 
         this.#fetchAndRenderPyramid(tournamentId);
+        this.#setupLanguageChangeListener(tournamentId);
         this._tournamentInterval = setInterval(() => this.#fetchAndRenderPyramid(tournamentId), 5000);
 
         $(window).one("hashchange", () => clearInterval(this._tournamentInterval));
@@ -42,7 +43,7 @@ export class TournamentController {
                 }
             }
         } catch (err) {
-            this.#showError("Failed to load tournament data");
+            this.#showError($.i18n('failedToLoadTournamentData'));
         }
     }
 
@@ -333,7 +334,7 @@ export class TournamentController {
         if (!quitBtn) return;
 
         quitBtn.addEventListener("click", async () => {
-            if (!confirm("Are you sure you want to quit this tournament?")) return;
+            if (!confirm($.i18n('quitTournamentConfirm'))) return;
 
             try {
                 await window.tools.matchManager.quitTournament(tournamentId);        // vedi nota ①
@@ -341,7 +342,7 @@ export class TournamentController {
                 localStorage.removeItem("currentTournamentId");
                 window.location.hash = "#tournamentMenu";
             } catch (err) {
-                alert("Failed to quit tournament");
+                alert($.i18n('failedToQuitTournament'));
             }
         });
     }
@@ -386,5 +387,12 @@ export class TournamentController {
         });
         
         return results;
+    }
+
+    #setupLanguageChangeListener(tournamentId) {
+        // Ascolta i cambi di lingua e ri-renderizza il bracket
+        document.addEventListener('languageChanged', () => {
+            this.#fetchAndRenderPyramid(tournamentId);
+        });
     }
 }

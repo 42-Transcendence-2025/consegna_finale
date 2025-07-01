@@ -59,47 +59,55 @@
 						</a>
 					</li>
 				</ul>
-			</div>
-			<div class="d-flex align-items-center w-100">
-				<!-- LANGUAGE SWITCHER -->
-				<div class="btn-group ms-auto">
-					<div id="locale-switch" class="btn-group">
-						<button
-							type="button" class="btn d-flex justify-content-center align-items-center"
-							data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static"
-						>
-							<img class="d-none selected-flag-img object-fit-scale" src="assets/flags/us.png" alt="US Flag">
-						</button>
-						<ul class="dropdown-menu dropdown-menu-dark user-select-none" style="min-width: auto;">
-							<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="en">
-								<img id="flag-en" class="object-fit-scale" src="assets/flags/us.png" alt="US Flag">
-								EN
-							</li>
-							<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="it">
-								<img id="flag-it" class="object-fit-scale" src="assets/flags/it.png" alt="IT Flag">
-								IT
-							</li>
-							<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="uk">
-								<img id="flag-ua" class="object-fit-scale" src="assets/flags/ua.png" alt="UA Flag">
-								UA
-							</li>
-						</ul>
+				
+				<!-- USERNAME AL CENTRO -->
+				<div class="d-flex justify-content-center flex-grow-1">
+					<div id="navbar-username" class="text-white fw-bold fs-5 d-none">
+						<!-- Il nome utente sarà inserito qui dinamicamente -->
 					</div>
 				</div>
-				<!-- PROFILE ICON -->
-				<div id="profile-menu" class="btn-group ms-2">
-					<button
-						id="profile-button"
-						type="button"
-						class="btn text-white"
-						data-bs-toggle="dropdown"
-						aria-expanded="false"
-					>
-						<i class="fa fa-user-circle fa-lg" aria-hidden="true"></i>
-					</button>
-					<ul id="profile-dropdown" class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-						<!-- Il contenuto sarà gestito dinamicamente -->
-					</ul>
+				
+				<div class="d-flex align-items-center">
+					<!-- LANGUAGE SWITCHER -->
+					<div class="btn-group">
+						<div id="locale-switch" class="btn-group">
+							<button
+								type="button" class="btn d-flex justify-content-center align-items-center"
+								data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static"
+							>
+								<img class="d-none selected-flag-img object-fit-scale" src="assets/flags/us.png" alt="US Flag">
+							</button>
+							<ul class="dropdown-menu dropdown-menu-dark user-select-none" style="min-width: auto;">
+								<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="en">
+									<img id="flag-en" class="object-fit-scale" src="assets/flags/us.png" alt="US Flag">
+									EN
+								</li>
+								<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="it">
+									<img id="flag-it" class="object-fit-scale" src="assets/flags/it.png" alt="IT Flag">
+									IT
+								</li>
+								<li class="dropdown-item lang-item" style="cursor:pointer;" data-lang="uk">
+									<img id="flag-ua" class="object-fit-scale" src="assets/flags/ua.png" alt="UA Flag">
+									UA
+								</li>
+							</ul>
+						</div>
+					</div>
+					<!-- PROFILE ICON -->
+					<div id="profile-menu" class="btn-group ms-2">
+						<button
+							id="profile-button"
+							type="button"
+							class="btn text-white"
+							data-bs-toggle="dropdown"
+							aria-expanded="false"
+						>
+							<i class="fa fa-user-circle fa-lg" aria-hidden="true"></i>
+						</button>
+						<ul id="profile-dropdown" class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+							<!-- Il contenuto sarà gestito dinamicamente -->
+						</ul>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -108,20 +116,9 @@
 <!--PAGES CONTENT STARTS HERE-->
 <main id="app" class="flex-grow-1 grid-bg">
     <h1 class="text-warning animate-pulse-heartbeat-slow text-center" data-i18n="homepage-welcome">Welcome</h1>
-    <div id="welcome-username" class="text-center text-white fs-4 mb-4"></div>
 </main>
 <!--PAGES CONTENT ENDS HERE-->
 
 <script src="app.js" type="module" defer></script>
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-        // Mostra il nome utente se disponibile
-        if (window.tools && window.tools.authManager && window.tools.authManager.username) {
-            const username = window.tools.authManager.username;
-            const el = document.getElementById('welcome-username');
-            if (el) el.textContent = username;
-        }
-    });
-</script>
 </body>
 </html>

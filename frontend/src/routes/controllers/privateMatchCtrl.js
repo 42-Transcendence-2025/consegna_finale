@@ -5,6 +5,7 @@ export class PrivateMatchController {
         console.log("Private Match Controller");
         this.#bindEvents();
         this.#initializeTooltips();
+        this.#setupLanguageChangeListener();
     }
 
     #bindEvents() {
@@ -85,8 +86,37 @@ export class PrivateMatchController {
 
     #initializeTooltips() {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-            new bootstrap.Tooltip(tooltipTriggerEl);
+        this.tooltipInstances = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+    }
+
+    #setupLanguageChangeListener() {
+        // Ascolta i cambi di lingua e aggiorna i tooltip
+        document.addEventListener('languageChanged', () => {
+            this.#updateTooltips();
+        });
+    }
+
+    #updateTooltips() {
+        // Distruggi i tooltip esistenti
+        if (this.tooltipInstances) {
+            this.tooltipInstances.forEach(tooltip => tooltip.dispose());
+        }
+        
+        // Aggiorna manualmente gli attributi title con le traduzioni
+        const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"][data-i18n*="[title]"]');
+        tooltipElements.forEach(element => {
+            const i18nAttr = element.getAttribute('data-i18n');
+            if (i18nAttr && i18nAttr.includes('[title]')) {
+                // Estrae la chiave di traduzione dall'attributo data-i18n
+                const titleKey = i18nAttr.replace('[title]', '');
+                const translatedTitle = $.i18n(titleKey);
+                element.setAttribute('title', translatedTitle);
+            }
+        });
+        
+        // Reinizializza i tooltip con le nuove traduzioni
+        this.#initializeTooltips();
     }
 }
