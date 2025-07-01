@@ -347,20 +347,32 @@ export class AuthManager {
 	// Get user info
 	async getUserInfo() {
 		this.#isLoading = true;
-		$.ajax({
-			url: `${this.#userApiUrl}/profile/`,
-			method: "GET",
-		})
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				url: `${this.#userApiUrl}/profile/`,
+				method: "GET",
+			})
 			.done((response) => {
 				this.#lastResponse = response;
 				this.#user = response;
+				console.log('User info loaded:', this.username);
+				resolve(response);
 			})
 			.fail((error) => {
 				console.error('User info retrieval failed:', error);
+				reject(error);
 			})
 			.always(() => {
 				this.#isLoading = false;
 			});
+		});
+	}
+
+	async initializeUserInfo() {
+		if (this.isLoggedIn() && !this.#user) {
+			console.log('Initializing user info...');
+			await this.getUserInfo();
+		}
 	}
 
 	// GETTERS ---------------------------------------------------------------------------------------------------------

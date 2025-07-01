@@ -137,10 +137,15 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 		});
 	}
 
-	window.onload = function () {
-		document.title = CONFIG.baseTitle;
-		loadTools();
-		setupAjax();
+	window.onload = async function () {
+	    await loadTools();
+	    setupAjax(); // Prima configura AJAX
+	    
+	    // POI inizializza le info utente
+	    if (window.tools?.authManager) {
+	        await window.tools.authManager.initializeUserInfo();
+	    }
+	    
 
 		// ────── PROFILE ICON SETUP ──────
 		const auth = window.tools.authManager;

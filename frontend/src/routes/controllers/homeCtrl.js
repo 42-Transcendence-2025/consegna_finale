@@ -12,6 +12,11 @@ export class HomeController {
 		if (window.tools?.authManager?.isLoggedIn()) {
 			await window.tools.authManager.getUserInfo();
 			console.log("User info loaded:", window.tools.authManager.username);
+			const navbarUsername = document.getElementById('navbar-username');
+			if (navbarUsername) {
+				navbarUsername.textContent = window.tools.authManager.username;
+				navbarUsername.classList.remove('d-none');
+			}
 		} else {
 			console.warn("User not logged in.");
 		}
