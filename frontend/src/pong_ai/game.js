@@ -423,8 +423,27 @@ export class PongGame {
         this.ctx.strokeStyle = "white";
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
-        this.ctx.moveTo(this.canvas.width / 2, 0);
-        this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+        
+        // Se stiamo aspettando l'inizio del gioco, creiamo un "buco" nella rete per il testo
+        if (this.waitingToStart) {
+            const textY = this.canvas.height / 3;
+            const gapHeight = 30; // Altezza del buco nella rete
+            const gapTop = textY - gapHeight / 2;
+            const gapBottom = textY + gapHeight / 2;
+            
+            // Disegna la rete sopra il gap
+            this.ctx.moveTo(this.canvas.width / 2, 0);
+            this.ctx.lineTo(this.canvas.width / 2, gapTop);
+            
+            // Disegna la rete sotto il gap
+            this.ctx.moveTo(this.canvas.width / 2, gapBottom);
+            this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+        } else {
+            // Disegna la rete completa durante il gioco
+            this.ctx.moveTo(this.canvas.width / 2, 0);
+            this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+        }
+        
         this.ctx.stroke();
     }
 
@@ -446,8 +465,10 @@ export class PongGame {
         if (this.waitingToStart) {
             this.ctx.font = "25px Arial";
             this.ctx.fillStyle = "grey";
+            this.ctx.textAlign = "center";
+            this.ctx.zIndex = 1000;
             if (Math.floor(Date.now() / 1000) % 2 === 0) {
-                this.ctx.fillText("Press an arrow to start the game", 228, 250);
+                this.ctx.fillText($.i18n('pressArrowToStart'), this.canvas.width / 2, this.canvas.height / 3 + 8);
             }
         }
     }

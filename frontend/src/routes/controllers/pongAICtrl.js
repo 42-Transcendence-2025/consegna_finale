@@ -103,9 +103,8 @@ export class PongAIController {
 			function animate(timestamp)
 			{
 				if (!start) start = timestamp;
-				let progress = Math.min((timestamp - start) / duration, 1);
-				let ctx = game.ctx;
-				let winnerName = game.state.leftScore > game.state.rightScore ? "You won" : "A.I. wins";
+				let progress = Math.min((timestamp - start) / duration, 1);			let ctx = game.ctx;
+			let winnerName = game.state.leftScore > game.state.rightScore ? $.i18n('youWon') : $.i18n('aiWins');
 				
 				// 2. Score animati
 				let currentY = scoreStartY + (targetY - scoreStartY) * progress;
@@ -139,7 +138,7 @@ export class PongAIController {
 				{
 					ctx.font = "25px Arial";
 					ctx.fillStyle = "grey";
-					ctx.fillText("Press esc to go back.", 400, 500);
+					ctx.fillText($.i18n('pressEscToGoBack'), 400, 500);
 				}
 			}
 		

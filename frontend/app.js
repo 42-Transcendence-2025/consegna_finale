@@ -15,7 +15,7 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 
 
 	let savedLocale = localStorage.getItem(CONFIG.localStorageKeys.locale);
-	if (!savedLocale) savedLocale = "en";
+	if (!savedLocale) savedLocale = "it";
 	I18nUtils.setLocale(savedLocale);
 
 	$(`#${CONFIG.locale.switchSelectorID} .lang-item`).on("click", (el) => {
@@ -66,6 +66,14 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 			$(`#${CONFIG.appContainerID}`).html(viewHTML);
 
 			$(document.body).i18n();
+
+			// Handle language switcher visibility
+			const langSwitcher = $(`#${CONFIG.locale.switchSelectorID}`);
+			if (selectedRoute.hideLangSwitcher) {
+				langSwitcher.hide();
+			} else {
+				langSwitcher.show();
+			}
 
 			const controller = selectedRoute.controller ? new selectedRoute.controller() : null;
 			document.title = CONFIG.baseTitle;

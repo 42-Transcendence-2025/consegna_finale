@@ -9,8 +9,9 @@ export class TournamentMenuController {
         
         this.#fetchAndRenderTournaments();
         this.#bindCreateTournament();
+        this.#setupLanguageChangeListener();
+        
         // Aggiorna la lista ogni 5 secondi
-
         if (this._tournamentInterval)
             clearInterval(this._tournamentInterval);
 
@@ -54,7 +55,7 @@ export class TournamentMenuController {
                 localStorage.setItem('currentTournamentId', created.tournament_id);
                 window.location.hash = "#tournament";
             } catch (err) {
-                alert("Failed to create tournament");
+                alert($.i18n('failedToCreateTournament'));
             }
         });
     }
@@ -110,10 +111,10 @@ export class TournamentMenuController {
                 // Re-bind click handler dopo eventuali cambiamenti
                 this.#bindTournamentCardClicks();
             } else {
-                $list.html(`<div class='alert alert-warning'>No tournaments found.</div>`);
+                $list.html(`<div class='alert alert-warning'>${$.i18n('noTournamentsFound')}</div>`);
             }
         } catch (err) {
-            $list.html(`<div class='alert alert-danger'>Failed to load tournaments.</div>`);
+            $list.html(`<div class='alert alert-danger'>${$.i18n('failedToLoadTournaments')}</div>`);
         }
     }
 
@@ -133,7 +134,7 @@ export class TournamentMenuController {
         // Popola nome torneo
         $("#tournamentDetailsModalLabel").text(tournament.name);
         // Popola numero giocatori
-        $("#tournamentPlayersCount").text(`Players ${tournament.players.length}/8`);
+        $("#tournamentPlayersCount").text(`${$.i18n('players')} ${tournament.players.length}/8`);
         // Popola lista giocatori
         const $list = $("#tournamentPlayersList");
         $list.empty();
@@ -142,7 +143,7 @@ export class TournamentMenuController {
                 $list.append(`<li class='list-group-item text-center'>${p.username}</li>`);
             }
         } else {
-            $list.append(`<li class='list-group-item text-center text-muted'>No players yet</li>`);
+            $list.append(`<li class='list-group-item text-center text-muted'>${$.i18n('noPlayersYet')}</li>`);
         }
         // Mostra il modal
         const modal = new window.bootstrap.Modal(document.getElementById('tournamentDetailsModal'));
@@ -163,7 +164,7 @@ export class TournamentMenuController {
         $footer.empty();
 
         if (isSubscribed) {
-            const $btn = $(`<button class="btn btn-success flex-grow-1" id="goToTournamentBtn">Go to Tournament</button>`);
+            const $btn = $(`<button class="btn btn-success flex-grow-1" id="goToTournamentBtn">${$.i18n('goToTournament')}</button>`);
             $footer.append($btn);
             $btn.on("click", () => {
                 localStorage.setItem('currentTournamentId', tournament.id);
@@ -171,7 +172,7 @@ export class TournamentMenuController {
                 window.location.hash = "#tournament";
             });
         } else {
-            const $btn = $(`<button class="btn btn-primary flex-grow-1" id="subscribeTournamentBtn">Subscribe</button>`);
+            const $btn = $(`<button class="btn btn-primary flex-grow-1" id="subscribeTournamentBtn">${$.i18n('subscribe')}</button>`);
             $footer.append($btn);
             $btn.on("click", async () => {
                 try {
@@ -180,7 +181,7 @@ export class TournamentMenuController {
                     modal.hide();
                     window.location.hash = "#tournament";
                 } catch (err) {
-                    let msg = "Subscription failed.";
+                    let msg = $.i18n('subscriptionFailed');
                     if (err.responseJSON?.detail) {
                         msg = err.responseJSON.detail;
                     } else if (err.responseText) {
@@ -203,5 +204,12 @@ export class TournamentMenuController {
         setTimeout(() => {
             msgDiv.remove();
         }, 3000);
+    }
+
+    #setupLanguageChangeListener() {
+        // Ascolta i cambi di lingua e ri-renderizza per aggiornare i testi
+        document.addEventListener('languageChanged', () => {
+            this.#fetchAndRenderTournaments();
+        });
     }
 }

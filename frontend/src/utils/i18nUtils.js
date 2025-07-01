@@ -14,5 +14,8 @@ export class I18nUtils {
 			img.attr("src", CONFIG.locale.images[locale]);
 		}
 		img.removeClass("d-none");
+		
+		// Emetti un evento personalizzato per notificare il cambio di lingua
+		document.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale } }));
 	}
 }

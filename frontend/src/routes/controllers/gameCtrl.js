@@ -274,7 +274,7 @@ function animateGameOver(timestamp, context) {
 		ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
 
 		ctx.font = "40px Arial";
-		ctx.fillText(`${winner} wins!`, canvas.width / 2, canvas.height / 2 + 80);
+		ctx.fillText(`${winner} ${$.i18n('wins')}!`, canvas.width / 2, canvas.height / 2 + 80);
 	}
 
 	if (progress < 1) {
@@ -282,7 +282,7 @@ function animateGameOver(timestamp, context) {
 	} else {
 		ctx.font = "25px Arial";
 		ctx.fillStyle = "grey";
-		ctx.fillText("Press esc to go back", canvas.width / 2, canvas.height - 50);
+		ctx.fillText($.i18n('pressEscToGoBack'), canvas.width / 2, canvas.height - 50);
 	}
 
 }

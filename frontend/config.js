@@ -49,7 +49,7 @@ const WS_URL = window.location.origin.split(/(http[s]?:\/\/.*):/)[1].replace("ht
  * 	debug: boolean,
  * 	baseTitle: string,
  * 	appContainerID: string,
- * 	routes: {[key: string]: {view: string, controller: Controller, authRequired?: boolean}},
+ * 	routes: {[key: string]: {view: string, controller: Controller, authRequired?: boolean, hideLangSwitcher?: boolean}},
  * 	defaultRoute: string,
  * 	locale: {
  * 		switchSelectorID: string,
@@ -115,6 +115,7 @@ export const CONFIG = {
 			view: "pongAI", // Nome del file HTML (senza estensione)
 			controller: PongAIController, // Controller associato
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		profileMenu: {
 			view: "",
@@ -125,6 +126,7 @@ export const CONFIG = {
 			view: "game",
 			controller: GameController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		tournamentMenu: {
 			view: "tournamentMenu",
@@ -135,6 +137,7 @@ export const CONFIG = {
 			view: "tournament",
 			controller: TournamentController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 	},
 	// Default route if the hash is not found.
