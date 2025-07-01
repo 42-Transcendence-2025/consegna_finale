@@ -1,0 +1,42 @@
+[
+  {
+    "username": "goku",
+    "email": "player1@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "vegeta",
+    "email": "player2@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "majinbu",
+    "email": "player3@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "piccolo",
+    "email": "player4@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "cell",
+    "email": "player5@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "gohan",
+    "email": "player6@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "broly",
+    "email": "player7@mock.com",
+    "password": "password123!"
+  },
+  {
+    "username": "trunks",
+    "email": "player8@mock.com",
+    "password": "password123!"
+  }
+]

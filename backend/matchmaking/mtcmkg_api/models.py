@@ -83,3 +83,7 @@ class Tournament(models.Model):
 
     def __str__(self):
         return f"Tournament #{self.pk}"
+    
+    def can_add_match(self):
+        """Verifica se il torneo può avere ancora partite (massimo 7)"""
+        return self.matches.count() < 7

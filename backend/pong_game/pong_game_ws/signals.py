@@ -18,9 +18,18 @@ def check_tournament_finished(sender, instance, **kwargs):
         if t.status == Tournament.Status.FINISHED:
             return
 
-        if not t.matches.filter(status="created").exists():
-            t.status = Tournament.Status.FINISHED
-            final = t.matches.filter(match_number=6).first()
-            if final and final.winner:
-                t.winner = final.winner
-            t.save(update_fields=["status", "winner"])
+        # controlla che ci siano tutte le 7 partite e che siano tutte finite o abortite
+        total_matches = t.matches.count()
+        if total_matches == 7:
+            # Verifica che tutte le partite abbiano status finished* o aborted
+            finished_or_aborted_matches = t.matches.filter(
+                status__in=['finished', 'finished_walkover', 'aborted']
+            ).count()
+            
+            if finished_or_aborted_matches == 7:
+                t.status = Tournament.Status.FINISHED
+                # Imposta il vincitore dalla finale (match_number=6)
+                final = t.matches.filter(match_number=6).first()
+                if final and final.winner:
+                    t.winner = final.winner.username
+                t.save(update_fields=["status", "winner"])
