@@ -27,8 +27,6 @@ export class AIvsAIGame {
         this.fireThreshold = 15; // Velocità minima per attivare l'effetto fuoco
         this.fireParticles = []; // Array per le particelle di fuoco
         this.fireAnimationTime = 0; // Timer per l'animazione
-        this.wasOnFire = false; // Per tracciare quando l'effetto inizia
-        this.wasBlueFire = false; // Per tracciare quando si attivano le fiamme blu
     }
 
     update() {
@@ -133,12 +131,6 @@ export class AIvsAIGame {
         );
     }
 
-    // handlePaddleBounce(ball, paddleY) {
-    //     ball.dx = -ball.dx * 1.05;
-    //     const offset = (ball.y - paddleY) - this.paddleHeight / 2;
-    //     ball.dy = offset / 10;
-    // }
-
    handlePaddleBounce(ball, paddleY) {
         const paddleCenter = paddleY + this.paddleHeight / 2;
         const relativeIntersectY = ball.y - paddleCenter;
@@ -158,9 +150,6 @@ export class AIvsAIGame {
         // Calcola velocità attuale e nuova velocità
         const oldSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
         const speed = oldSpeed * 1.10; // aumenta leggermente la velocità
-
-        // Log dell'aumento di velocità
-        console.log(`🚀 Ball speed increased! ${oldSpeed.toFixed(2)} → ${speed.toFixed(2)} (+${(speed - oldSpeed).toFixed(2)})`);
 
         // Direzione orizzontale invertita (la palla rimbalza)
         const direction = ball.dx > 0 ? -1 : 1;
@@ -201,21 +190,7 @@ export class AIvsAIGame {
     updateFireParticles() {
         this.fireAnimationTime += 0.1;
         const currentlyOnFire = this.isBallOnFire();
-        const currentSpeed = this.getBallSpeed();
-        const isBlueFire = currentSpeed >= 35;
         
-        // Traccia quando l'effetto fuoco si attiva per la prima volta
-        if (currentlyOnFire && !this.wasOnFire) {
-            console.log("🔥 Ball is on fire! Speed:", currentSpeed.toFixed(1));
-        }
-        
-        // Traccia quando si attivano le fiamme blu
-        if (isBlueFire && this.wasOnFire && currentSpeed >= 35 && !this.wasBlueFire) {
-            console.log("💙 BLUE FIRE ACTIVATED! Speed:", currentSpeed.toFixed(1));
-            this.wasBlueFire = true;
-        }
-        
-        this.wasOnFire = currentlyOnFire;
         
         if (currentlyOnFire) {
             // Genera nuove particelle di fuoco

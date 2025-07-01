@@ -49,9 +49,16 @@ export class AI
 				this.predictBallPosition();
 				this.lastPrediction = currentTime;
 				this.predictionLocked = true; // Lock prediction for the current trajectory
-			
-				if (this.AILevel < 40){
-						this.prediction += ((this.game.paddleHeight / 2) - 10) * (Math.random() < 0.5 ? -1 : 1);
+
+				// Angle the shot randomly for impossible AI
+				if (this.AILevel < 40) {
+					const upOrDown = Math.random() < 0.5 ? 0 : 1;
+					if (upOrDown) {
+						this.prediction += 15;
+					}
+					else {
+						this.prediction -= 15;
+					}
 				}
 			}
 		}

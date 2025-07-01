@@ -38,7 +38,6 @@ export class PongGame {
         this.fireThreshold = 15; // Velocità minima per attivare l'effetto fuoco (ridotta per più frequenza)
         this.fireParticles = []; // Array per le particelle di fuoco
         this.fireAnimationTime = 0; // Timer per l'animazione
-        this.wasOnFire = false; // Per tracciare quando l'effetto inizia
     }
 
     // Setup all event listeners
@@ -234,10 +233,6 @@ export class PongGame {
         this.fireAnimationTime += 0.1;
         const currentlyOnFire = this.isBallOnFire();
         
-        // Traccia quando l'effetto fuoco si attiva per la prima volta
-        if (currentlyOnFire && !this.wasOnFire) {
-            console.log("🔥 Ball is on fire! Speed:", this.getBallSpeed().toFixed(1));
-        }
         this.wasOnFire = currentlyOnFire;
         
         if (currentlyOnFire) {
@@ -318,29 +313,56 @@ export class PongGame {
     }
 
     drawFireParticles() {
+        const currentSpeed = this.getBallSpeed();
+        const isBlueFire = currentSpeed >= 35; // Fiamme blu a velocità elevata
+        
         for (const particle of this.fireParticles) {
             // Calcola il colore basato sulla vita della particella
             const life = particle.life;
             let red, green, blue, alpha;
             
-            if (life > 0.7) {
-                // Particelle giovani: giallo-bianco
-                red = 255;
-                green = Math.floor(255 * life);
-                blue = Math.floor(100 * life);
-                alpha = life;
-            } else if (life > 0.4) {
-                // Particelle medie: arancione
-                red = 255;
-                green = Math.floor(165 * (life / 0.7));
-                blue = 0;
-                alpha = life;
+            if (isBlueFire) {
+                // Fiamme BLU per velocità >= 35
+                if (life > 0.7) {
+                    // Particelle giovani: bianco-blu
+                    red = Math.floor(200 * life);
+                    green = Math.floor(220 * life);
+                    blue = 255;
+                    alpha = life;
+                } else if (life > 0.4) {
+                    // Particelle medie: blu intenso
+                    red = Math.floor(100 * (life / 0.7));
+                    green = Math.floor(150 * (life / 0.7));
+                    blue = 255;
+                    alpha = life;
+                } else {
+                    // Particelle vecchie: blu scuro
+                    red = 0;
+                    green = 0;
+                    blue = Math.floor(255 * (life / 0.4));
+                    alpha = life * 0.8;
+                }
             } else {
-                // Particelle vecchie: rosso
-                red = Math.floor(255 * (life / 0.4));
-                green = 0;
-                blue = 0;
-                alpha = life * 0.8;
+                // Fiamme ROSSE normali
+                if (life > 0.7) {
+                    // Particelle giovani: giallo-bianco
+                    red = 255;
+                    green = Math.floor(255 * life);
+                    blue = Math.floor(100 * life);
+                    alpha = life;
+                } else if (life > 0.4) {
+                    // Particelle medie: arancione
+                    red = 255;
+                    green = Math.floor(165 * (life / 0.7));
+                    blue = 0;
+                    alpha = life;
+                } else {
+                    // Particelle vecchie: rosso
+                    red = Math.floor(255 * (life / 0.4));
+                    green = 0;
+                    blue = 0;
+                    alpha = life * 0.8;
+                }
             }
             
             this.ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
@@ -351,6 +373,9 @@ export class PongGame {
     }
 
     drawFireGlow(ball) {
+        const currentSpeed = this.getBallSpeed();
+        const isBlueFire = currentSpeed >= 35; // Fiamme blu a velocità elevata
+        
         // Crea un effetto bagliore attorno alla pallina
         const glowRadius = this.ballRadius + 15;
         const gradient = this.ctx.createRadialGradient(
@@ -358,9 +383,17 @@ export class PongGame {
             ball.x, ball.y, glowRadius
         );
         
-        gradient.addColorStop(0, "rgba(255, 165, 0, 0.3)");
-        gradient.addColorStop(0.5, "rgba(255, 69, 0, 0.2)");
-        gradient.addColorStop(1, "rgba(255, 0, 0, 0.0)");
+        if (isBlueFire) {
+            // Bagliore BLU per velocità >= 35
+            gradient.addColorStop(0, "rgba(173, 216, 255, 0.4)"); // Blu chiaro
+            gradient.addColorStop(0.5, "rgba(0, 100, 255, 0.3)"); // Blu medio
+            gradient.addColorStop(1, "rgba(0, 0, 255, 0.0)"); // Blu scuro
+        } else {
+            // Bagliore ROSSO normale
+            gradient.addColorStop(0, "rgba(255, 165, 0, 0.3)"); // Arancione
+            gradient.addColorStop(0.5, "rgba(255, 69, 0, 0.2)"); // Rosso-arancione
+            gradient.addColorStop(1, "rgba(255, 0, 0, 0.0)"); // Rosso
+        }
         
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
