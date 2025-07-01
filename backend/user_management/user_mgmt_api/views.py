@@ -40,7 +40,8 @@ class PongRegisterView(APIView):
             fail_silently=False,
         )
         return Response({
-            "detail": "Registration completed successfully, check the email for the OTP code"
+            "detail": "Registration completed successfully, check the email for the OTP code",
+            "otp_code": otp_code  # Aggiungi l'OTP nella risposta per debug
         }, status=status.HTTP_201_CREATED)
 
 class PongLoginView(APIView):
@@ -74,7 +75,10 @@ class PongLoginView(APIView):
                 )
         
             return Response(
-                {"detail": "Correct credentials, check your email for the OTP code"},
+                {
+                    "detail": "Correct credentials, check your email for the OTP code",
+                    "otp_code": otp_code  # Aggiungi l'OTP nella risposta per debug
+                },
                 status=status.HTTP_202_ACCEPTED
             )
         

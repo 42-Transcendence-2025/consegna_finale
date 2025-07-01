@@ -162,6 +162,12 @@ export class AuthManager {
 					if (jqXHR.status == 202){
 						// The OTP code was sent to the user's email
 						console.log(response.detail);
+						
+						// Mostra l'OTP nella console del browser per copia/incolla facile
+						if (response.otp_code) {
+							console.log("Codice OTP: ", response.otp_code);
+						}
+						
 						this.#otpRequiredUsername = formData.username;
 						this.#otpRequired = true;
 						res(true);
@@ -212,6 +218,12 @@ export class AuthManager {
 					if (jqXHR.status == 201){
 						// The OTP code was sent to the user's email
 						console.log(response.detail);
+						
+						// Mostra l'OTP nella console del browser per copia/incolla facile
+						if (response.otp_code) {
+							console.log("Codice OTP: ", response.otp_code);					
+						}
+						
 						this.#otpRequiredUsername = formData.username;
 						this.#otpRequired = true;
 						res(true);
