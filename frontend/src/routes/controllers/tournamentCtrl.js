@@ -1,7 +1,12 @@
+import { MockTournamentApi } from "../../utils/mockTournamentApi.js";
+
 export class TournamentController {
     titleSuffix = "Tournament Bracket";
+    #mockApi = null;
 
     async init(tournamentId) {
+        const useMock = true; // Imposta a true per usare l'API finta
+
         if (!tournamentId) {
             tournamentId = localStorage.getItem('currentTournamentId');
         }
@@ -10,22 +15,39 @@ export class TournamentController {
             return;
         }
 
+        if (useMock) {
+            console.log("Usando Mock Tournament API");
+            this.#mockApi = new MockTournamentApi(tournamentId);
+        } else {
+            this.#mockApi = null;
+        }
+
         if (this._tournamentInterval)
             clearInterval(this._tournamentInterval);
 
-        this.#fetchAndRenderPyramid(tournamentId);
-        this.#setupLanguageChangeListener(tournamentId);
-        this._tournamentInterval = setInterval(() => this.#fetchAndRenderPyramid(tournamentId), 5000);
+        this.#fetchAndRenderPyramid(tournamentId, useMock);
+        this.#setupLanguageChangeListener(tournamentId, useMock);
+        this._tournamentInterval = setInterval(() => this.#fetchAndRenderPyramid(tournamentId, useMock), 5000);
 
-        $(window).one("hashchange", () => clearInterval(this._tournamentInterval));
+        $(window).one("hashchange", () => {
+            clearInterval(this._tournamentInterval);
+            if (this.#mockApi) {
+                this.#mockApi.destroy();
+            }
+        });
     }
 
-    async #fetchAndRenderPyramid(tournamentId) {
+    async #fetchAndRenderPyramid(tournamentId, useMock = false) {
         try {
-            const data = await window.tools.matchManager.getTournamentDetails(tournamentId);
+            const data = useMock
+                ? await this.#mockApi.getTournamentDetails()
+                : await window.tools.matchManager.getTournamentDetails(tournamentId);
+
             this.#renderPyramid(data);
             this.#bindQuitButton(tournamentId);
+
             if (
+               !useMock && // Non iniziare match reali se usiamo l'API finta
                data.status === "full" &&
                data.ready === true
             ) {
@@ -48,23 +70,6 @@ export class TournamentController {
     }
 
     #renderPyramid(tournament) {
-        const NUM_BASE_SLOTS = 8;
-        let players = Array(NUM_BASE_SLOTS).fill("-");
-        
-        // Se abbiamo match (torneo iniziato), ricostruisci le posizioni dai match
-        if (tournament.matches && tournament.matches.length > 0) {
-            players = this.#reconstructPlayersFromMatches(tournament.matches, tournament.players);
-        } else {
-            // Se non ci sono match ancora, usa gli slot (fase di registrazione)
-            if (Array.isArray(tournament.players)) {
-                tournament.players.forEach(p => {
-                    if (typeof p.slot === "number" && p.slot >= 0 && p.slot < NUM_BASE_SLOTS) {
-                        players[p.slot] = p.username;
-                    }
-                });
-            }
-        }
-
         // Ottieni i risultati dei match per aggiornare il bracket
         const matchResults = this.#getMatchResults(tournament.matches || []);
 
@@ -73,267 +78,108 @@ export class TournamentController {
         
         // Pulisce il contenuto esistente
         pyramid.innerHTML = "";
+
+        // --- QUARTI DI FINALE ---
+        const qf_top_left = matchResults.quarterfinals[0];
+        const qf_bottom_left = matchResults.quarterfinals[1];
+        const qf_top_right = matchResults.quarterfinals[2];
+        const qf_bottom_right = matchResults.quarterfinals[3];
+
+        // --- SEMIFINALI ---
+        const sf_left = matchResults.semifinals[0];
+        const sf_right = matchResults.semifinals[1];
+        // --- FINALE ---
+        const final = matchResults.final;
         
-        // Sezione sinistra (primi 4 giocatori)
+        // Sezione sinistra (primi 2 quarti)
         const leftSection = document.createElement("div");
         leftSection.className = "bracket-section left-section";
-        const verticalLineLeft = document.createElement("div");
-        verticalLineLeft.className = "vertical-connector";
-        leftSection.appendChild(verticalLineLeft);
+        leftSection.appendChild(this.#createMatchElement(qf_top_left, [qf_top_left?.player_1, qf_top_left?.player_2]));
+        leftSection.appendChild(this.#createMatchElement(qf_bottom_left, [qf_bottom_left?.player_1, qf_bottom_left?.player_2]));
         
-        // Linea orizzontale dalla linea verticale sinistra alla semifinale
-        const horizontalToSemiLeft = document.createElement("div");
-        horizontalToSemiLeft.className = "horizontal-to-semi-left";
-        leftSection.appendChild(horizontalToSemiLeft);
-        
-        // Crea le coppie di giocatori
-        for (let i = 0; i < 4; i += 2) {
-            const matchGroup = document.createElement("div");
-            matchGroup.className = "match-group";
-            
-            const matchBlock = document.createElement("div");
-            matchBlock.className = "tournament-match-block";
-            
-            const player1Name = document.createElement("div");
-            player1Name.className = "player-name";
-            player1Name.textContent = players[i] || "-";
-            
-            const vsText = document.createElement("div");
-            vsText.className = "vs-text";
-            vsText.textContent = "VS";
-            
-            const player2Name = document.createElement("div");
-            player2Name.className = "player-name";
-            player2Name.textContent = players[i + 1] || "-";
-            
-            // Aggiungi classi per vincitori/perdenti se il match è finito
-            const quarterIndex = Math.floor(i / 2); // 0 per i=0,1 e 1 per i=2,3
-            const quarterMatch = matchResults.quarterfinals[quarterIndex];
-            if (quarterMatch && quarterMatch.winner) {
-                const player1 = players[i];
-                const player2 = players[i + 1];
-                if (quarterMatch.winner === player1) {
-                    player1Name.classList.add("winner");
-                    player2Name.classList.add("loser");
-                } else if (quarterMatch.winner === player2) {
-                    player1Name.classList.add("loser");
-                    player2Name.classList.add("winner");
-                }
-            }
-            
-            matchBlock.appendChild(player1Name);
-            matchBlock.appendChild(vsText);
-            matchBlock.appendChild(player2Name);
-            matchGroup.appendChild(matchBlock);
-            leftSection.appendChild(matchGroup);
-        }
-        
-        // Sezione destra (ultimi 4 giocatori)
+        // Sezione destra (ultimi 2 quarti)
         const rightSection = document.createElement("div");
         rightSection.className = "bracket-section right-section";
-        const verticalLineRight = document.createElement("div");
-        verticalLineRight.className = "vertical-connector";
-        rightSection.appendChild(verticalLineRight);
+        rightSection.appendChild(this.#createMatchElement(qf_top_right, [qf_top_right?.player_1, qf_top_right?.player_2]));
+        rightSection.appendChild(this.#createMatchElement(qf_bottom_right, [qf_bottom_right?.player_1, qf_bottom_right?.player_2]));
 
-        // Linea orizzontale dalla linea verticale destra alla semifinale
-        const horizontalToSemiRight = document.createElement("div");
-        horizontalToSemiRight.className = "horizontal-to-semi-right";
-        rightSection.appendChild(horizontalToSemiRight);
-
-        
-        // Crea le coppie di giocatori
-        for (let i = 4; i < 8; i += 2) {
-            const matchGroup = document.createElement("div");
-            matchGroup.className = "match-group";
-            
-            const matchBlock = document.createElement("div");
-            matchBlock.className = "tournament-match-block";
-            
-            const player1Name = document.createElement("div");
-            player1Name.className = "player-name";
-            player1Name.textContent = players[i] || "-";
-            
-            const vsText = document.createElement("div");
-            vsText.className = "vs-text";
-            vsText.textContent = "VS";
-            
-            const player2Name = document.createElement("div");
-            player2Name.className = "player-name";
-            player2Name.textContent = players[i + 1] || "-";
-            
-            // Aggiungi classi per vincitori/perdenti se il match è finito
-            const quarterIndex = Math.floor(i / 2); // 2 per i=4,5 e 3 per i=6,7
-            const quarterMatch = matchResults.quarterfinals[quarterIndex];
-            if (quarterMatch && quarterMatch.winner) {
-                const player1 = players[i];
-                const player2 = players[i + 1];
-                if (quarterMatch.winner === player1) {
-                    player1Name.classList.add("winner");
-                    player2Name.classList.add("loser");
-                } else if (quarterMatch.winner === player2) {
-                    player1Name.classList.add("loser");
-                    player2Name.classList.add("winner");
-                }
-            }
-            
-            matchBlock.appendChild(player1Name);
-            matchBlock.appendChild(vsText);
-            matchBlock.appendChild(player2Name);
-            matchGroup.appendChild(matchBlock);
-            rightSection.appendChild(matchGroup);
-        }
-        
-        // Sezione semifinale sinistra (tra quarti sinistri e finale)
+        // Sezione semifinale sinistra
         const leftSemifinalSection = document.createElement("div");
         leftSemifinalSection.className = "bracket-section semifinal-section";
-        
-        const semifinal1Group = document.createElement("div");
-        semifinal1Group.className = "match-group";
-        const semifinal1Block = document.createElement("div");
-        semifinal1Block.className = "tournament-match-block semifinal";
-        
-        // Linea orizzontale che esce dalla semifinale sinistra
-        const horizontalLineLeft = document.createElement("div");
-        horizontalLineLeft.className = "horizontal-connector-left";
-        semifinal1Group.appendChild(horizontalLineLeft);
-        
-        const semi1Player1 = document.createElement("div");
-        semi1Player1.className = "player-name";
-        semi1Player1.textContent = matchResults.semifinals[0]?.player_1 || "TBD";
-        
-        const semi1Vs = document.createElement("div");
-        semi1Vs.className = "vs-text";
-        semi1Vs.textContent = "VS";
-        
-        const semi1Player2 = document.createElement("div");
-        semi1Player2.className = "player-name";
-        semi1Player2.textContent = matchResults.semifinals[0]?.player_2 || "TBD";
-        
-        // Aggiungi classi per vincitori/perdenti
-        const semi1Match = matchResults.semifinals[0];
-        if (semi1Match && semi1Match.winner) {
-            if (semi1Match.winner === semi1Match.player_1) {
-                semi1Player1.classList.add("winner");
-                semi1Player2.classList.add("loser");
-            } else if (semi1Match.winner === semi1Match.player_2) {
-                semi1Player1.classList.add("loser");
-                semi1Player2.classList.add("winner");
-            }
-        }
-        
-        semifinal1Block.appendChild(semi1Player1);
-        semifinal1Block.appendChild(semi1Vs);
-        semifinal1Block.appendChild(semi1Player2);
-        semifinal1Group.appendChild(semifinal1Block);
-        leftSemifinalSection.appendChild(semifinal1Group);
-        
-        // Sezione finale (centro assoluto)
-        const finalSection = document.createElement("div");
-        finalSection.className = "bracket-section final-section";
-        
-        // Linea verticale che unisce le linee orizzontali di semifinali e finale
-        const centralVerticalLineLeft = document.createElement("div");
-        centralVerticalLineLeft.className = "central-vertical-connector-left";
-        finalSection.appendChild(centralVerticalLineLeft);
+        leftSemifinalSection.appendChild(this.#createMatchElement(sf_left, [sf_left?.player_1, sf_left?.player_2], "semifinal"));
 
-        const centralVerticalLineRight = document.createElement("div");
-        centralVerticalLineRight.className = "central-vertical-connector-right";
-        finalSection.appendChild(centralVerticalLineRight);
-        
-        const finalGroup = document.createElement("div");
-        finalGroup.className = "match-group final-match-group";
-        
-        // Primo rettangolo della finale
-        const finalPlayer1Block = document.createElement("div");
-        finalPlayer1Block.className = "tournament-player-block final-player";
-        finalPlayer1Block.textContent = matchResults.final?.player_1 || "TBD";
-        
-        // Linea orizzontale che esce a sinistra dal primo rettangolo della finale
-        const finalLineLeft = document.createElement("div");
-        finalLineLeft.className = "final-connector-left";
-        finalGroup.appendChild(finalLineLeft);
-        
-        // Scritta VS centrale
-        const finalVsText = document.createElement("div");
-        finalVsText.className = "final-vs-text";
-        finalVsText.textContent = "VS";
-        
-        // Secondo rettangolo della finale
-        const finalPlayer2Block = document.createElement("div");
-        finalPlayer2Block.className = "tournament-player-block final-player";
-        finalPlayer2Block.textContent = matchResults.final?.player_2 || "TBD";
-        
-        // Linea orizzontale che esce a destra dal secondo rettangolo della finale
-        const finalLineRight = document.createElement("div");
-        finalLineRight.className = "final-connector-right";
-        finalGroup.appendChild(finalLineRight);
-        
-        // Aggiungi classi per vincitori/perdenti nella finale
-        const finalMatch = matchResults.final;
-        if (finalMatch && finalMatch.winner) {
-            if (finalMatch.winner === finalMatch.player_1) {
-                finalPlayer1Block.classList.add("winner");
-                finalPlayer2Block.classList.add("loser");
-            } else if (finalMatch.winner === finalMatch.player_2) {
-                finalPlayer1Block.classList.add("loser");
-                finalPlayer2Block.classList.add("winner");
-            }
-        }
-        
-        finalGroup.appendChild(finalPlayer1Block);
-        finalGroup.appendChild(finalVsText);
-        finalGroup.appendChild(finalPlayer2Block);
-        finalSection.appendChild(finalGroup);
-        
-        // Sezione semifinale destra (tra quarti destri e finale)
+        // Sezione semifinale destra
         const rightSemifinalSection = document.createElement("div");
         rightSemifinalSection.className = "bracket-section semifinal-section";
-        
-        const semifinal2Group = document.createElement("div");
-        semifinal2Group.className = "match-group";
-        const semifinal2Block = document.createElement("div");
-        semifinal2Block.className = "tournament-match-block semifinal";
-        
-        // Linea orizzontale che esce dalla semifinale destra
-        const horizontalLineRight = document.createElement("div");
-        horizontalLineRight.className = "horizontal-connector-right";
-        semifinal2Group.appendChild(horizontalLineRight);
-        
-        const semi2Player1 = document.createElement("div");
-        semi2Player1.className = "player-name";
-        semi2Player1.textContent = matchResults.semifinals[1]?.player_1 || "TBD";
-        
-        const semi2Vs = document.createElement("div");
-        semi2Vs.className = "vs-text";
-        semi2Vs.textContent = "VS";
-        
-        const semi2Player2 = document.createElement("div");
-        semi2Player2.className = "player-name";
-        semi2Player2.textContent = matchResults.semifinals[1]?.player_2 || "TBD";
-        
-        // Aggiungi classi per vincitori/perdenti
-        const semi2Match = matchResults.semifinals[1];
-        if (semi2Match && semi2Match.winner) {
-            if (semi2Match.winner === semi2Match.player_1) {
-                semi2Player1.classList.add("winner");
-                semi2Player2.classList.add("loser");
-            } else if (semi2Match.winner === semi2Match.player_2) {
-                semi2Player1.classList.add("loser");
-                semi2Player2.classList.add("winner");
-            }
-        }
-        
-        semifinal2Block.appendChild(semi2Player1);
-        semifinal2Block.appendChild(semi2Vs);
-        semifinal2Block.appendChild(semi2Player2);
-        semifinal2Group.appendChild(semifinal2Block);
-        rightSemifinalSection.appendChild(semifinal2Group);
-        
+        rightSemifinalSection.appendChild(this.#createMatchElement(sf_right, [sf_right?.player_1, sf_right?.player_2], "semifinal"));
+
+        // Sezione finale
+        const finalSection = document.createElement("div");
+        finalSection.className = "bracket-section final-section";
+        finalSection.appendChild(this.#createMatchElement(final, [final?.player_1, final?.player_2], "final"));
+
+        // Aggiungi le sezioni al DOM
         pyramid.appendChild(leftSection);
         pyramid.appendChild(leftSemifinalSection);
         pyramid.appendChild(finalSection);
         pyramid.appendChild(rightSemifinalSection);
         pyramid.appendChild(rightSection);
+
+        // Aggiungi connettori e linee decorative
+        this.#addConnectors(pyramid);
+    }
+
+    #createMatchElement(match, players, type = 'quarterfinal') {
+        const matchGroup = document.createElement("div");
+        matchGroup.className = "match-group";
+
+        const matchContainer = document.createElement('div');
+        matchContainer.className = `tournament-match-block ${type}`;
+
+        const player1Block = document.createElement("div");
+        player1Block.className = "player-block";
+        player1Block.textContent = players[0] && players[0] !== 'null' ? players[0] : "Waiting...";
+
+        const vsText = document.createElement("div");
+        vsText.className = "vs-text";
+        vsText.textContent = "VS";
+
+        const player2Block = document.createElement("div");
+        player2Block.className = "player-block";
+        player2Block.textContent = players[1] && players[1] !== 'null' ? players[1] : "Waiting...";
+
+        if (type === 'final') {
+            player1Block.classList.add('final-player');
+            player2Block.classList.add('final-player');
+            vsText.classList.add('final-vs-text');
+        }
+
+        if (match && match.winner && match.winner !== 'null') {
+            if (match.winner === players[0]) {
+                player1Block.classList.add("winner");
+                player2Block.classList.add("loser");
+            } else if (match.winner === players[1]) {
+                player1Block.classList.add("loser");
+                player2Block.classList.add("winner");
+            }
+        }
+
+        if (match && match.status === 'in_game') {
+            player1Block.classList.add('in-game');
+            player2Block.classList.add('in-game');
+        }
+
+        matchContainer.appendChild(player1Block);
+        matchContainer.appendChild(vsText);
+        matchContainer.appendChild(player2Block);
+        matchGroup.appendChild(matchContainer);
+
+        return matchGroup;
+    }
+
+    #addConnectors(pyramid) {
+        // Questa funzione può essere espansa per aggiungere linee e connettori SVG o CSS
+        // per collegare visivamente i match nel bracket.
     }
 
     #bindQuitButton(tournamentId) {
@@ -362,144 +208,27 @@ export class TournamentController {
     }
 
     #getMatchResults(matches) {
-        // Inizializza la struttura dei risultati
-        const results = {
-            quarterfinals: [], // matches 0-3 (primi 4 match)
-            semifinals: [],    // matches 4-5 (semifinali)
-            final: null        // match 6 (finale)
+        if (!matches || matches.length < 7) {
+            // Ritorna una struttura vuota se i dati non sono validi
+            const emptyMatch = { player_1: "null", player_2: "null", winner: "null", status: "created" };
+            return {
+                quarterfinals: Array(4).fill(emptyMatch),
+                semifinals: Array(2).fill(emptyMatch),
+                final: emptyMatch
+            };
+        }
+
+        return {
+            quarterfinals: [matches[0], matches[1], matches[2], matches[3]],
+            semifinals: [matches[4], matches[5]],
+            final: matches[6]
         };
-        
-        if (!matches || matches.length === 0) return results;
-        
-        // Filtra i match duplicati tenendo quelli con status più avanzato
-        const uniqueMatches = this.#filterUniqueMatches(matches);
-        
-        // Classifica i match per tipo
-        const quarterMatches = [];
-        const semiMatches = [];
-        const finalMatches = [];
-        
-        // Trova tutti i vincitori per classificare i match
-        const winners = new Set(uniqueMatches.filter(m => m.winner).map(m => m.winner));
-        
-        uniqueMatches.forEach(match => {
-            // Determina se è un quarto, semifinale o finale
-            const player1IsWinner = winners.has(match.player_1);
-            const player2IsWinner = winners.has(match.player_2);
-            
-            if (!(player1IsWinner && player2IsWinner)) {
-                // Almeno uno dei giocatori non è un vincitore -> probabilmente un quarto
-                quarterMatches.push(match);
-            } else if (player1IsWinner && player2IsWinner) {
-                // Entrambi sono vincitori -> semifinale o finale
-                if (this.#countPlayersInMatches([match]) === 2) {
-                    // Se ci sono solo 2 giocatori unici, è la finale
-                    finalMatches.push(match);
-                } else {
-                    semiMatches.push(match);
-                }
-            }
-        });
-        
-        // Assegna ai risultati
-        results.quarterfinals = quarterMatches.slice(0, 4);
-        results.semifinals = semiMatches.slice(0, 2);
-        results.final = finalMatches[0] || null;
-        
-        return results;
     }
 
-    #filterUniqueMatches(matches) {
-        const uniqueMap = new Map();
-        
-        matches.forEach(match => {
-            // Crea una chiave unica per il match (ordine indipendente)
-            const players = [match.player_1, match.player_2].sort();
-            const key = `${players[0]}_vs_${players[1]}`;
-            
-            if (!uniqueMap.has(key)) {
-                uniqueMap.set(key, match);
-            } else {
-                // Se esiste già, tieni quello con status più avanzato
-                const existing = uniqueMap.get(key);
-                if (this.#getMatchPriority(match) > this.#getMatchPriority(existing)) {
-                    uniqueMap.set(key, match);
-                }
-            }
-        });
-        
-        return Array.from(uniqueMap.values());
-    }
-
-    #getMatchPriority(match) {
-        switch (match.status) {
-            case 'finished': return 3;
-            case 'finished_walkover': return 2;
-            case 'created': return 1;
-            default: return 0;
-        }
-    }
-
-    #countPlayersInMatches(matches) {
-        const players = new Set();
-        matches.forEach(match => {
-            players.add(match.player_1);
-            players.add(match.player_2);
-        });
-        return players.size;
-    }
-
-    #reconstructPlayersFromMatches(matches, allPlayers) {
-        const NUM_BASE_SLOTS = 8;
-        const players = Array(NUM_BASE_SLOTS).fill("-");
-        
-        // Trova i primi 4 match (quarti di finale) basandoci sui giocatori che non sono vincitori di match precedenti
-        const quarterMatches = this.#findQuarterMatches(matches);
-        
-        // Se non riusciamo a identificare i quarti, usa i primi 4 match ordinati
-        if (quarterMatches.length === 0) {
-            const sortedMatches = matches.slice(0, 4);
-            sortedMatches.forEach((match, index) => {
-                if (match.player_1) players[index * 2] = match.player_1;
-                if (match.player_2) players[index * 2 + 1] = match.player_2;
-            });
-        } else {
-            // Usa i quarti identificati
-            quarterMatches.forEach((match, index) => {
-                if (match.player_1) players[index * 2] = match.player_1;
-                if (match.player_2) players[index * 2 + 1] = match.player_2;
-            });
-        }
-        
-        return players;
-    }
-
-    #findQuarterMatches(matches) {
-        // Trova tutti i vincitori dei match
-        const winners = new Set(matches.filter(m => m.winner).map(m => m.winner));
-        
-        // I quarti di finale sono match dove almeno uno dei giocatori non è un vincitore di un altro match
-        const quarterMatches = [];
-        
-        matches.forEach(match => {
-            // Un match è un quarto se almeno uno dei giocatori non ha vinto un match precedente
-            const player1IsWinner = winners.has(match.player_1);
-            const player2IsWinner = winners.has(match.player_2);
-            
-            // Se entrambi i giocatori sono vincitori di altri match, probabilmente non è un quarto
-            if (!(player1IsWinner && player2IsWinner)) {
-                quarterMatches.push(match);
-            }
-        });
-        
-        // Se abbiamo più di 4 quarti, prendi i primi 4
-        return quarterMatches.slice(0, 4);
-    }
-
-    #setupLanguageChangeListener(tournamentId) {
+    #setupLanguageChangeListener(tournamentId, useMock) {
         // Ascolta i cambi di lingua e ri-renderizza il bracket
         document.addEventListener('languageChanged', () => {
-            this.#fetchAndRenderPyramid(tournamentId);
+            this.#fetchAndRenderPyramid(tournamentId, useMock);
         });
     }
 }
