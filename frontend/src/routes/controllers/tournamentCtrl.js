@@ -31,6 +31,10 @@ export class TournamentController {
 
         $(window).one("hashchange", () => {
             clearInterval(this._tournamentInterval);
+            if (this._resizeListener) {
+                window.removeEventListener('resize', this._resizeListener);
+                this._resizeListener = null;
+            }
             if (this.#mockApi) {
                 this.#mockApi.destroy();
             }
@@ -127,6 +131,9 @@ export class TournamentController {
 
         // Aggiungi connettori e linee decorative
         this.#addConnectors(pyramid);
+        
+        // Aggiungi listener per il ridimensionamento della finestra
+        this.#setupResizeListener(pyramid);
     }
 
     #createMatchElement(match, players, type = 'quarterfinal') {
@@ -178,8 +185,222 @@ export class TournamentController {
     }
 
     #addConnectors(pyramid) {
-        // Questa funzione può essere espansa per aggiungere linee e connettori SVG o CSS
-        // per collegare visivamente i match nel bracket.
+        // Rimuovi eventuali connettori esistenti
+        const existingConnectors = pyramid.querySelectorAll('.connector-line');
+        existingConnectors.forEach(line => line.remove());
+
+        // Ottieni tutti i match dei quarti di finale (sia sinistra che destra)
+        const leftQuarters = pyramid.querySelector('.left-section').querySelectorAll('.match-group');
+        const rightQuarters = pyramid.querySelector('.right-section').querySelectorAll('.match-group');
+
+        // Funzione per creare linea da un singolo rettangolo
+        const createLineFromMatch = (matchGroup, direction) => {
+            // Trova tutti i player-block dentro questo match
+            const playerBlocks = matchGroup.querySelectorAll('.player-block');
+            
+            playerBlocks.forEach(playerBlock => {
+                const rect = playerBlock.getBoundingClientRect();
+                const pyramidRect = pyramid.getBoundingClientRect();
+                
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                
+                if (direction === 'right') {
+                    // Attacca la linea direttamente al bordo destro del rettangolo
+                    line.style.left = `${rect.right - pyramidRect.left - 5}px`;
+                } else {
+                    // Attacca la linea direttamente al bordo sinistro del rettangolo
+                    line.style.left = `${rect.left - pyramidRect.left - 50}px`;
+                }
+                
+                line.style.top = `${rect.top + rect.height / 2 - pyramidRect.top - 1.5}px`;
+                line.style.width = '55px';
+                line.style.height = '2px';
+                line.style.backgroundColor = '#ffff00';
+                line.style.zIndex = '10';
+                
+                pyramid.appendChild(line);
+                console.log('Linea creata da player block:', playerBlock.textContent);
+            });
+        };
+
+        // Crea linee dai quarti di sinistra verso destra
+        leftQuarters.forEach(quarter => {
+            createLineFromMatch(quarter, 'right');
+        });
+
+        // Crea linee dai quarti di destra verso sinistra
+        rightQuarters.forEach(quarter => {
+            createLineFromMatch(quarter, 'left');
+        });
+
+        // Aggiungi linee verticali per collegare le linee orizzontali
+        this.#addVerticalConnectors(pyramid, leftQuarters, rightQuarters);
+        
+        // Aggiungi linee orizzontali dalle semifinali
+        this.#addSemifinalLines(pyramid);
+        
+        // Aggiungi linee verticali che collegano semifinali ai quarti
+        this.#addSemifinalToQuarterConnectors(pyramid);
+        
+        // Aggiungi linee verticali che collegano le semifinali alla finale
+        this.#addSemifinalToFinalConnectors(pyramid);
+    }
+
+    #addVerticalConnectors(pyramid, leftQuarters, rightQuarters) {
+        const pyramidRect = pyramid.getBoundingClientRect();
+
+        // Crea una linea verticale per ogni quarto di finale (4 linee totali)
+        
+        // Linee verticali per i quarti di sinistra
+        leftQuarters.forEach((quarter, index) => {
+            const playerBlocks = quarter.querySelectorAll('.player-block');
+            
+            if (playerBlocks.length >= 2) {
+                const topPlayerRect = playerBlocks[0].getBoundingClientRect();
+                const bottomPlayerRect = playerBlocks[1].getBoundingClientRect();
+                
+                // Calcola la posizione della linea verticale
+                const lineLeft = topPlayerRect.right - pyramidRect.left + 48; // Alla fine delle linee orizzontali
+                const lineTop = topPlayerRect.top + topPlayerRect.height / 2 - pyramidRect.top;
+                const lineHeight = bottomPlayerRect.top + bottomPlayerRect.height / 2 - topPlayerRect.top - topPlayerRect.height / 2;
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineLeft}px`;
+                verticalLine.style.top = `${lineTop}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${lineHeight}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+
+                // Aggiungi linea orizzontale dal centro della linea verticale verso destra
+                const horizontalLine = document.createElement('div');
+                horizontalLine.style.position = 'absolute';
+                horizontalLine.style.left = `${lineLeft}px`; // Parte dalla linea verticale
+                horizontalLine.style.top = `${lineTop + lineHeight / 2 - 1}px`; // Centro della linea verticale
+                horizontalLine.style.width = '70px'; // Lunghezza verso destra
+                horizontalLine.style.height = '2px';
+                horizontalLine.style.backgroundColor = '#ffff00';
+                horizontalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(horizontalLine);
+            }
+        });
+
+        // Linee verticali per i quarti di destra
+        rightQuarters.forEach((quarter, index) => {
+            const playerBlocks = quarter.querySelectorAll('.player-block');
+            
+            if (playerBlocks.length >= 2) {
+                const topPlayerRect = playerBlocks[0].getBoundingClientRect();
+                const bottomPlayerRect = playerBlocks[1].getBoundingClientRect();
+                
+                // Calcola la posizione della linea verticale
+                const lineLeft = topPlayerRect.left - pyramidRect.left - 50; // All'inizio delle linee orizzontali
+                const lineTop = topPlayerRect.top + topPlayerRect.height / 2 - pyramidRect.top;
+                const lineHeight = bottomPlayerRect.top + bottomPlayerRect.height / 2 - topPlayerRect.top - topPlayerRect.height / 2;
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineLeft}px`;
+                verticalLine.style.top = `${lineTop}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${lineHeight}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+
+                // Aggiungi linea orizzontale dal centro della linea verticale verso sinistra
+                const horizontalLine = document.createElement('div');
+                horizontalLine.style.position = 'absolute';
+                horizontalLine.style.left = `${lineLeft - 68}px`; // Parte 68px a sinistra della linea verticale
+                horizontalLine.style.top = `${lineTop + lineHeight / 2 - 1}px`; // Centro della linea verticale
+                horizontalLine.style.width = '68px'; // Lunghezza verso sinistra
+                horizontalLine.style.height = '2px';
+                horizontalLine.style.backgroundColor = '#ffff00';
+                horizontalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(horizontalLine);
+            }
+        });
+    }
+
+    #addSemifinalLines(pyramid) {
+        const pyramidRect = pyramid.getBoundingClientRect();
+        
+        // Ottieni le sezioni delle semifinali
+        const leftSemifinalSection = pyramid.querySelector('.left-section ~ .semifinal-section');
+        const rightSemifinalSection = pyramid.querySelector('.semifinal-section ~ .final-section ~ .semifinal-section');
+        
+        // Linee per la semifinale sinistra
+        if (leftSemifinalSection) {
+            const playerBlocks = leftSemifinalSection.querySelectorAll('.player-block');
+            
+            playerBlocks.forEach(playerBlock => {
+                const rect = playerBlock.getBoundingClientRect();
+                
+                // Linea verso sinistra (verso i quarti)
+                const leftLine = document.createElement('div');
+                leftLine.style.position = 'absolute';
+                leftLine.style.left = `${rect.left - pyramidRect.left - 50}px`;
+                leftLine.style.top = `${rect.top + rect.height / 2 - pyramidRect.top - 1.5}px`;
+                leftLine.style.width = '55px';
+                leftLine.style.height = '2px';
+                leftLine.style.backgroundColor = '#ffff00';
+                leftLine.style.zIndex = '10';
+                
+                pyramid.appendChild(leftLine);
+                
+                // Linea verso destra (verso la finale)
+                const rightLine = document.createElement('div');
+                rightLine.style.position = 'absolute';
+                rightLine.style.left = `${rect.right - pyramidRect.left - 5}px`;
+                rightLine.style.top = `${rect.top + rect.height / 2 - pyramidRect.top - 1.5}px`;
+                rightLine.style.width = '65px';
+                rightLine.style.height = '2px';
+                rightLine.style.backgroundColor = '#ffff00';
+                rightLine.style.zIndex = '10';
+                
+                pyramid.appendChild(rightLine);
+            });
+        }
+        
+        // Linee per la semifinale destra
+        if (rightSemifinalSection) {
+            const playerBlocks = rightSemifinalSection.querySelectorAll('.player-block');
+            
+            playerBlocks.forEach(playerBlock => {
+                const rect = playerBlock.getBoundingClientRect();
+                
+                // Linea verso destra (verso i quarti)
+                const rightLine = document.createElement('div');
+                rightLine.style.position = 'absolute';
+                rightLine.style.left = `${rect.right - pyramidRect.left - 5}px`;
+                rightLine.style.top = `${rect.top + rect.height / 2 - pyramidRect.top - 1.5}px`;
+                rightLine.style.width = '55px';
+                rightLine.style.height = '2px';
+                rightLine.style.backgroundColor = '#ffff00';
+                rightLine.style.zIndex = '10';
+                
+                pyramid.appendChild(rightLine);
+                
+                // Linea verso sinistra (verso la finale)
+                const leftLine = document.createElement('div');
+                leftLine.style.position = 'absolute';
+                leftLine.style.left = `${rect.left - pyramidRect.left - 55}px`;
+                leftLine.style.top = `${rect.top + rect.height / 2 - pyramidRect.top - 1.5}px`;
+                leftLine.style.width = '60px';
+                leftLine.style.height = '2px';
+                leftLine.style.backgroundColor = '#ffff00';
+                leftLine.style.zIndex = '10';
+                
+                pyramid.appendChild(leftLine);
+            });
+        }
     }
 
     #bindQuitButton(tournamentId) {
@@ -230,5 +451,195 @@ export class TournamentController {
         document.addEventListener('languageChanged', () => {
             this.#fetchAndRenderPyramid(tournamentId, useMock);
         });
+    }
+
+    #setupResizeListener(pyramid) {
+        // Rimuovi eventuali listener precedenti per evitare duplicati
+        if (this._resizeListener) {
+            window.removeEventListener('resize', this._resizeListener);
+        }
+        
+        // Crea il nuovo listener
+        this._resizeListener = () => {
+            // Aspetta un po' per permettere al DOM di aggiornarsi
+            setTimeout(() => {
+                this.#addConnectors(pyramid);
+            }, 100);
+        };
+        
+        // Aggiungi il listener
+        window.addEventListener('resize', this._resizeListener);
+    }
+
+    #addSemifinalToQuarterConnectors(pyramid) {
+        const pyramidRect = pyramid.getBoundingClientRect();
+        
+        // Ottieni le sezioni delle semifinali
+        const leftSemifinalSection = pyramid.querySelector('.left-section ~ .semifinal-section');
+        const rightSemifinalSection = pyramid.querySelector('.semifinal-section ~ .final-section ~ .semifinal-section');
+        
+        // Connettori verticali per il lato sinistro (2 linee)
+        if (leftSemifinalSection) {
+            const playerBlocks = leftSemifinalSection.querySelectorAll('.player-block');
+            
+            playerBlocks.forEach((playerBlock, playerIndex) => {
+                const rect = playerBlock.getBoundingClientRect();
+                
+                // Posizione Y del player block della semifinale
+                const semifinalY = rect.top + rect.height / 2 - pyramidRect.top;
+                
+                // Posizione X dove finisce la linea orizzontale della semifinale
+                const lineStartX = rect.left - pyramidRect.left - 50;
+                
+                // Calcola la posizione Y dove dovrebbe arrivare (linee dai quarti)
+                // Il primo player (index 0) va verso l'alto, il secondo (index 1) verso il basso
+                let targetY;
+                if (playerIndex === 0) {
+                    // Top player - va verso l'alto (primo quarto)
+                    targetY = semifinalY - 145;
+                } else {
+                    // Bottom player - va verso il basso (secondo quarto)
+                    targetY = semifinalY + 145;
+                }
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineStartX}px`;
+                verticalLine.style.top = `${Math.min(semifinalY, targetY)}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${Math.abs(targetY - semifinalY)}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+            });
+        }
+        
+        // Connettori verticali per il lato destro (2 linee)
+        if (rightSemifinalSection) {
+            const playerBlocks = rightSemifinalSection.querySelectorAll('.player-block');
+            
+            playerBlocks.forEach((playerBlock, playerIndex) => {
+                const rect = playerBlock.getBoundingClientRect();
+                
+                // Posizione Y del player block della semifinale
+                const semifinalY = rect.top + rect.height / 2 - pyramidRect.top;
+                
+                // Posizione X dove finisce la linea orizzontale della semifinale
+                const lineStartX = rect.right - pyramidRect.left + 50;
+                
+                // Calcola la posizione Y dove dovrebbe arrivare (linee dai quarti)
+                let targetY;
+                if (playerIndex === 0) {
+                    // Top player - va verso l'alto (primo quarto)
+                    targetY = semifinalY - 145;
+                } else {
+                    // Bottom player - va verso il basso (secondo quarto)
+                    targetY = semifinalY + 145;
+                }
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineStartX - 2}px`;
+                verticalLine.style.top = `${Math.min(semifinalY, targetY)}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${Math.abs(targetY - semifinalY)}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+            });
+        }
+    }
+
+    #addSemifinalToFinalConnectors(pyramid) {
+        const pyramidRect = pyramid.getBoundingClientRect();
+        
+        // Ottieni le sezioni delle semifinali e della finale
+        const leftSemifinalSection = pyramid.querySelector('.left-section ~ .semifinal-section');
+        const rightSemifinalSection = pyramid.querySelector('.semifinal-section ~ .final-section ~ .semifinal-section');
+        const finalSection = pyramid.querySelector('.final-section');
+        
+        // Connettori verticali per il lato sinistro (collega le 2 linee verso la finale)
+        if (leftSemifinalSection) {
+            const playerBlocks = leftSemifinalSection.querySelectorAll('.player-block');
+            
+            if (playerBlocks.length >= 2) {
+                const topPlayerRect = playerBlocks[0].getBoundingClientRect();
+                const bottomPlayerRect = playerBlocks[1].getBoundingClientRect();
+                
+                // Posizione Y dei player block
+                const topY = topPlayerRect.top + topPlayerRect.height / 2 - pyramidRect.top;
+                const bottomY = bottomPlayerRect.top + bottomPlayerRect.height / 2 - pyramidRect.top;
+                
+                // Posizione X alla fine delle linee orizzontali verso la finale
+                const lineX = topPlayerRect.right - pyramidRect.left + 58; // 50px di linea - 5px
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineX}px`;
+                verticalLine.style.top = `${topY}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${bottomY - topY}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+                
+                // Linea orizzontale dal centro della linea verticale verso la finale (verso destra)
+                const centerY = topY + (bottomY - topY) / 2;
+                const horizontalLineToFinal = document.createElement('div');
+                horizontalLineToFinal.style.position = 'absolute';
+                horizontalLineToFinal.style.left = `${lineX}px`;
+                horizontalLineToFinal.style.top = `${centerY - 1}px`;
+                horizontalLineToFinal.style.width = '70px'; // Lunghezza verso la finale
+                horizontalLineToFinal.style.height = '2px';
+                horizontalLineToFinal.style.backgroundColor = '#ffff00';
+                horizontalLineToFinal.style.zIndex = '10';
+                
+                pyramid.appendChild(horizontalLineToFinal);
+            }
+        }
+        
+        // Connettori verticali per il lato destro (collega le 2 linee verso la finale)
+        if (rightSemifinalSection) {
+            const playerBlocks = rightSemifinalSection.querySelectorAll('.player-block');
+            
+            if (playerBlocks.length >= 2) {
+                const topPlayerRect = playerBlocks[0].getBoundingClientRect();
+                const bottomPlayerRect = playerBlocks[1].getBoundingClientRect();
+                
+                // Posizione Y dei player block
+                const topY = topPlayerRect.top + topPlayerRect.height / 2 - pyramidRect.top;
+                const bottomY = bottomPlayerRect.top + bottomPlayerRect.height / 2 - pyramidRect.top;
+                
+                // Posizione X alla fine delle linee orizzontali verso la finale (verso sinistra)
+                const lineX = topPlayerRect.left - pyramidRect.left - 55; // -45px di linea - 2px
+                
+                const verticalLine = document.createElement('div');
+                verticalLine.style.position = 'absolute';
+                verticalLine.style.left = `${lineX}px`;
+                verticalLine.style.top = `${topY}px`;
+                verticalLine.style.width = '2px';
+                verticalLine.style.height = `${bottomY - topY}px`;
+                verticalLine.style.backgroundColor = '#ffff00';
+                verticalLine.style.zIndex = '10';
+                
+                pyramid.appendChild(verticalLine);
+                
+                // Linea orizzontale dal centro della linea verticale verso la finale (verso sinistra)
+                const centerY = topY + (bottomY - topY) / 2;
+                const horizontalLineToFinal = document.createElement('div');
+                horizontalLineToFinal.style.position = 'absolute';
+                horizontalLineToFinal.style.left = `${lineX - 72}px`; // 60px a sinistra della linea verticale
+                horizontalLineToFinal.style.top = `${centerY - 1}px`;
+                horizontalLineToFinal.style.width = '72px'; // Lunghezza verso la finale
+                horizontalLineToFinal.style.height = '2px';
+                horizontalLineToFinal.style.backgroundColor = '#ffff00';
+                horizontalLineToFinal.style.zIndex = '10';
+                
+                pyramid.appendChild(horizontalLineToFinal);
+            }
+        }
     }
 }

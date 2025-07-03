@@ -11,6 +11,8 @@ import {GameController} from "./src/routes/controllers/gameCtrl.js";
 import {TournamentMenuController} from "./src/routes/controllers/tournamentMenuCtrl.js";
 import {TournamentController} from "./src/routes/controllers/tournamentCtrl.js";
 
+import {TestController} from "./src/routes/controllers/test.js";
+
 
 /**
  * @typedef {Object} Tools
@@ -139,6 +141,12 @@ export const CONFIG = {
 			authRequired: true,
 			hideLangSwitcher: true,
 		},
+		test: {
+			view: "test",
+			controller: TestController,
+			authRequired: true,
+			hideLangSwitcher: true,
+		}
 	},
 	// Default route if the hash is not found.
 	defaultRoute: "",

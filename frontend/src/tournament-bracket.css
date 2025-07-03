@@ -1,10 +1,16 @@
 /* Tournament Bracket Horizontal Layout - Full Width */
+#bracket-container {
+    box-sizing: border-box; /* Include padding nella larghezza totale */
+    width: 100%; /* Larghezza del container */
+}
+
 .tournament-bracket-container {
-    width: 100%;
-        padding: 30px 20px;
+    width: 100%; /* Larghezza del container */
+    padding: 30px 20px;
     display: flex;
-    justify-content: space-between; /* Allinea le colonne ai lati */
+    justify-content: space-around; /* Distribuzione più naturale delle sezioni */
     align-items: center;
+    position: relative; /* Necessario per il posizionamento assoluto delle linee */
 }
 
 .bracket-section {
@@ -142,15 +148,6 @@
     color: #0dcaf0;
 }
 
-/* Fixed quit tournament button */
-#quit-tournament-container {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-}
-
 /* Stili per la finale */
 .tournament-match-block.final { 
     flex-direction: row; /* Disposizione in riga */
@@ -221,57 +218,12 @@
     animation: breathing-glow 1.5s ease-in-out infinite alternate;
 }
 
-/* Responsive design for laptops and smaller screens */
-@media (max-width: 1440px) {
-    .bracket-section {
-        gap: 100px; /* Reduced gap for smaller screens */
-    }
-
-    .player-block {
-        min-width: 120px;
-        min-height: 60px;
-        font-size: 1rem;
-    }
-
-    .player-block.final-player {
-        min-width: 180px;
-        min-height: 80px;
-        font-size: 1.2rem;
-    }
-
-    .vs-text.final-vs-text {
-        font-size: 2rem;
-    }
-}
-
-/* Responsive design for mobile */
-@media (max-width: 768px) {
-    .tournament-bracket-container {
-        flex-direction: column;
-        gap: 50px; /* Spazio tra le sezioni su mobile */
-        padding: 40px 10px; /* Padding ridotto per mobile */
-    }
-    
-    .bracket-section {
-        width: 100%;
-        align-items: center;
-        gap: 50px; /* Spazio ridotto tra i match su mobile */
-        flex-basis: auto; /* Resetta la base per il layout a colonna */
-    }
-
-    .left-section, .semifinal-section, .final-section, .right-section {
-        flex-basis: auto; /* Assicura che non ci sia una base fissa */
-        width: 100%;
-    }
-    
-    .player-block {
-        min-width: 180px; /* Adatta la larghezza per mobile */
-    }
-    
-    /* Nascondi l'header delle fasi su mobile */
-    .tournament-phases-header {
-        display: none;
-    }
+/* Connector lines - responsive using fractions */
+.connector-line {
+    position: absolute;
+    background-color: #ffff00; /* Giallo per le linee di connessione */
+    height: 2px;
+    z-index: 0;
 }
 
 /* Header for Tournament Phases */
@@ -279,6 +231,8 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 2px;
+    min-width: 1200px; /* Mantiene allineamento con il bracket */
+    width: 100%;
 }
 
 /* Individual Header Titles */
@@ -305,3 +259,7 @@
 .tournament-phases-header .tournament-section-header:nth-child(3) {
     flex-basis: 32%;
 }
+
+
+
+/* Tournament Phases */

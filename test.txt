@@ -1,0 +1,50 @@
+{
+    "id": 10,
+    "name": "dbz",
+    "status": "full",
+    "matches": [
+        {
+            "player_1": "goku",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "gohan",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        },
+        {
+            "player_1": "null",
+            "player_2": "null",
+            "winner": "null",
+            "status": "created"
+        }
+    ],
+    "ready": true
+}
