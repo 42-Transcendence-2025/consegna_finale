@@ -245,6 +245,7 @@ class TournamentView(GenericAPIView):
         if slot is None:
             return Response({"detail": "You have lost in this tournament"}, status=status.HTTP_403_FORBIDDEN)
         m_num = slot // 2
+        print(f"Creating match for user {user.username} in slot {slot} (match number {m_num})")
         wait_key = f"wait_{tournament.id}_{m_num}"
         cond = get_condition(wait_key)
 

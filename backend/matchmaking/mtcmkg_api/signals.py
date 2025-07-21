@@ -10,11 +10,18 @@ def check_tournament_finished(sender, instance, **kwargs):
     if instance.tournament_id is None:
         return
 
+    # Gestisci partite finite
     if not instance.status.startswith("finished"):
         return
 
+    check_tournament_completion(instance.tournament)
+
+def check_tournament_completion(tournament):
+    """
+    Controlla se il torneo è completato (tutte le 7 partite finite)
+    """
     with transaction.atomic():
-        t = Tournament.objects.select_for_update().get(pk=instance.tournament_id)
+        t = Tournament.objects.select_for_update().get(pk=tournament.pk)
         if t.status == Tournament.Status.FINISHED:
             return
 

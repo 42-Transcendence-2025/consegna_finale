@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Match, PongUser, Tournament  # importa i modelli corretti
-from .bracket import current_slot
+from .models import Match, PongUser, Tournament
+from .bracket import current_slot, get_all_tournament_matches
 
 class MatchCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -77,36 +77,38 @@ class TournamentDetailSerializer(serializers.ModelSerializer):
 
     # ---- players --------------------------------------------------
     def get_players(self, obj: Tournament):
-        # 1. ordine di ingresso = foglie 0-7
+        """Ritorna solo la lista degli username dei giocatori, senza slot"""
         ordered = list(obj.players.all())
-        return [
-            {"username": p.username, "slot": current_slot(obj, p)}
-            for p in ordered
-        ]
+        return [p.username for p in ordered]
 
     # ---- matches --------------------------------------------------
     def get_matches(self, obj: Tournament):
-        qs = obj.matches.order_by("match_number")
-        return [
-            {
-                "player_1": m.player_1.username if m.player_1 else None,
-                "player_2": m.player_2.username if m.player_2 else None,
-                "winner"  : m.winner.username   if m.winner   else None,
-                "status"  : m.status,
-            }
-            for m in qs
-        ]
+        """
+        Ritorna sempre tutti i 7 match del bracket, con i player pre-calcolati dove possibile.
+        Per i match non ancora creati, tutti i campi sono null eccetto player_1, player_2 se determinabili.
+        """
+        return get_all_tournament_matches(obj)
+
     def get_ready(self, obj: Tournament):
         """True se c’è un avversario nello slot opposto, altrimenti False."""
+
+        bracket_structure = {
+            0: (0, 1), 1: (2, 3), 2: (4, 5), 3: (6, 7),
+            4: (8, 9), 5: (10, 11), 6: (12, 13)
+        }
+
         user = self.context["request"].user
         my_slot = current_slot(obj, user)
-        if my_slot is None:          # safety, non dovrebbe accadere
+        if my_slot is None:
             return False
 
-        opponent_slot = my_slot ^ 1  # 0↔1, 2↔3, 4↔5, 6↔7
-        for p in obj.players.all():
-            if current_slot(obj, p) == opponent_slot:
-                return True
+        for match_number, (s1, s2) in bracket_structure.items():
+            if my_slot in (s1, s2):
+                opponent_slot = s2 if my_slot == s1 else s1
+                for p in obj.players.all():
+                    if current_slot(obj, p) == opponent_slot:
+                        return True
+                return False
         return False
 
     

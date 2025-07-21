@@ -5,7 +5,7 @@ export class TournamentController {
     #mockApi = null;
 
     async init(tournamentId) {
-        const useMock = true; // Imposta a true per usare l'API finta
+        const useMock = false; // Imposta a true per usare l'API finta
 
         if (!tournamentId) {
             tournamentId = localStorage.getItem('currentTournamentId');

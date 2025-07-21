@@ -10,13 +10,22 @@ def parent_slot(child: int) -> int:
 
 def current_slot(tournament: Tournament, player: PongUser) -> int | None:
     """
-    Ritorna lo slot (0-14) se il player è ancora “vivo” nel bracket,
+    Ritorna lo slot (0-14) se il player è ancora "vivo" nel bracket,
     altrimenti None.
     """
-    ordered   = list(tournament.players.all())          # foglie 0-7
-    slot_map  = {p.id: idx for idx, p in enumerate(ordered)}
+    ordered_players = list(tournament.players.order_by('id'))
+    slot_map  = {p.id: idx for idx, p in enumerate(ordered_players)}
 
     for m in tournament.matches.order_by("match_number"):  # 0-6
+        # Gestisci partite abortite - entrambi i giocatori vengono eliminati
+        if m.status == "aborted":
+            if m.player_1_id in slot_map:
+                slot_map[m.player_1_id] = None
+            if m.player_2_id in slot_map:
+                slot_map[m.player_2_id] = None
+            continue
+            
+        # Gestisci partite finite normalmente
         if m.winner_id is None:
             continue
 
@@ -33,3 +42,140 @@ def current_slot(tournament: Tournament, player: PongUser) -> int | None:
         slot_map[loser_id] = None      # oppure slot_map.pop(loser_id, None)
 
     return slot_map.get(player.id)
+
+
+def get_all_tournament_matches(tournament: Tournament) -> list:
+    """
+    Ritorna sempre tutti i 7 match del bracket, con i player pre-calcolati dove possibile.
+    Se un match non esiste ancora, viene creato con valori null ma con i player calcolati se determinabili.
+    """
+    # Ottieni i match esistenti mappati per match_number
+    existing_matches = {m.match_number: m for m in tournament.matches.all()}
+    
+    # Ottieni i giocatori ordinati (foglie 0-7)
+    ordered_players = list(tournament.players.all())
+    
+    # Crea un mapping slot -> player per lo stato attuale
+    slot_to_player = {}
+    for player in ordered_players:
+        slot = current_slot(tournament, player)
+        if slot is not None:
+            slot_to_player[slot] = player
+    
+    # Definisci la struttura del bracket: match_number -> (slot1, slot2)
+    bracket_structure = {
+        0: (0, 1),    # quarterfinal 1
+        1: (2, 3),    # quarterfinal 2
+        2: (4, 5),    # quarterfinal 3
+        3: (6, 7),    # quarterfinal 4
+        4: (8, 9),    # semifinal 1
+        5: (10, 11),  # semifinal 2
+        6: (12, 13),  # final
+    }
+    
+    matches = []
+    
+    for match_number in range(7):  # 0-6
+        slot1, slot2 = bracket_structure[match_number]
+        
+        # Controlla se esiste già questo match
+        if match_number in existing_matches:
+            existing_match = existing_matches[match_number]
+            match_data = {
+                "match_number": match_number,
+                "player_1": existing_match.player_1.username if existing_match.player_1 else None,
+                "player_2": existing_match.player_2.username if existing_match.player_2 else None,
+                "winner": existing_match.winner.username if existing_match.winner else None,
+                "status": existing_match.status,
+                "points_player_1": existing_match.points_player_1,
+                "points_player_2": existing_match.points_player_2,
+            }
+        else:
+            # Match non ancora creato - calcola i player se possibili
+            player1 = slot_to_player.get(slot1)
+            player2 = slot_to_player.get(slot2)
+            
+            match_data = {
+                "match_number": match_number,
+                "player_1": player1.username if player1 else None,
+                "player_2": player2.username if player2 else None,
+                "winner": None,
+                "status": None,
+                "points_player_1": None,
+                "points_player_2": None,
+            }
+        
+        matches.append(match_data)
+    
+    return matches
+
+
+def get_player_next_opponent(tournament: Tournament, player: PongUser) -> str | None:
+    """
+    Ritorna l'username dell'avversario nel prossimo match del player,
+    o None se non c'è ancora un avversario determinato.
+    """
+    my_slot = current_slot(tournament, player)
+    if my_slot is None:
+        return None
+    
+    # Per i quarti di finale (slot 0-7), calcola lo slot dell'avversario
+    if my_slot < 8:
+        opponent_slot = my_slot ^ 1  # 0↔1, 2↔3, 4↔5, 6↔7
+        
+        # Trova il player nello slot dell'avversario
+        for p in tournament.players.all():
+            if current_slot(tournament, p) == opponent_slot:
+                return p.username
+    
+    return None
+
+
+def test_current_slot_logic():
+    """
+    Funzione di test per verificare la logica di current_slot.
+    Stampa degli scenari di test per verificare il comportamento.
+    """
+    print("=== TEST CURRENT_SLOT LOGIC ===")
+    
+    # Questo è un test conceptuale - nella pratica useresti Django's TestCase
+    test_scenarios = [
+        {
+            "description": "8 giocatori iniziali, nessun match",
+            "players": ["A", "B", "C", "D", "E", "F", "G", "H"],
+            "matches": [],
+            "expected_slots": {
+                "A": 0, "B": 1, "C": 2, "D": 3, 
+                "E": 4, "F": 5, "G": 6, "H": 7
+            }
+        },
+        {
+            "description": "Dopo il primo quarto: A batte B",
+            "players": ["A", "B", "C", "D", "E", "F", "G", "H"],
+            "matches": [
+                {"match_number": 0, "player_1": "A", "player_2": "B", "winner": "A", "status": "finished"}
+            ],
+            "expected_slots": {
+                "A": 8, "B": None, "C": 2, "D": 3, 
+                "E": 4, "F": 5, "G": 6, "H": 7
+            }
+        },
+        {
+            "description": "Match abortito: A vs B aborted",
+            "players": ["A", "B", "C", "D", "E", "F", "G", "H"],
+            "matches": [
+                {"match_number": 0, "player_1": "A", "player_2": "B", "winner": None, "status": "aborted"}
+            ],
+            "expected_slots": {
+                "A": None, "B": None, "C": 2, "D": 3, 
+                "E": 4, "F": 5, "G": 6, "H": 7
+            }
+        }
+    ]
+    
+    for scenario in test_scenarios:
+        print(f"\nScenario: {scenario['description']}")
+        print("Expected slots:", scenario['expected_slots'])
+        # Qui implementeresti la logica di test effettiva
+    
+    return test_scenarios
