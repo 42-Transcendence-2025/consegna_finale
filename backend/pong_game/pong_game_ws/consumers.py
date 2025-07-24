@@ -14,10 +14,23 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.room_group_name = f"game_{self.game_id}"
-        self.match_id = await self.get_match_id()
         self.player_side = None  # Sarà assegnato come "left" o "right" dopo l'autenticazione
         self.user = None  # Utente autenticato
         self.game = None  # Istanza del gioco
+
+        # Verifica se il match esiste e non è già finito
+        self.match_id = await self.get_match_id()
+        if self.match_id is None:
+            # Match non trovato nella cache
+            await self.close(code=4004)  # Game not found
+            return
+
+        # Verifica lo stato del match
+        match_status = await self.get_match_status()
+        if match_status in ['finished', 'finished_walkover', 'aborted']:
+            # Match già finito
+            await self.close(code=4005)  # Game already finished
+            return
 
         # Accetta la connessione WebSocket per ricevere il token
         await self.accept()
@@ -70,6 +83,13 @@ class GameConsumer(AsyncWebsocketConsumer):
         """
         Aggiunge l'utente autenticato alla stanza e assegna un lato del campo.
         """
+        # Verifica che l'utente possa giocare questa partita
+        can_play = await self.can_user_play_match()
+        if not can_play:
+            await self.send_json({"error": "You are not authorized to play this match."})
+            await self.close(code=4003)  # Unauthorized
+            return
+
         # Aggiungi l'utente al gruppo del canale
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -301,8 +321,48 @@ class GameConsumer(AsyncWebsocketConsumer):
         return cache.get(f"match_id_for_game_{self.game_id}")
     
     @database_sync_to_async
+    def get_match_status(self):
+        """Ottiene lo status del match dal database"""
+        try:
+            if self.match_id:
+                match = Match.objects.get(id=self.match_id)
+                return match.status
+            return None
+        except Match.DoesNotExist:
+            return None
+        except Exception as e:
+            print(f"[ERROR] Error getting match status: {e}")
+            return None
+    
+    @database_sync_to_async
+    def can_user_play_match(self):
+        """Verifica se l'utente può giocare questa partita"""
+        try:
+            if not self.match_id:
+                return False
+            
+            match = Match.objects.get(id=self.match_id)
+            
+            # Verifica che il match sia in stato 'created'
+            if match.status != 'created':
+                return False
+            
+            # Verifica che l'utente sia uno dei due giocatori del match
+            return (match.player_1 == self.user or match.player_2 == self.user)
+            
+        except Match.DoesNotExist:
+            return False
+        except Exception as e:
+            print(f"[ERROR] Error checking user permissions: {e}")
+            return False
+    
+    @database_sync_to_async
     def update_match_status(self, status, winner=None, loser=None):
         try:
+            if not self.match_id:
+                print(f"[ERROR] Cannot update match status: match_id is None")
+                return False
+                
             match = Match.objects.get(id=self.match_id)
             match.status = status
             if winner:
@@ -310,19 +370,33 @@ class GameConsumer(AsyncWebsocketConsumer):
             if loser:
                 match.loser = loser
             match.save()
+            return True
         except Exception as e:
             print(f"[ERROR] Match update failed: {e}")
+            return False
 
     @database_sync_to_async
     def update_match_finished(self, points_player_1, points_player_2):
         try:
+            if not self.match_id:
+                print(f"[ERROR] Cannot finish match: match_id is None")
+                return False
+                
             match = Match.objects.get(id=self.match_id)
+            
+            # Verifica che il match non sia già finito
+            if match.status in ['finished', 'finished_walkover', 'aborted']:
+                print(f"[WARNING] Attempted to finish already completed match {self.match_id}")
+                return False
+                
             match.points_player_1 = points_player_1
             match.points_player_2 = points_player_2
             match.status = 'finished'
             match.save()
+            return True
         except Exception as e:
             print(f"[ERROR] Final match update failed: {e}")
+            return False
 
 
     @database_sync_to_async

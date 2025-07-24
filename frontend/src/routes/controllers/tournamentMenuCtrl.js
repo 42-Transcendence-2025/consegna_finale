@@ -140,7 +140,7 @@ export class TournamentMenuController {
         $list.empty();
         if (Array.isArray(tournament.players) && tournament.players.length > 0) {
             for (const p of tournament.players) {
-                $list.append(`<li class='list-group-item text-center'>${p.username}</li>`);
+                $list.append(`<li class='list-group-item text-center'>${p}</li>`);
             }
         } else {
             $list.append(`<li class='list-group-item text-center text-muted'>${$.i18n('noPlayersYet')}</li>`);

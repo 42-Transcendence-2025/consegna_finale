@@ -42,6 +42,8 @@ export class GameController {
 		const gameId = localStorage.getItem("game_id");
 		if (!gameId) {
 			console.error("Game ID not found!");
+			alert("Game ID not found.");
+			this.#goBack();
 			return;
 		}
 		this.pongManager = window.tools.pongManager;
@@ -53,6 +55,7 @@ export class GameController {
 		this.pongManager.on("onGameOver", (gameState) => {
 			this.gameOver = true;
 			this.winner = gameState.winner;
+			localStorage.removeItem("game_id");
 			
 		});
 
@@ -246,7 +249,7 @@ export class GameController {
     	if (tId)
     	    window.location.hash = "#tournament";      // torna al bracket
     	else
-    	    window.location.hash = "#privateMatch";    // caso normale
+    	    window.location.hash = "#onlineGame";    // caso normale
 	}
 }
 
