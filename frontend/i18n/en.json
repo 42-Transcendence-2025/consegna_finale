@@ -43,5 +43,6 @@
 	"quitTournamentConfirm": "Are you sure you want to quit this tournament?",
 	"failedToQuitTournament": "Failed to quit tournament",
 	"noTournamentId": "No tournament ID provided",
-	"failedToLoadTournamentData": "Failed to load tournament data"
+	"failedToLoadTournamentData": "Failed to load tournament data",
+	"playMatch": "Play"
 }

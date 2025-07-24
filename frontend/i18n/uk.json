@@ -43,5 +43,6 @@
 	"quitTournamentConfirm": "Ви впевнені, що хочете покинути цей турнір?",
 	"failedToQuitTournament": "Не вдалося покинути турнір",
 	"noTournamentId": "Не надано ID турніру",
-	"failedToLoadTournamentData": "Не вдалося завантажити дані турніру"
+	"failedToLoadTournamentData": "Не вдалося завантажити дані турніру",
+	"playMatch": "Грати"
 }

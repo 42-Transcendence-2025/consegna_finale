@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Match, PongUser, Tournament
-from .bracket import current_slot, get_all_tournament_matches
+from .bracket import current_slot, get_all_tournament_matches, get_opponent_for_player
 
 class MatchCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,23 +92,13 @@ class TournamentDetailSerializer(serializers.ModelSerializer):
     def get_ready(self, obj: Tournament):
         """True se c’è un avversario nello slot opposto, altrimenti False."""
 
-        bracket_structure = {
-            0: (0, 1), 1: (2, 3), 2: (4, 5), 3: (6, 7),
-            4: (8, 9), 5: (10, 11), 6: (12, 13)
-        }
-
         user = self.context["request"].user
         my_slot = current_slot(obj, user)
         if my_slot is None:
             return False
-
-        for match_number, (s1, s2) in bracket_structure.items():
-            if my_slot in (s1, s2):
-                opponent_slot = s2 if my_slot == s1 else s1
-                for p in obj.players.all():
-                    if current_slot(obj, p) == opponent_slot:
-                        return True
-                return False
-        return False
+        
+        # Usa la nuova funzione helper invece di duplicare la logica
+        opponent = get_opponent_for_player(obj, user)
+        return opponent is not None
 
     

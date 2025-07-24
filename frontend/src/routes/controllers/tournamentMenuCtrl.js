@@ -157,7 +157,7 @@ export class TournamentMenuController {
             console.warn("User is logged in but username not available yet");
         }
         
-        const isSubscribed = tournament.players.some(p => p.username === currentUser);
+        const isSubscribed = tournament.players.some(p => p === currentUser);
 
         // Mostra il pulsante giusto
         const $footer = $("#tournamentDetailsModal .modal-footer");

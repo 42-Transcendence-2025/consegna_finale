@@ -9,7 +9,7 @@ from .serializers import MatchCreateSerializer, TournamentCreateSerializer, Tour
 from .models import Match, PongUser, Tournament
 from rest_framework.generics import ListCreateAPIView, GenericAPIView
 from django.db import transaction
-from .bracket import current_slot
+from .bracket import current_slot, get_opponent_for_player
 
 
 conditions = {}
@@ -218,8 +218,7 @@ class TournamentView(GenericAPIView):
         Restituisce il torneo con lo stato 'created' o 'full' con player e match
         """
         return Tournament.objects.filter(
-            id=self.kwargs['pk'],
-            status__in=[Tournament.Status.CREATED, Tournament.Status.FULL]
+            id=self.kwargs['pk']
         ).prefetch_related('players', 'matches')
     
     def get(self, request, pk, *args, **kwargs):
@@ -277,15 +276,17 @@ class TournamentView(GenericAPIView):
         
         # Giocatore 1 crea una condizione e aspetta
         game_id = str(uuid.uuid4())
-        cache.set(wait_key, {"game_id": game_id, "username": user.username}, timeout=60)
+        cache.set(wait_key, {"game_id": game_id, "username": user.username}, timeout=100)
         with cond:
             cond.wait(timeout=60)
         if not cache.get(wait_key):
             return Response({"game_id": game_id}, status=status.HTTP_200_OK)
         cache.delete(wait_key)
-        # Giocatore il vince il match a tavolino
+        # Giocatore vince il match a tavolino - trova l'avversario
+        opponent = get_opponent_for_player(tournament, user)
         match = Match.objects.create(
             player_1 = user,
+            player_2 = opponent,  # Ora include anche l'avversario
             status = "finished_walkover",
             match_number = m_num,
             tournament = tournament,

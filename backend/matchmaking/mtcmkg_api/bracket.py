@@ -110,23 +110,31 @@ def get_all_tournament_matches(tournament: Tournament) -> list:
     return matches
 
 
-def get_player_next_opponent(tournament: Tournament, player: PongUser) -> str | None:
+def get_opponent_for_player(tournament: Tournament, player: PongUser) -> PongUser | None:
     """
-    Ritorna l'username dell'avversario nel prossimo match del player,
-    o None se non c'è ancora un avversario determinato.
+    Trova l'avversario del giocatore nel prossimo match.
+    Usa la stessa logica robusta del serializer get_ready.
+    Ritorna il PongUser avversario o None se non trovato.
     """
+    bracket_structure = {
+        0: (0, 1), 1: (2, 3), 2: (4, 5), 3: (6, 7),
+        4: (8, 9), 5: (10, 11), 6: (12, 13)
+    }
+    
     my_slot = current_slot(tournament, player)
     if my_slot is None:
         return None
     
-    # Per i quarti di finale (slot 0-7), calcola lo slot dell'avversario
-    if my_slot < 8:
-        opponent_slot = my_slot ^ 1  # 0↔1, 2↔3, 4↔5, 6↔7
-        
-        # Trova il player nello slot dell'avversario
-        for p in tournament.players.all():
-            if current_slot(tournament, p) == opponent_slot:
-                return p.username
+    # Trova il match e lo slot dell'avversario
+    for match_number, (s1, s2) in bracket_structure.items():
+        if my_slot in (s1, s2):
+            opponent_slot = s2 if my_slot == s1 else s1
+            
+            # Trova il giocatore nello slot dell'avversario
+            for p in tournament.players.all():
+                if current_slot(tournament, p) == opponent_slot:
+                    return p
+            return None
     
     return None
 

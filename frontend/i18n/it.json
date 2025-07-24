@@ -43,5 +43,6 @@
 	"quitTournamentConfirm": "Sei sicuro di voler abbandonare questo torneo?",
 	"failedToQuitTournament": "Impossibile abbandonare il torneo",
 	"noTournamentId": "Nessun ID torneo fornito",
-	"failedToLoadTournamentData": "Impossibile caricare i dati del torneo"
+	"failedToLoadTournamentData": "Impossibile caricare i dati del torneo",
+	"playMatch": "Gioca"
 }

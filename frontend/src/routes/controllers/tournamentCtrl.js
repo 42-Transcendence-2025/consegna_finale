@@ -48,25 +48,16 @@ export class TournamentController {
                 : await window.tools.matchManager.getTournamentDetails(tournamentId);
 
             this.#renderPyramid(data);
-            this.#bindQuitButton(tournamentId);
+            this.#bindQuitButton(tournamentId, data.status);
+            this.#bindPlayButton(tournamentId, data.ready || false);
 
             if (
                !useMock && // Non iniziare match reali se usiamo l'API finta
                data.status === "full" &&
                data.ready === true
             ) {
-                try {
-                    const res = await window.tools.matchManager.matchTournament(tournamentId);
-                    if (res && res.game_id) {
-                        localStorage.setItem("game_id", res.game_id);
-                        window.location.hash = "#game";
-                    } else {
-                        this._matchStarted = false; // fallback
-                    }
-                } catch (e) {
-                    console.error("Match start failed:", e);
-                    this._matchStarted = false;
-                }
+                // Non avviare automaticamente il match, lasciare che l'utente clicchi Play
+                // Il codice di avvio automatico è stato rimosso
             }
         } catch (err) {
             this.#showError($.i18n('failedToLoadTournamentData'));
@@ -403,22 +394,79 @@ export class TournamentController {
         }
     }
 
-    #bindQuitButton(tournamentId) {
+    #bindQuitButton(tournamentId, status) {
         const quitBtn = document.getElementById("quitTournamentBtn");
         if (!quitBtn) return;
 
-        quitBtn.addEventListener("click", async () => {
-            if (!confirm($.i18n('quitTournamentConfirm'))) return;
+        // Rimuovi eventuali listener precedenti in modo più efficiente
+        quitBtn.onclick = null;
 
+        quitBtn.onclick = async () => {
             try {
-                await window.tools.matchManager.quitTournament(tournamentId);        // vedi nota ①
-                clearInterval(this._tournamentInterval);
+                // Manda DELETE solo se lo status è 'created'
+                if (status === 'created') {
+                    await window.tools.matchManager.quitTournament(tournamentId);
+                }
+                // Rimuovi l'ID del torneo dal localStorage
                 localStorage.removeItem("currentTournamentId");
+                // Rimanda sempre alla pagina tournament menu
                 window.location.hash = "#tournamentMenu";
             } catch (err) {
-                alert($.i18n('failedToQuitTournament'));
+                console.error("Failed to quit tournament:", err);
+                // Anche in caso di errore, torna al menu
+                localStorage.removeItem("currentTournamentId");
+                window.location.hash = "#tournamentMenu";
             }
-        });
+        };
+    }
+
+    #bindPlayButton(tournamentId, ready) {
+        const playBtn = document.getElementById("playTournamentBtn");
+        if (!playBtn) return;
+
+        // Mostra/nascondi il bottone in base al ready state
+        if (ready) {
+            playBtn.style.display = 'inline-block';
+        } else {
+            playBtn.style.display = 'none';
+            return;
+        }
+
+        // Rimuovi eventuali listener precedenti in modo più efficiente
+        playBtn.onclick = null;
+
+        playBtn.onclick = async () => {
+            try {
+                // Disabilita il bottone durante la richiesta
+                playBtn.disabled = true;
+                playBtn.textContent = "Starting...";
+
+                const res = await window.tools.matchManager.matchTournament(tournamentId);
+                if (res && res.game_id) {
+                    localStorage.setItem("game_id", res.game_id);
+                    window.location.hash = "#game";
+                } else {
+                    // Re-abilita il bottone se non c'è game_id
+                    playBtn.disabled = false;
+                    playBtn.textContent = "Play";
+                    console.warn("No game_id received from match start");
+                }
+            } catch (err) {
+                console.error("Match start failed:", err);
+                // Re-abilita il bottone in caso di errore
+                playBtn.disabled = false;
+                playBtn.textContent = "Play";
+                
+                // Mostra messaggio di errore all'utente
+                let errorMsg = "Failed to start match";
+                if (err.responseJSON?.detail) {
+                    errorMsg = err.responseJSON.detail;
+                } else if (err.responseText) {
+                    errorMsg = err.responseText;
+                }
+                this.#showTemporaryMessage(errorMsg, true);
+            }
+        };
     }
 
     #showError(msg) {
@@ -426,6 +474,19 @@ export class TournamentController {
         if (container) {
             container.innerHTML = `<div class='alert alert-danger'>${msg}</div>`;
         }
+    }
+
+    #showTemporaryMessage(message, isError = false) {
+        const msgDiv = document.createElement("div");
+        msgDiv.textContent = message;
+        msgDiv.className = `position-fixed start-50 translate-middle-x px-4 py-2 rounded shadow text-white fw-bold ${isError ? "bg-danger" : "bg-success"}`;
+        msgDiv.style.zIndex = "9999";
+        msgDiv.style.top = "3rem";
+        msgDiv.style.fontSize = "1.25rem";
+        document.body.appendChild(msgDiv);
+        setTimeout(() => {
+            msgDiv.remove();
+        }, 3000);
     }
 
     #getMatchResults(matches) {
