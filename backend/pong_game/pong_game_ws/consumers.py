@@ -218,8 +218,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             asyncio.create_task(self.game_loop())
 
 
-
-
     async def game_loop(self):
         """
         Aggiorna periodicamente lo stato del gioco e lo trasmette ai client.
@@ -233,10 +231,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             if game.game_over:
                 winner = self.game.winner
                 loser = self.game.loser
-
-                # Aggiorna i trofei
-                await self.update_trophies(winner, loser)
-                # Aggiorna lo stato della partita nel database
 
                 await self.update_match_finished(
                     points_player_1=self.game.state["left_score"],
@@ -267,6 +261,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         # Una volta che non ci sono più giocatori connessi, ferma il loop
         game.game_loop_running = False
+
 
     async def send_json(self, content):
         """
@@ -397,18 +392,3 @@ class GameConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"[ERROR] Final match update failed: {e}")
             return False
-
-
-    @database_sync_to_async
-    def update_trophies(self, winner, loser):
-        """
-        Aggiorna i trofei dei giocatori dopo la partita.
-        """
-        try:
-            winner.trophies += 3  # Aggiungi trofei al vincitore
-            loser.trophies = max(loser.trophies - 1, 0)  # Rimuovi trofei dal perdente (ma non scendere sotto zero)
-
-            winner.save()
-            loser.save()
-        except Exception as e:
-            print(f"Errore durante l'aggiornamento dei trofei: {e}")
