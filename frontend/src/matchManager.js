@@ -127,6 +127,29 @@ export class MatchManager {
         });
     }
 
+    async startRankedMatch() {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/ranked/`,
+            method: "POST",
+            contentType: "application/json"
+        });
+    }
+
+    async checkRankedMatchStatus() {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/ranked/`,
+            method: "GET",
+            dataType: "json"
+        });
+    }
+
+    async cancelRankedMatch() {
+        return $.ajax({
+            url: `${this.#matchApiUrl}/match/ranked/`,
+            method: "DELETE"
+        });
+    }
+
     destroy() {
         // Potresti voler annullare una richiesta in corso anche qui
         this.abortCurrentMatchRequest();

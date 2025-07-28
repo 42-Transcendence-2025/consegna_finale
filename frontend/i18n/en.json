@@ -44,5 +44,11 @@
 	"failedToQuitTournament": "Failed to quit tournament",
 	"noTournamentId": "No tournament ID provided",
 	"failedToLoadTournamentData": "Failed to load tournament data",
-	"playMatch": "Play"
+	"playMatch": "Play",
+	"rankedMatch": "Ranked Match",
+	"rankedMatchDescription": "Play ranked matches to earn trophies and climb the leaderboard!",
+	"trophies": "trophies",
+	"searchMatch": "Search Match",
+	"searchingForRankedMatch": "Searching for a ranked match...",
+	"rankedMatchSearchInfo": "We're looking for an opponent with similar skill level"
 }

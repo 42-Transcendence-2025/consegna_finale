@@ -82,6 +82,8 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 					document.title = `${CONFIG.baseTitle} - ${controller.titleSuffix}`;
 				}
 				controller.init();
+				// Salva il controller corrente per il cleanup
+				window.currentController = controller;
 			}
 
 		} catch (err) {
@@ -97,6 +99,11 @@ import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js
 	 * Handle hash change
 	 */
 	window.onhashchange = function () {
+		// Cleanup del controller precedente se ha il metodo destroy
+		if (window.currentController && typeof window.currentController.destroy === 'function') {
+			window.currentController.destroy();
+		}
+
 		const newHash = window.location.hash;
 		const route = HashUtils.stripHash(newHash);
 		loadView(route);

@@ -44,5 +44,11 @@
 	"failedToQuitTournament": "Impossibile abbandonare il torneo",
 	"noTournamentId": "Nessun ID torneo fornito",
 	"failedToLoadTournamentData": "Impossibile caricare i dati del torneo",
-	"playMatch": "Gioca"
+	"playMatch": "Gioca",
+	"rankedMatch": "Partita Classificata",
+	"rankedMatchDescription": "Gioca partite classificate per guadagnare trofei e scalare la classifica!",
+	"trophies": "trofei",
+	"searchMatch": "Cerca Partita",
+	"searchingForRankedMatch": "Cercando una partita classificata...",
+	"rankedMatchSearchInfo": "Stiamo cercando un avversario con livello simile"
 }

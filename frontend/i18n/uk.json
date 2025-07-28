@@ -44,5 +44,11 @@
 	"failedToQuitTournament": "Не вдалося покинути турнір",
 	"noTournamentId": "Не надано ID турніру",
 	"failedToLoadTournamentData": "Не вдалося завантажити дані турніру",
-	"playMatch": "Грати"
+	"playMatch": "Грати",
+	"rankedMatch": "Рейтингова Гра",
+	"rankedMatchDescription": "Грайте рейтингові ігри, щоб заробляти трофеї та підніматися в рейтингу!",
+	"trophies": "трофеї",
+	"searchMatch": "Пошук Гри",
+	"searchingForRankedMatch": "Пошук рейтингової гри...",
+	"rankedMatchSearchInfo": "Ми шукаємо опонента з подібним рівнем навичок"
 }

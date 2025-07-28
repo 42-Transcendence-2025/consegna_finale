@@ -7,6 +7,7 @@ import {PongAIController} from "./src/routes/controllers/pongAICtrl.js";
 import {ProfileMenuController} from "./src/routes/controllers/profileMenuCtrl.js";
 import {PlayMenuController} from "./src/routes/controllers/playMenuCtrl.js";
 import {PrivateMatchController} from "./src/routes/controllers/privateMatchCtrl.js";
+import {RankedMatchController} from "./src/routes/controllers/rankedMatch.js";
 import {GameController} from "./src/routes/controllers/gameCtrl.js";
 import {TournamentMenuController} from "./src/routes/controllers/tournamentMenuCtrl.js";
 import {TournamentController} from "./src/routes/controllers/tournamentCtrl.js";
@@ -103,6 +104,11 @@ export const CONFIG = {
 		privateMatch: {
 			view: "privateMatch",
 			controller: PrivateMatchController,
+			authRequired: true,
+		},
+		rankedMatch: {
+			view: "rankedMatch",
+			controller: RankedMatchController,
 			authRequired: true,
 		},
 		login: {

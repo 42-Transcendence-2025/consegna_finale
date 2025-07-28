@@ -1,18 +1,84 @@
 import uuid
+import json
+import redis
 from threading import Condition
 from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListCreateAPIView, GenericAPIView
 from rest_framework import status
 from .serializers import MatchCreateSerializer, TournamentCreateSerializer, TournamentListSerializer, TournamentDetailSerializer
 from .models import Match, PongUser, Tournament
-from rest_framework.generics import ListCreateAPIView, GenericAPIView
 from django.db import transaction
 from .bracket import current_slot, get_opponent_for_player
+from django.conf import settings
+from datetime import datetime
+from django.utils.timezone import now
 
 
 conditions = {}
+redis_url = settings.CACHES["default"]["LOCATION"]
+redis_conn = redis.Redis.from_url(redis_url)
+
+class PongRankedMatchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        username = user.username
+        trophies = user.trophies
+
+        # Timestamp e payload per il matchmaking
+        timestamp = now().isoformat()
+        player_data = {
+            "username": username,
+            "trophies": trophies,
+            "timestamp": timestamp
+        }
+
+        # 1. Inserisce il player in coda Redis
+        redis_conn.rpush("ranked_pool", json.dumps(player_data))
+
+        # 2. Imposta un'attesa in cache
+        cache.set(f"ranked_wait_{username}", {"status": "waiting"}, timeout=60)
+
+        # 3. Il client farà polling con un GET /match/ranked/status/
+        return Response({"detail": "Searching for match"}, status=202)
+    
+    def get(self, request):
+        username = request.user.username
+        key = f"ranked_wait_{username}"
+        cached = cache.get(key)
+
+        if not cached:
+            return Response({"detail": "Matchmaking expired or cancelled"}, status=404)
+
+        if cached.get("status") == "waiting":
+            return Response({"detail": "Still searching..."}, status=202)
+
+        if "game_id" in cached:
+            return Response({"game_id": cached["game_id"]}, status=200)
+
+        return Response({"detail": "Unknown matchmaking state"}, status=500)
+
+    def delete(self, request):
+        username = request.user.username
+        trophies = request.user.trophies
+
+        # Elimina dalla cache
+        cache.delete(f"ranked_wait_{username}")
+
+        # Rimuovi dalla coda Redis (scorre la lista e rimuove il match)
+        redis_key = "ranked_pool"
+        player_data = {
+            "username": username,
+            "trophies": trophies,
+        }
+        # Rimuove tutte le occorrenze (può succedere che ci siano duplicati per errore)
+        redis_conn.lrem(redis_key, 0, json.dumps(player_data))
+
+        return Response({"detail": "Matchmaking cancelled"}, status=200)
 
 def get_condition(password):
     if password not in conditions:
