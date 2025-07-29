@@ -126,23 +126,26 @@ class GameConsumer(AsyncWebsocketConsumer):
         })
 
 
-        # Avvia il game loop se non è già in esecuzione e entrambi i giocatori sono connessi
-        if len(self.game.clients) == 2 and not self.game.game_loop_running:
+        # SEMPRE invia l'aggiornamento dei giocatori quando qualcuno si unisce
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "players_update",
+                "left_player": self.game.left_player.username if self.game.left_player else None,
+                "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
+                "right_player": self.game.right_player.username if self.game.right_player else None,
+                "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
+            }
+        )
 
-            # Invia un messaggio a tutti i client nel gruppo con i dettagli dei giocatori
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "players_update",
-                    "left_player": self.game.left_player.username if self.game.left_player else None,
-                    "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
-                    "right_player": self.game.right_player.username if self.game.right_player else None,
-                    "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
-                }
-            )
-            
+        # Avvia il processo di readiness solo se entrambi i giocatori sono presenti E non è già in corso
+        if (len(self.game.clients) == 2 and 
+            not self.game.game_loop_running and 
+            not hasattr(self.game, 'waiting_for_ready')):
+
+            # Flag per evitare múltipli wait_for_ready
+            self.game.waiting_for_ready = True
             asyncio.create_task(self.wait_for_ready())
-                
 
     async def leave_game(self):
         """
@@ -202,6 +205,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.game.winner = self.game.left_player if self.game.ready["left"] else self.game.right_player
                 self.game.loser = self.game.right_player if self.game.ready["left"] else self.game.left_player
 
+        # Rimuovi il flag di attesa
+        if hasattr(self.game, 'waiting_for_ready'):
+            delattr(self.game, 'waiting_for_ready')
+
         if outcome != "start":
             await self.update_match_status(outcome, self.game.winner, self.game.loser)
             await self.channel_layer.group_send(
@@ -213,9 +220,13 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
-            self.game.game_loop_running = True
-            await self.update_match_status('in_game')
-            asyncio.create_task(self.game_loop())
+            # DOPPIO CONTROLLO per evitare múltipli game loop
+            if not self.game.game_loop_running:
+                self.game.game_loop_running = True
+                await self.update_match_status('in_game')
+                asyncio.create_task(self.game_loop())
+            else:
+                print(f"[WARNING] Game loop already running for game {self.game_id}, skipping")
 
 
     async def game_loop(self):
@@ -337,10 +348,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 return False
             
             match = Match.objects.get(id=self.match_id)
-            
-            # Verifica che il match sia in stato 'created'
-            if match.status != 'created':
-                return False
             
             # Verifica che l'utente sia uno dei due giocatori del match
             return (match.player_1 == self.user or match.player_2 == self.user)
