@@ -79,6 +79,30 @@ services:
       - ./backend/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
 
+  profile_service:
+    build:
+      context: ./backend/profile_service
+    container_name: profile_service
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      django-base:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      - APP_PORT=8004
+      - SIGNING_KEY=${SIGNING_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres_db:5432/main_db
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - transcendence
+    ports:
+      - 8004:8004
+    volumes:
+      - ./backend/profile_service:/app # TODO: remove this on prod and use COPY instead
+      - profile_service_venv:/venv
+
   frontend:
     build:
       context: ./frontend
@@ -141,3 +165,4 @@ volumes:
     matchmaking_venv:
     pong_game_venv:
     user_management_venv:
+    profile_service_venv:

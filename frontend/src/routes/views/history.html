@@ -1,0 +1,35 @@
+<!-- Extended Match History Page -->
+<div class="container py-5">
+    <h1 class="text-warning text-center mb-4" data-i18n="match-history">Match History</h1>
+
+    <!-- Search/filter controls -->
+    <form id="history-search-form" class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+            <input type="text" id="history-search-input" class="form-control" placeholder="Search by opponent or tournament">
+        </div>
+        <div class="col-6 col-md-3">
+            <select id="history-filter" class="form-select">
+                <option value="all">All</option>
+                <option value="win">Wins</option>
+                <option value="loss">Losses</option>
+                <option value="draw">Draws</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <select id="history-sort" class="form-select">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+            </select>
+        </div>
+    </form>
+
+    <!-- Match list -->
+    <div id="history-matches-list" class="d-flex flex-column gap-2 overflow-auto" style="max-height: 50vh;"></div>
+
+    <!-- Back -->
+    <div class="mt-4 d-flex justify-content-center">
+        <a href="#home" class="btn btn-outline-secondary" style="border-radius: 12px;">
+            <i class="fa fa-arrow-left"></i>
+        </a>
+    </div>
+</div>

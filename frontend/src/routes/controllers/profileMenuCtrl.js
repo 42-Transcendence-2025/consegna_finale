@@ -40,6 +40,18 @@ export class ProfileMenuController {
             historyItem.innerHTML = `<a class="dropdown-item" href="#history" data-i18n="match-history">Match History</a>`;
             profileDropdown.appendChild(historyItem);
 
+            //const divider = document.createElement('li');
+            //divider.innerHTML = `<hr class="dropdown-divider">`;
+            //profileDropdown.appendChild(divider);
+
+            const searchItem = document.createElement('li');
+            searchItem.innerHTML = `<a class="dropdown-item" href="#search">Search Users</a>`;
+            profileDropdown.appendChild(searchItem);
+
+            const wofItem = document.createElement('li');
+            wofItem.innerHTML = `<a class="dropdown-item" href="#walloffame">Wall of Fame</a>`;
+            profileDropdown.appendChild(wofItem);
+
             const divider = document.createElement('li');
             divider.innerHTML = `<hr class="dropdown-divider">`;
             profileDropdown.appendChild(divider);

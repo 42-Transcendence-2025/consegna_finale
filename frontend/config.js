@@ -11,7 +11,10 @@ import {RankedMatchController} from "./src/routes/controllers/rankedMatch.js";
 import {GameController} from "./src/routes/controllers/gameCtrl.js";
 import {TournamentMenuController} from "./src/routes/controllers/tournamentMenuCtrl.js";
 import {TournamentController} from "./src/routes/controllers/tournamentCtrl.js";
-
+import {ProfileController} from "./src/routes/controllers/profileCtrl.js";
+import {SearchController} from "./src/routes/controllers/searchCtrl.js";
+import {HistoryController} from "./src/routes/controllers/historyCtrl.js";
+import {WallOfFameController} from "./src/routes/controllers/wallOfFameCtrl.js";
 import {TestController} from "./src/routes/controllers/test.js";
 
 
@@ -72,6 +75,7 @@ export const CONFIG = {
 		userApiUrl: `${BASE_URL}:8003`,
 		matchApiUrl: `${BASE_URL}:8001`,
 		pongApiUrl: `${WS_URL}:8002`,
+		profileApiUrl: `${BASE_URL}:8004`,
 	},
 	
 
@@ -135,6 +139,26 @@ export const CONFIG = {
 			controller: GameController,
 			authRequired: true,
 			hideLangSwitcher: true,
+		},
+		profile: {
+			view: "profile",
+			controller: ProfileController,
+			authRequired: true,
+		},
+		history: {
+			view: "history",
+			controller: HistoryController,
+			authRequired: true,
+		},
+		walloffame: {
+             view: "walloffame",
+             controller: WallOfFameController,
+             authRequired: true,
+         },
+		search: {
+			view: "search",
+			controller: SearchController,
+			authRequired: true,
 		},
 		tournamentMenu: {
 			view: "tournamentMenu",

@@ -1,0 +1,46 @@
+<!-- Wall of Fame Page -->
+<div class="container py-5">
+    <h1 class="text-warning text-center mb-4">Wall of Fame</h1>
+
+    <!-- Timeframe selector -->
+    <div class="row mb-4">
+        <div class="col-12 col-md-4 offset-md-4">
+            <label for="wof-timeframe" class="form-label">Timeframe</label>
+            <select id="wof-timeframe" class="form-select">
+                <option value="all">All Time</option>
+                <option value="week">Past Week</option>
+                <option value="month">Past Month</option>
+                <option value="year">Past Year</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Leaderboard sections -->
+    <div class="row">
+        <div class="col-12 col-md-6 mb-4">
+            <h3 class="text-info">Top Trophies</h3>
+            <div id="wof-top-trophies"></div>
+        </div>
+        <div class="col-12 col-md-6 mb-4">
+            <h3 class="text-info">Longest Win Streaks</h3>
+            <div id="wof-longest-streaks"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6 mb-4">
+            <h3 class="text-info">Most Wins</h3>
+            <div id="wof-most-wins"></div>
+        </div>
+        <div class="col-12 col-md-6 mb-4">
+            <h3 class="text-info">Never Lost</h3>
+            <div id="wof-never-lost"></div>
+        </div>
+    </div>
+
+    <!-- Back button -->
+    <div class="mt-4 d-flex justify-content-center">
+        <a href="#home" class="btn btn-outline-secondary" style="border-radius: 12px;">
+            <i class="fa fa-arrow-left"></i>
+        </a>
+    </div>
+</div>
