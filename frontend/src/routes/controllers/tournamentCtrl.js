@@ -12,6 +12,7 @@ export class TournamentController {
         }
         if (!tournamentId) {
             this.#showError($.i18n('noTournamentId'));
+            window.location.hash = "#tournamentMenu";
             return;
         }
 
@@ -44,11 +45,11 @@ export class TournamentController {
     async #fetchAndRenderPyramid(tournamentId, useMock = false) {
         try {
             const data = useMock
-                ? await this.#mockApi.getTournamentDetails()
-                : await window.tools.matchManager.getTournamentDetails(tournamentId);
-
-            this.#renderPyramid(data);
+            ? await this.#mockApi.getTournamentDetails()
+            : await window.tools.matchManager.getTournamentDetails(tournamentId);
+            
             this.#bindQuitButton(tournamentId, data.status);
+            this.#renderPyramid(data);
             this.#bindPlayButton(tournamentId, data.ready || false);
 
             if (
@@ -61,6 +62,7 @@ export class TournamentController {
             }
         } catch (err) {
             this.#showError($.i18n('failedToLoadTournamentData'));
+            this.#bindQuitButton(tournamentId, null);
         }
     }
 
@@ -396,7 +398,8 @@ export class TournamentController {
 
     #bindQuitButton(tournamentId, status) {
         const quitBtn = document.getElementById("quitTournamentBtn");
-        if (!quitBtn) return;
+        if (!quitBtn)
+            return;
 
         // Rimuovi eventuali listener precedenti in modo più efficiente
         quitBtn.onclick = null;
