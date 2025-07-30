@@ -1,14 +1,42 @@
-<div id="bracket-container" class="my-5">
-    <div class="tournament-phases-header w-100">
-        <h2 class="tournament-section-header" data-i18n="quarter-finals">Quarter Final</h2>
-        <h2 class="tournament-section-header" data-i18n="semi-finals">Semi Final</h2>
-        <h2 class="tournament-section-header" data-i18n="final">Final</h2>
-        <h2 class="tournament-section-header" data-i18n="semi-finals">Semi Final</h2>
-        <h2 class="tournament-section-header" data-i18n="quarter-finals">Quarter Final</h2>
-    </div>
-
-    <div class="tournament-bracket-container w-100">
-        <!-- Le righe verranno generate dinamicamente da JS -->
+<div class="wrapper" id="tournament-bracket">
+    <div class="item">
+        <div class="item-parent-central">
+            <div class="item-childrens">
+                <div class="item-child">
+                    <div class="item">
+                        <div class="item-parent">
+                            <p id="LeftSemiFinal"></p>
+                        </div>
+                        <div class="item-childrens">
+                            <div class="item-child">
+                                <p id="TopLeftQuarterFinal"></p>
+                            </div>
+                            <div class="item-child">
+                                <p id="BottomLeftQuarterFinal"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="Final"></p>
+            <div class="item-childrens-right">
+                <div class="item-child-right">
+                    <div class="item-right">
+                        <div class="item-parent-right">
+                            <p id="RightSemiFinal"></p>
+                        </div>
+                        <div class="item-childrens-right">
+                            <div class="item-child-right">
+                                <p id="TopRightQuarterFinal"></p>
+                            </div>
+                            <div class="item-child-right">
+                                <p id="BottomRightQuarterFinal"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -16,4 +44,3 @@
     <button id="playTournamentBtn" class="btn btn-success btn-lg me-3" data-i18n="playMatch" style="display: none;">Play</button>
     <button id="quitTournamentBtn" class="btn btn-danger btn-lg" data-i18n="quitTournament">Quit Tournament</button>
 </div>
-

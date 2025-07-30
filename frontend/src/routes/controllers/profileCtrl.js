@@ -80,8 +80,8 @@ export class ProfileController {
     }
 
     #renderBasicInfo(data) {
-        const trophiesLabel = $.i18n("trophies") ?? "trophies";
-        const lastActivityLabel = "Last activity";
+        const trophiesLabel = $.i18n('trophies') ?? "trophies";
+        const lastActivityLabel = $.i18n('lastActivity') ?? "last activity";
         const lastActivity = data.last_activity
             ? new Date(data.last_activity).toLocaleString()
             : "N/A";
@@ -201,7 +201,7 @@ export class ProfileController {
                     <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                         <div class="flex-grow-1">
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                <strong>vs ${m.opponent ?? "Unknown"}</strong>
+                                <strong>vs ${m.opponent ?? $.i18n('unknown')}</strong>
                                 ${tournamentPart}
                             </div>
                             <small class="text-muted">${createdAt}</small>
@@ -284,15 +284,15 @@ export class ProfileController {
         const $container = $("#profile-stats");
         $container.empty();
         const items = [
-            { label: "Total Matches", value: stats.total },
-            { label: "Wins", value: stats.wins },
-            { label: "Losses", value: stats.losses },
-            { label: "Draws", value: stats.draws },
-            { label: "Win %", value: stats.winPercentage + "%" },
-            { label: "Current Streak", value: stats.currentStreak },
-            { label: "Longest Streak", value: stats.longestStreak },
-            { label: "Avg. Points Scored", value: stats.avgPointsFor },
-            { label: "Avg. Points Against", value: stats.avgPointsAgainst },
+            { label: $.i18n("totalMatches") ?? "Total Matches", value: stats.total },
+            { label: $.i18n("profile-wins") ?? "Wins", value: stats.wins },
+            { label: $.i18n("losses") ?? "Losses", value: stats.losses },
+            { label: $.i18n("draws") ?? "Draws", value: stats.draws },
+            { label: $.i18n("winPercentage") ?? "Win %", value: stats.winPercentage + "%" },
+            { label: $.i18n("currentStreak") ?? "Current Streak", value: stats.currentStreak },
+            { label: $.i18n("longestStreak") ?? "Longest Streak", value: stats.longestStreak },
+            { label: $.i18n("avgPointsScored") ?? "Avg. Points Scored", value: stats.avgPointsFor },
+            { label: $.i18n("avgPointsAgainst") ?? "Avg. Points Against", value: stats.avgPointsAgainst },
         ];
         for (const item of items) {
             const card = `

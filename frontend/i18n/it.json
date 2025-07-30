@@ -48,7 +48,19 @@
 	"rankedMatch": "Partita Classificata",
 	"rankedMatchDescription": "Gioca partite classificate per guadagnare trofei e scalare la classifica!",
 	"trophies": "trofei",
+	"lastActivity": "ultima accesso",
+	"statistics": "Statistiche",
 	"searchMatch": "Cerca Partita",
 	"searchingForRankedMatch": "Cercando una partita classificata...",
-	"rankedMatchSearchInfo": "Stiamo cercando un avversario con livello simile"
+	"rankedMatchSearchInfo": "Stiamo cercando un avversario con livello simile",
+	"totalMatches": "Partite Totali",
+	"profile-wins": "Vittorie",
+	"losses": "Sconfitte",
+	"draws": "Pareggi",
+	"winPercentage": "Percentuale Vittorie",
+	"currentStreak": "Serie di vittorie attuale",
+	"longestStreak": "Serie di vittorie più lunga",
+	"avgPointsScored": "Punti Medi Segnati",
+	"avgPointsAgainst": "Punti Medi Subiti",
+	"unknown": "Sconosciuto"
 }
