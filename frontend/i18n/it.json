@@ -62,5 +62,6 @@
 	"longestStreak": "Serie di vittorie più lunga",
 	"avgPointsScored": "Punti Medi Segnati",
 	"avgPointsAgainst": "Punti Medi Subiti",
-	"unknown": "Sconosciuto"
+	"unknown": "Sconosciuto",
+	"aborted": "Non giocata"
 }

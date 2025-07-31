@@ -10,7 +10,16 @@ export class TournamentController {
             window.location.hash = "#tournamentMenu";
             return;
         }
-        this.fetchTournamentData(tournamentId);
+        // Fetch iniziale
+        await this.fetchTournamentData(tournamentId);
+
+        // Aggiorna ogni 5 secondi
+        if (this._tournamentInterval) {
+            clearInterval(this._tournamentInterval);
+        }
+        this._tournamentInterval = setInterval(() => {
+            this.fetchTournamentData(tournamentId);
+        }, 5000);
     }
 
     async fetchTournamentData(tournamentId) {
@@ -35,118 +44,99 @@ export class TournamentController {
         if (!tournamentBracket)
             return;
 
-        const qf_top_left = document.getElementById("TopLeftQuarterFinal");
-        const qf_bottom_left = document.getElementById("BottomLeftQuarterFinal");
-        const qf_top_right = document.getElementById("TopRightQuarterFinal");
-        const qf_bottom_right = document.getElementById("BottomRightQuarterFinal");
-        const sf_left = document.getElementById("LeftSemiFinal");
-        const sf_right = document.getElementById("RightSemiFinal");
-        const final = document.getElementById("Final");
+        // Configurazione per ogni fase del torneo
+        const bracketConfig = [
+            // Quarti di finale
+            { elementId: "TopLeftQuarterFinal", match: matchResults.quarterfinals[0], template: "vs" },
+            { elementId: "BottomLeftQuarterFinal", match: matchResults.quarterfinals[1], template: "vs" },
+            { elementId: "TopRightQuarterFinal", match: matchResults.quarterfinals[2], template: "vs" },
+            { elementId: "BottomRightQuarterFinal", match: matchResults.quarterfinals[3], template: "vs" },
+            
+            // Semifinali
+            { elementId: "LeftSemiFinal", match: matchResults.semifinals[0], template: "vs" },
+            { elementId: "RightSemiFinal", match: matchResults.semifinals[1], template: "vs" },
+            
+            // Finale (solo nomi dei giocatori)
+            { elementId: "LeftPlayerFinal", match: matchResults.final, template: "player1" },
+            { elementId: "RightPlayerFinal", match: matchResults.final, template: "player2" }
+        ];
 
-        let player1 = matchResults.quarterfinals[0].player_1;
-        let player2 = matchResults.quarterfinals[0].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.quarterfinals[0].status === "finished")
-        {
-            if (matchResults.quarterfinals[0].winner === player1)
-                qf_top_left.classList.add("p-green-red");
-            else if (matchResults.quarterfinals[0].winner === player2)
-                qf_top_left.classList.add("p-red-green");
+        // Renderizza ogni elemento del bracket
+        bracketConfig.forEach(config => this.#renderBracketElement(config));
+    }
+
+    #renderBracketElement({ elementId, match, template }) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const player1 = this.#formatPlayerName(match.player_1);
+        const player2 = this.#formatPlayerName(match.player_2);
+
+        // Applica la classe CSS per il vincitore se il match è finito
+        // this.#applyWinnerStyle(element, match, player1, player2);
+
+        // Imposta il contenuto HTML basato sul template
+        switch (template) {
+            case "vs":
+                const player1WithScore = this.#formatPlayerWithScore(player1, match.points_player_1, match.status, match.winner);
+                const player2WithScore = this.#formatPlayerWithScore(player2, match.points_player_2, match.status, match.winner);
+                
+                // Gestisci il testo VS/Aborted con stile appropriato
+                let vsText, vsStyle;
+                if (match.status === "aborted") {
+                    vsText = $.i18n('aborted') || 'Aborted';
+                    vsStyle = 'style="color: red; font-weight: bold; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);"';
+                } else {
+                    vsText = 'VS';
+                    vsStyle = 'class="vs-text"';
+                }
+                
+                element.innerHTML = `${player1WithScore}<br><span ${vsStyle}>${vsText}</span><br>${player2WithScore}`;
+                break;
+            case "player1":
+                const finalPlayer1 = this.#formatPlayerWithScore(player1, match.points_player_1, match.status, match.winner);
+                element.innerHTML = finalPlayer1;
+                break;
+            case "player2":
+                const finalPlayer2 = this.#formatPlayerWithScore(player2, match.points_player_2, match.status, match.winner);
+                element.innerHTML = finalPlayer2;
+                break;
         }
-        qf_top_left.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
+    }
 
-        player1 = matchResults.quarterfinals[1].player_1;
-        player2 = matchResults.quarterfinals[1].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.quarterfinals[1].status === "finished")
-        {
-            if (matchResults.quarterfinals[1].winner === player1)
-                qf_bottom_left.classList.add("p-green-red");
-            else if (matchResults.quarterfinals[1].winner === player2)
-                qf_bottom_left.classList.add("p-red-green");
+    #formatPlayerName(playerName) {
+        return (playerName === "null" || playerName === null) 
+            ? "Waiting..." 
+            : playerName;
+    }
+
+    #formatPlayerWithScore(playerName, points, status, winner = null) {
+        // Se il match non è finito o i punti non sono disponibili, mostra solo il nome
+        if (!["finished", "walkover", "aborted"].includes(status) || playerName === "Waiting...") {
+            return playerName;
         }
-        qf_bottom_left.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
-        player1 = matchResults.quarterfinals[2].player_1;
-        player2 = matchResults.quarterfinals[2].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.quarterfinals[2].status === "finished")
-        {
-            if (matchResults.quarterfinals[2].winner === player1)
-                qf_top_right.classList.add("p-green-red");
-            else if (matchResults.quarterfinals[2].winner === player2)
-                qf_top_right.classList.add("p-red-green");
+        
+        // Determina lo stile in base al vincitore
+        let playerStyle = "";
+        if (status === "aborted") {
+            // Entrambi i giocatori vengono scuriti se il match è annullato
+            playerStyle = 'class="loser-dim"';
+        } else if (winner && winner !== "null") {
+            if (playerName === winner) {
+                playerStyle = 'class="winner-highlight"';
+            } else {
+                playerStyle = 'class="loser-dim"';
+            }
         }
-        qf_top_right.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
-        player1 = matchResults.quarterfinals[3].player_1;
-        player2 = matchResults.quarterfinals[3].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.quarterfinals[3].status === "finished")
-        {
-            if (matchResults.quarterfinals[3].winner === player1)
-                qf_bottom_right.classList.add("p-green-red");
-            else if (matchResults.quarterfinals[3].winner === player2)
-                qf_bottom_right.classList.add("p-red-green");
+        
+        // Gestisci i diversi casi di visualizzazione del punteggio
+        let scoreDisplay = points;
+        if (status === "walkover" || status === "aborted") {
+            scoreDisplay = "-";
         }
-        qf_bottom_right.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
-        player1 = matchResults.semifinals[0].player_1;
-        player2 = matchResults.semifinals[0].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.semifinals[0].status === "finished")
-        {
-            if (matchResults.semifinals[0].winner === player1)
-                sf_left.classList.add("p-green-red");
-            else if (matchResults.semifinals[0].winner === player2)
-                sf_left.classList.add("p-red-green");
-        }
-        sf_left.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
-        player1 = matchResults.semifinals[1].player_1;
-        player2 = matchResults.semifinals[1].player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.semifinals[1].status === "finished")
-        {
-            if (matchResults.semifinals[1].winner === player1)
-                sf_right.classList.add("p-green-red");
-            else if (matchResults.semifinals[1].winner === player2)
-                sf_right.classList.add("p-red-green");
-        }
-        sf_right.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
-        player1 = matchResults.final.player_1;
-        player2 = matchResults.final.player_2;
-        if (player1 === "null" || player1 === null)
-            player1 = "Waiting...";
-        if (player2 === "null" || player2 === null)
-            player2 = "Waiting...";
-        if (matchResults.final.status === "finished") {
-            if (matchResults.final.winner === player1)
-                final.classList.add("p-green-red");
-            else if (matchResults.final.winner === player2)
-                final.classList.add("p-red-green");
-        }
-        final.innerHTML = `${player1}<br><span class="vs-text">VS</span><br>${player2}`;
-
+        
+        // Mostra il nome del giocatore con il punteggio appropriato
+        return `<span ${playerStyle}>${playerName}</span><span style="color: yellow; font-size: 1.2em; margin-left: 15px; font-weight: bold;">${scoreDisplay}</span>`;
     }
 
     #getMatchResults(matches) {

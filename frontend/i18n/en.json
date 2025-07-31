@@ -62,5 +62,6 @@
 	"currentStreak": "Current Streak",
 	"longestStreak": "Longest Streak",
 	"avgPointsScored": "Avg. Points Scored",
-	"avgPointsAgainst": "Avg. Points Against"
+	"avgPointsAgainst": "Avg. Points Against",
+	"aborted": "Aborted"
 }

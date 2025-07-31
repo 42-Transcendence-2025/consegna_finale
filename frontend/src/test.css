@@ -35,6 +35,41 @@
   flex-direction: row;
 }
 
+/* Nuova classe per parent centrale con due rettangoli separati */
+.item-parent-central-split {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+.item-parent-central-split .left-player,
+.item-parent-central-split .right-player {
+  min-width: 210px;
+  min-height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  padding: 30px;
+  margin: 0;
+  color: #0dcaf0;
+  background-color: transparent;
+  border: 3px solid #0dcaf0;
+  border-radius: 0.5rem;
+  transform: skewX(-8deg);
+  font-size: 18px;
+}
+
+.item-parent-central-split .vs-central {
+  color: yellow;
+  font-weight: bold;
+  font-size: 24px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+  z-index: 10;
+}
+
 
 .item-parent-central > .item-childrens {
   margin-right: 37px;

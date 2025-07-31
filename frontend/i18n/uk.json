@@ -67,5 +67,6 @@
 	"longestStreak": "Найдовша серія перемог",
 	"avgPointsScored": "Середня кількість очок за гру",
 	"avgPointsAgainst": "Середня кількість очок проти",
-	"unknown": "Невідомо"
+	"unknown": "Невідомо",
+	"aborted": "Не зіграно"
 }

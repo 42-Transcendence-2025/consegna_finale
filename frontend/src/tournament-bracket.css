@@ -35,6 +35,41 @@
   flex-direction: row;
 }
 
+/* Nuova classe per parent centrale con due rettangoli separati */
+.item-parent-central-split {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+.item-parent-central-split .left-player,
+.item-parent-central-split .right-player {
+  min-width: 210px;
+  min-height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  padding: 30px;
+  margin: 0;
+  color: #0dcaf0;
+  background-color: transparent;
+  border: 3px solid #0dcaf0;
+  border-radius: 0.5rem;
+  transform: skewX(-8deg);
+  font-size: 18px;
+}
+
+.item-parent-central-split .vs-central {
+  color: yellow;
+  font-weight: bold;
+  font-size: 24px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+  z-index: 10;
+}
+
 
 .item-parent-central > .item-childrens {
   margin-right: 37px;
@@ -192,44 +227,18 @@
   font-size: 20px;
 }
 
-/* Elemento p speciale con metà superiore verde e inferiore rossa */
-.p-green-red {
-  min-width: 210px;
-  min-height: 105px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+/* Stili per vincitore e perdente */
+.winner-highlight {
+  color: #ffffff; /* Verde brillante per il vincitore */
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
   font-weight: bold;
-  padding: 30px;
-  margin: 0;
-  border: 3px solid #0dcaf0;
-  border-radius: 0.5rem;
-  transform: skewX(-8deg);
-  position: relative;
-  background: linear-gradient(to bottom, rgba(0, 255, 0, 0.5) 50%, rgba(255, 0, 0, 0.5) 50%);
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-  font-size: 18px;
 }
 
-.p-red-green {
-  min-width: 210px;
-  min-height: 105px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-weight: bold;
-  padding: 30px;
-  margin: 0;
-  border: 3px solid #0dcaf0;
-  border-radius: 0.5rem;
-  transform: skewX(-8deg);
-  position: relative;
-  background: linear-gradient(to bottom, rgba(255, 0, 0, 0.5) 50%, rgba(0, 255, 0, 0.5) 50%);
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-  font-size: 18px;
+.loser-dim {
+  color: #666666; /* Grigio scuro per il perdente */
+  opacity: 0.6;
 }
+
 
 
 
