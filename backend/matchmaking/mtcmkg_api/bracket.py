@@ -24,21 +24,40 @@ def current_slot(tournament: Tournament, player: PongUser) -> int | None:
                 slot_map[m.player_2_id] = None
             continue
             
-        # Gestisci partite finite normalmente
+        # Gestisci partite finite normalmente (inclusi walkover)
         if m.winner_id is None:
             continue
 
-        s1 = slot_map.get(m.player_1_id)
-        s2 = slot_map.get(m.player_2_id)
-        if s1 is None or s2 is None:
+        # Per i walkover, uno dei due giocatori può essere None
+        # Dobbiamo comunque processare il match se c'è un vincitore
+        
+        # Ottieni gli slot dei giocatori (potrebbero essere None per walkover)
+        s1 = slot_map.get(m.player_1_id) if m.player_1_id else None
+        s2 = slot_map.get(m.player_2_id) if m.player_2_id else None
+        
+        # Per determinare lo slot target, usiamo lo slot più basso disponibile
+        target_slot = None
+        if s1 is not None and s2 is not None:
+            # Match normale - usa il minimo
+            target_slot = min(s1, s2)
+        elif s1 is not None:
+            # Walkover: player_2 è None, usa slot di player_1
+            target_slot = s1
+        elif s2 is not None:
+            # Walkover: player_1 è None, usa slot di player_2
+            target_slot = s2
+        else:
+            # Entrambi None - situazione anomala, skip
             continue
+        
+        # Aggiorna lo slot del vincitore
+        slot_map[m.winner_id] = parent_slot(target_slot)
 
-        # aggiorna lo slot del vincitore
-        slot_map[m.winner_id] = parent_slot(min(s1, s2))
-
-        # azzera lo slot del perdente
-        loser_id = m.player_2_id if m.player_1_id == m.winner_id else m.player_1_id
-        slot_map[loser_id] = None      # oppure slot_map.pop(loser_id, None)
+        # Azzera lo slot del perdente (se esiste)
+        if m.player_1_id and m.player_1_id != m.winner_id:
+            slot_map[m.player_1_id] = None
+        if m.player_2_id and m.player_2_id != m.winner_id:
+            slot_map[m.player_2_id] = None
 
     return slot_map.get(player.id)
 
