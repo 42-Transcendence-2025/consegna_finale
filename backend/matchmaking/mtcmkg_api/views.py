@@ -11,7 +11,7 @@ from rest_framework import status
 from .serializers import MatchCreateSerializer, TournamentCreateSerializer, TournamentListSerializer, TournamentDetailSerializer
 from .models import Match, PongUser, Tournament
 from django.db import transaction
-from .bracket import current_slot, get_opponent_for_player
+from .bracket import current_slot, get_opponent_for_player, get_player_position_in_match
 from django.conf import settings
 from datetime import datetime
 from django.utils.timezone import now
@@ -314,6 +314,11 @@ class TournamentView(GenericAPIView):
         wait_key = f"wait_{tournament.id}_{m_num}"
         cond = get_condition(wait_key)
 
+        # Determina la posizione di questo giocatore nel match
+        user_position = get_player_position_in_match(tournament, m_num, user)
+        if user_position is None:
+            return Response({"detail": "You don't belong to this match"}, status=status.HTTP_400_BAD_REQUEST)
+
         cached = cache.get(wait_key)
 
         # Giocatore 2 trova il match
@@ -325,14 +330,21 @@ class TournamentView(GenericAPIView):
                 )
             
             game_id = cached["game_id"]
-            player_1_username = cached["username"]
+            opponent_username = cached["username"]
+            opponent = PongUser.objects.get(username=opponent_username)
+        
+            # Determina chi è player_1 e chi è player_2
+            if user_position == 1:
+                player_1, player_2 = user, opponent
+            else:  # user_position == 2
+                player_1, player_2 = opponent, user
         
             match = Match.objects.create(
-                player_1 = PongUser.objects.get(username=player_1_username),
-                player_2 = user,
-                status = "created",
-                match_number = m_num,
-                tournament = tournament
+                player_1=player_1,
+                player_2=player_2,
+                status="created",
+                match_number=m_num,
+                tournament=tournament
             )
             cache.set(f"match_id_for_game_{game_id}", match.id, timeout=3600)
             cache.delete(wait_key)

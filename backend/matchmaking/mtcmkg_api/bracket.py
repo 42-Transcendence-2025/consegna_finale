@@ -192,6 +192,31 @@ def find_next_round_player(tournament: Tournament, aborted_match_number: int) ->
     
     return None
 
+def get_player_position_in_match(tournament: Tournament, match_number: int, player: PongUser) -> int:
+    """
+    Restituisce la posizione del giocatore nel match specificato.
+    Ritorna 1 se il giocatore deve essere player_1, 2 se deve essere player_2.
+    Ritorna None se il giocatore non appartiene a questo match.
+    """
+    bracket_structure = {
+        0: (0, 1), 1: (2, 3), 2: (4, 5), 3: (6, 7),
+        4: (8, 9), 5: (10, 11), 6: (12, 13)
+    }
+    
+    if match_number not in bracket_structure:
+        return None
+    
+    slot1, slot2 = bracket_structure[match_number]
+    player_slot = current_slot(tournament, player)
+    
+    if player_slot == slot1:
+        return 1  # player_1
+    elif player_slot == slot2:
+        return 2  # player_2
+    else:
+        return None  # Il giocatore non appartiene a questo match
+
+
 def test_current_slot_logic():
     """
     Funzione di test per verificare la logica di current_slot.
