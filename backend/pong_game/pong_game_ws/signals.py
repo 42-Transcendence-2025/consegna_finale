@@ -22,6 +22,8 @@ def check_match_finished(sender, instance, **kwargs):
     if instance.tournament_id is None:
         return
 
+    check_walkover(instance)
+
     check_tournament_completion(instance.tournament)
 
 
@@ -88,6 +90,80 @@ def handle_aborted_match(aborted_match):
                 )
                 
                 print(f"Created walkover match {next_match_number} for {walkover_winner.username} due to aborted match {aborted_match.match_number}")
+
+def check_walkover(finished_match):
+    """
+    Controlla se il completamento di questo match può sbloccare 
+    situazioni di walkover causate da match aborted.
+    """
+    if not finished_match.tournament or not finished_match.winner:
+        return
+    
+    tournament = finished_match.tournament
+    
+    # Mappa per determinare quale match del round successivo viene alimentato
+    next_round_mapping = {
+        0: 4, 1: 4,  # Quarti 0,1 → Semifinale 4
+        2: 5, 3: 5,  # Quarti 2,3 → Semifinale 5
+        4: 6, 5: 6,  # Semifinali 4,5 → Finale 6
+    }
+    
+    current_match_num = finished_match.match_number
+    next_match_num = next_round_mapping.get(current_match_num)
+    
+    if next_match_num is None:
+        return  # È già la finale, niente da fare
+    
+    # Verifica se il match del round successivo esiste già
+    if tournament.matches.filter(match_number=next_match_num).exists():
+        return  # Il match successivo è già stato creato
+    
+    # Trova quale altro match alimenta lo stesso round successivo
+    sibling_matches = [k for k, v in next_round_mapping.items() if v == next_match_num and k != current_match_num]
+    
+    if not sibling_matches:
+        return
+    
+    sibling_match_num = sibling_matches[0]
+    
+    # Controlla se il match "fratello" è aborted
+    try:
+        sibling_match = tournament.matches.get(match_number=sibling_match_num)
+        if sibling_match.status == "aborted":
+            # Il match fratello è aborted, possiamo creare walkover!
+            create_walkover_match_for_winner(tournament, next_match_num, finished_match.winner, current_match_num)
+    except Match.DoesNotExist:
+        # Il match fratello non esiste ancora, niente da fare
+        pass
+
+def create_walkover_match_for_winner(tournament, match_number, winner, winner_source_match):
+    """
+    Crea un match walkover per il vincitore specificato.
+    """
+    # Determina la posizione corretta del walkover winner
+    # Basandosi da quale match proviene
+    if winner_source_match in [0, 2, 4]:  # Match pari → player_1
+        player_1 = winner
+        player_2 = None
+        points_1, points_2 = 0, 0
+    else:  # Match dispari → player_2
+        player_1 = None
+        player_2 = winner
+        points_1, points_2 = 0, 0
+
+    # Crea il match walkover
+    Match.objects.create(
+        player_1=player_1,
+        player_2=player_2,
+        status="finished_walkover",
+        match_number=match_number,
+        tournament=tournament,
+        winner=winner,
+        points_player_1=points_1,
+        points_player_2=points_2
+    )
+    
+    print(f"Created walkover match {match_number} for {winner.username} due to sibling match being aborted")
 
 
 def check_tournament_completion(tournament):
