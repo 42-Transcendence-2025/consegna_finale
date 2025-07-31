@@ -90,6 +90,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.close(code=4003)  # Unauthorized
             return
 
+        # Ottieni i dati del match per assegnare correttamente i lati
+        match_data = await self.get_match_data()
+        if not match_data:
+            await self.send_json({"error": "Match data not found."})
+            await self.close(code=4004)  # Match not found
+            return
+
         # Aggiungi l'utente al gruppo del canale
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -101,20 +108,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             GameConsumer.games[self.game_id] = PongGame(self.game_id)
         self.game = GameConsumer.games[self.game_id]
 
-        # Assegna un lato al giocatore
-        if hasattr(self.game, 'left_player') and self.game.left_player == self.user:
-            self.player_side = "left"
-        elif hasattr(self.game, 'right_player') and self.game.right_player == self.user:
-            self.player_side = "right"
-        elif len(self.game.clients) == 0:
+        # Assegna i lati basandosi sui dati del match dal database
+        # player_1 -> left_player, player_2 -> right_player
+        if self.user.id == match_data['player_1_id']:
             self.player_side = "left"
             self.game.left_player = self.user
-        elif len(self.game.clients) == 1:
+        elif self.user.id == match_data['player_2_id']:
             self.player_side = "right"
             self.game.right_player = self.user
         else:
-            await self.send_json({"error": "Game room is full. Closing connection."})
-            await self.close()
+            await self.send_json({"error": "You are not a player in this match."})
+            await self.close(code=4003)  # Unauthorized
             return
 
         # Aggiungi il client alla lista dei giocatori se non è già presente
@@ -243,9 +247,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 winner = self.game.winner
                 loser = self.game.loser
 
+                # Salva i punteggi nel database con la mappatura corretta:
+                # left_score (left_player) -> points_player_1 (player_1 nel DB)
+                # right_score (right_player) -> points_player_2 (player_2 nel DB)
                 await self.update_match_finished(
-                    points_player_1=self.game.state["left_score"],
-                    points_player_2=self.game.state["right_score"]
+                    points_player_1=self.game.state["left_score"],   # left_player = player_1
+                    points_player_2=self.game.state["right_score"]   # right_player = player_2
                 )
 
                 # Invia un messaggio di fine gioco ai client
@@ -327,6 +334,27 @@ class GameConsumer(AsyncWebsocketConsumer):
         return cache.get(f"match_id_for_game_{self.game_id}")
     
     @database_sync_to_async
+    def get_match_data(self):
+        """Ottiene i dati del match dal database"""
+        try:
+            if not self.match_id:
+                return None
+                
+            match = Match.objects.get(id=self.match_id)
+            return {
+                'player_1_id': match.player_1.id if match.player_1 else None,
+                'player_2_id': match.player_2.id if match.player_2 else None,
+                'player_1_username': match.player_1.username if match.player_1 else None,
+                'player_2_username': match.player_2.username if match.player_2 else None,
+                'status': match.status
+            }
+        except Match.DoesNotExist:
+            return None
+        except Exception as e:
+            print(f"[ERROR] Error getting match data: {e}")
+            return None
+    
+    @database_sync_to_async
     def get_match_status(self):
         """Ottiene lo status del match dal database"""
         try:
@@ -379,6 +407,11 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def update_match_finished(self, points_player_1, points_player_2):
+        """
+        Aggiorna il match con i punteggi finali.
+        points_player_1: punteggio del left_player (che corrisponde a player_1 nel DB)
+        points_player_2: punteggio del right_player (che corrisponde a player_2 nel DB)
+        """
         try:
             if not self.match_id:
                 print(f"[ERROR] Cannot finish match: match_id is None")
@@ -390,11 +423,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             if match.status in ['finished', 'finished_walkover', 'aborted']:
                 print(f"[WARNING] Attempted to finish already completed match {self.match_id}")
                 return False
-                
+            
+            # Salva i punteggi: left_score -> player_1, right_score -> player_2
             match.points_player_1 = points_player_1
             match.points_player_2 = points_player_2
             match.status = 'finished'
+            
+            # Il metodo save() del modello Match si occuperà automaticamente 
+            # di impostare winner e loser basandosi sui punteggi
             match.save()
+            
+            print(f"[INFO] Match {self.match_id} finished: player_1({match.player_1.username})={points_player_1}, player_2({match.player_2.username})={points_player_2}")
             return True
         except Exception as e:
             print(f"[ERROR] Final match update failed: {e}")
