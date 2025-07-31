@@ -69,8 +69,16 @@ export class TournamentController {
         const element = document.getElementById(elementId);
         if (!element) return;
 
-        const player1 = this.#formatPlayerName(match.player_1);
-        const player2 = this.#formatPlayerName(match.player_2);
+        const player1 = this.#formatPlayerName(match.player_1, match.status);
+        const player2 = this.#formatPlayerName(match.player_2, match.status);
+
+        // Rimuovi eventuali classi di animazione precedenti
+        element.classList.remove('in-game-breathing');
+
+        // Aggiungi l'effetto respirazione se il match è in corso
+        if (match.status === "in_game") {
+            element.classList.add('in-game-breathing');
+        }
 
         // Applica la classe CSS per il vincitore se il match è finito
         // this.#applyWinnerStyle(element, match, player1, player2);
@@ -81,17 +89,17 @@ export class TournamentController {
                 const player1WithScore = this.#formatPlayerWithScore(player1, match.points_player_1, match.status, match.winner);
                 const player2WithScore = this.#formatPlayerWithScore(player2, match.points_player_2, match.status, match.winner);
                 
-                // Gestisci il testo VS/Aborted con stile appropriato
-                let vsText, vsStyle;
+                // Aggiungi etichette sotto i nomi per match speciali
+                let statusText = "";
                 if (match.status === "aborted") {
-                    vsText = $.i18n('aborted') || 'Aborted';
-                    vsStyle = 'style="color: red; font-weight: bold; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);"';
-                } else {
-                    vsText = 'VS';
-                    vsStyle = 'class="vs-text"';
+                    const abortedLabel = $.i18n('aborted') || 'Aborted';
+                    statusText = `<br><span style="color: red; font-weight: bold; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">${abortedLabel}</span>`;
+                } else if (match.status === "finished_walkover") {
+                    const walkoverLabel = $.i18n('walkover') || 'Walkover';
+                    statusText = `<br><span style="color: orange; font-weight: bold; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">${walkoverLabel}</span>`;
                 }
                 
-                element.innerHTML = `${player1WithScore}<br><span ${vsStyle}>${vsText}</span><br>${player2WithScore}`;
+                element.innerHTML = `${player1WithScore}<br><span class="vs-text">VS</span><br>${player2WithScore}${statusText}`;
                 break;
             case "player1":
                 const finalPlayer1 = this.#formatPlayerWithScore(player1, match.points_player_1, match.status, match.winner);
@@ -104,15 +112,20 @@ export class TournamentController {
         }
     }
 
-    #formatPlayerName(playerName) {
-        return (playerName === "null" || playerName === null) 
-            ? "Waiting..." 
-            : playerName;
+    #formatPlayerName(playerName, status = null) {
+        if (playerName === "null" || playerName === null) {
+            // Se il match è walkover e non c'è avversario, mostra "No opponent"
+            if (status === "finished_walkover" || status === "aborted") {
+                return $.i18n('noOpponent') || 'No opponent';
+            }
+            return "Waiting...";
+        }
+        return playerName;
     }
 
     #formatPlayerWithScore(playerName, points, status, winner = null) {
         // Se il match non è finito o i punti non sono disponibili, mostra solo il nome
-        if (!["finished", "walkover", "aborted"].includes(status) || playerName === "Waiting...") {
+        if (!["finished", "finished_walkover", "aborted", "in_game"].includes(status) || playerName === "Waiting...") {
             return playerName;
         }
         
@@ -120,6 +133,12 @@ export class TournamentController {
         let playerStyle = "";
         if (status === "aborted") {
             // Entrambi i giocatori vengono scuriti se il match è annullato
+            playerStyle = 'class="loser-dim"';
+        } else if (status === "in_game") {
+            // Per match in corso, nessuno stile speciale (saranno evidenziati dall'animazione del bordo)
+            playerStyle = "";
+        } else if (playerName === ($.i18n('noOpponent') || 'No opponent')) {
+            // "No opponent" viene sempre scurito
             playerStyle = 'class="loser-dim"';
         } else if (winner && winner !== "null") {
             if (playerName === winner) {
@@ -131,8 +150,11 @@ export class TournamentController {
         
         // Gestisci i diversi casi di visualizzazione del punteggio
         let scoreDisplay = points;
-        if (status === "walkover" || status === "aborted") {
+        if (status === "finished_walkover" || status === "aborted") {
             scoreDisplay = "-";
+        } else if (status === "in_game") {
+            // Per match in corso, mostra i punteggi attuali o "-" se non disponibili
+            scoreDisplay = (points !== undefined && points !== null) ? points : "-";
         }
         
         // Mostra il nome del giocatore con il punteggio appropriato

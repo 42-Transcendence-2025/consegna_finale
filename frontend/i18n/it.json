@@ -63,5 +63,7 @@
 	"avgPointsScored": "Punti Medi Segnati",
 	"avgPointsAgainst": "Punti Medi Subiti",
 	"unknown": "Sconosciuto",
-	"aborted": "Non giocata"
+	"aborted": "Non giocata",
+	"walkover": "Decisa a tavolino",
+	"noOpponent": "Nessun avversario"
 }

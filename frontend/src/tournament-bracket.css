@@ -239,7 +239,43 @@
   opacity: 0.6;
 }
 
+/* Animazione respirazione per partite in corso */
+@keyframes breathing {
+  0%, 100% {
+    border-color: #0dcaf0;
+    box-shadow: 0 0 5px rgba(13, 202, 240, 0.5);
+  }
+  50% {
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+}
 
+.in-game-breathing {
+  animation: breathing 2s ease-in-out infinite;
+}
 
+/* Media queries per responsive design */
+@media (max-width: 1600px) {
+  .wrapper { transform: scale(0.85); transform-origin: center; }
+}
 
+@media (max-width: 1400px) {
+  .wrapper { transform: scale(0.75); transform-origin: center; }
+}
 
+@media (max-width: 1200px) {
+  .wrapper { transform: scale(0.65); transform-origin: center; }
+}
+
+@media (max-width: 1000px) {
+  .wrapper { transform: scale(0.55); transform-origin: center; }
+}
+
+@media (max-width: 800px) {
+  .wrapper { transform: scale(0.45); transform-origin: center; }
+}
+
+@media (max-width: 600px) {
+  .wrapper { transform: scale(0.35); transform-origin: center; }
+}
