@@ -50,5 +50,17 @@
 	"trophies": "trophies",
 	"searchMatch": "Search Match",
 	"searchingForRankedMatch": "Searching for a ranked match...",
-	"rankedMatchSearchInfo": "We're looking for an opponent with similar skill level"
+	"rankedMatchSearchInfo": "We're looking for an opponent with similar skill level",
+	"unknown": "Unknown",
+	"lastActivity": "last activity",
+	"statistics": "Statistics",
+	"totalMatches": "Total Matches",
+	"profile-wins": "Wins",
+	"losses": "Losses",
+	"draws": "Draws",
+	"winPercentage": "Win",
+	"currentStreak": "Current Streak",
+	"longestStreak": "Longest Streak",
+	"avgPointsScored": "Avg. Points Scored",
+	"avgPointsAgainst": "Avg. Points Against"
 }
