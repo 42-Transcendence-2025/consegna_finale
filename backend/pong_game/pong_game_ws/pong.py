@@ -89,10 +89,12 @@ class PongGame:
         if ball["x"] < -self.BALL_RADIUS:
             self.state["right_score"] += 1
             self.reset_ball("left")  # Ball goes to left player (who lost the point)
+            self.reset_paddles()
         elif ball["x"] > self.GAME_WIDTH + self.BALL_RADIUS:
             self.state["left_score"] += 1
             self.reset_ball("right")  # Ball goes to right player (who lost the point)
-            
+            self.reset_paddles()
+
         # Check for game over
         if self.state["left_score"] >= self.WINNING_SCORE or self.state["right_score"] >= self.WINNING_SCORE:
             self.game_over = True
@@ -249,4 +251,11 @@ class PongGame:
             "dx": initial_speed * dx_direction,
             "dy": 0
         }
+
+    def reset_paddles(self):
+        """
+        Reset paddles to the center of the game area.
+        """
+        self.state["left_paddle"]["y"] = self.GAME_HEIGHT // 2 - self.PADDLE_HEIGHT // 2
+        self.state["right_paddle"]["y"] = self.GAME_HEIGHT // 2 - self.PADDLE_HEIGHT // 2
 
