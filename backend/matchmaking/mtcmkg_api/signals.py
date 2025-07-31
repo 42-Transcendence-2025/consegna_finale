@@ -74,16 +74,26 @@ def handle_aborted_match(aborted_match):
         if next_match_number is not None:
             # Verifica che il match successivo non esista già
             if not tournament.matches.filter(match_number=next_match_number).exists():
+                
+                # Determina la posizione corretta del walkover winner
+                # Basandosi da quale match proviene
+                if aborted_match.match_number in [0, 2, 4]:  # Match pari → player_1
+                    player_1 = walkover_winner
+                    player_2 = None
+                else:  # Match dispari → player_2
+                    player_1 = None
+                    player_2 = walkover_winner
+                
                 # Crea il match walkover
                 Match.objects.create(
-                    player_1=walkover_winner,
-                    player_2=None,  # Nessun avversario (walkover)
+                    player_1=player_1,
+                    player_2=player_2,
                     status="finished_walkover",
                     match_number=next_match_number,
                     tournament=tournament,
                     winner=walkover_winner,
-                    points_player_1=0,  # Punteggio di default per walkover
-                    points_player_2=0
+                    points_player_1=5 if player_1 == walkover_winner else 0,
+                    points_player_2=5 if player_2 == walkover_winner else 0
                 )
                 
                 print(f"Created walkover match {next_match_number} for {walkover_winner.username} due to aborted match {aborted_match.match_number}")
