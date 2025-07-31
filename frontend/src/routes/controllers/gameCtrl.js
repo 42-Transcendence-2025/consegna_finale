@@ -192,10 +192,6 @@ export class GameController {
 			{
 				this.moveDown = true;
             }
-			else if (event.key === "Escape" && this.gameOver)
-			{
-				this.#goBack();
-			}
         });
 
 		document.addEventListener("keyup", (event) =>
@@ -208,14 +204,25 @@ export class GameController {
 			{
 				this.moveDown = false;
 			}
-			else if (event.key === "Escape" && this.gameOver)
-			{
-				this.#goBack();
-			}
 		});
     }
 
+	exitInputListener() {
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && this.gameOver) {
+				this.#goBack();
+			}
+		});
+
+		document.addEventListener("keyup", (event) => {
+			if (event.key === "Escape" && this.gameOver) {
+				this.#goBack();
+			}
+		});
+	}
+
 	gameOverScreen() {
+		this.exitInputListener();
 		let duration = 1500; // durata animazione in ms
 		let canvas = this.canvas;
 	
