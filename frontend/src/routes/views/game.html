@@ -1,7 +1,36 @@
+<div id="readyTimer" class="visually-hidden" style="align-items: center; justify-content: center;">
+    <div class="timer-content">
+        <div id="timerCountdown" class="timer-countdown">60</div>
+		<div id="timerInstruction" class="timer-instruction breathing-effect">Press up/down arrow key to ready up</div>
+    </div>
+</div>
+
 <div class="game-row" id="gameRow">
-    <div id="leftPlayerIcon" class="visually-hidden"></div>
+    <div id="leftPlayerInfo">
+		<img
+		src="./assets/default_icons/matt.png"
+		id="leftPlayerIcon"
+		alt="Left Player">
+		<div id="leftPlayerName" class="icon-label"></div>
+		<div class="trophy-label">
+			<i id="leftPlayerThropies" class="bi bi-trophy-fill" style="color: gold;"></i>
+		</div>
+		<i id="leftIsReady" class="bi bi-check-circle visually-hidden" style="color: green;">Pronto</i>
+	</div>
+		
 	<div id="onlineGameContainer" class="visually-hidden">
 		<canvas id="onlineGameCanvas"></canvas>
 	</div>
-	<div id="rightPlayerIcon" class="visually-hidden"></div>
+
+	<div id="rightPlayerInfo">
+		<img
+		src="./assets/default_icons/matt.png"
+		id="rightPlayerIcon"
+		alt="Right Player">
+		<div id="rightPlayerName" class="icon-label"></div>
+		<div class="trophy-label">
+			<i id="rightPlayerThropies" class="bi bi-trophy-fill" style="color: gold;"></i>
+		</div>
+		<i id="rightIsReady" class="bi bi-check-circle visually-hidden" style="color: green;">Pronto</i>
+	</div>
 </div>

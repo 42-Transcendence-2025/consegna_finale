@@ -160,7 +160,16 @@ body {
     border-radius: 10px;
 }
 
-/* Layout oizzontale icone + canvas */
+.breathing-effect {
+    animation: breathing 2s infinite;
+}
+@keyframes breathing {
+    0% { opacity: 1; transform: scale(1);}
+    50% { opacity: 0.6; transform: scale(1.08);}
+    100% { opacity: 1; transform: scale(1);}
+}
+
+/* Layout orizzontale icone + canvas */
 .game-row {
     display: flex;
     align-items: flex-start;
@@ -171,7 +180,7 @@ body {
 }
 
 #playerIcon, #aiIcon,
-#leftPlayerIcon, #rightPlayerIcon,
+#leftPlayerInfo, #rightPlayerInfo,
 #AILeftIcon, #AIRightIcon {
     display: flex;
     flex-direction: column;      /* Dispone immagine e testo in colonna */
@@ -181,8 +190,8 @@ body {
 
 #playerIcon img,
 #aiIcon img,
-#leftPlayerIcon img,
-#rightPlayerIcon img,
+#leftPlayerInfo img,
+#rightPlayerInfo img,
 #AILeftIcon img,
 #AIRightIcon img {
 	width: 90px;
@@ -196,8 +205,8 @@ body {
 
 #playerIcon .icon-label,
 #aiIcon .icon-label,
-#leftPlayerIcon .icon-label,
-#rightPlayerIcon .icon-label,
+#leftPlayerInfo .icon-label,
+#rightPlayerInfo .icon-label,
 #AILeftIcon .icon-label,
 #AIRightIcon .icon-label
 {
@@ -335,6 +344,34 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 10px;
+}
+
+.timer-content {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 10px;
+    max-width: 300px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    margin: 0 auto;
+    margin-top: 10px;
+}
+
+.timer-countdown {
+    font-family: 'pong-score', monospace;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.timer-instruction {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 

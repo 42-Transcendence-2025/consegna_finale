@@ -13,10 +13,9 @@ export class PrivateMatchController {
         const passwordInput = document.getElementById("passwordInput");
         const loadingScreen = document.getElementById("loadingScreen");
         const formContainer = document.getElementById("privateMatchFormContainer");
-        const cancelSearchButton = document.getElementById("cancelSearchButton");
         const generatePasswordButton = document.getElementById("generatePassword");
 
-        if (playButton && passwordInput && loadingScreen && formContainer && cancelSearchButton && generatePasswordButton) {
+        if (playButton && passwordInput && loadingScreen && formContainer && generatePasswordButton) {
             playButton.addEventListener("click", async () => {
                 const password = passwordInput.value.trim();
                 if (!password) {
@@ -55,17 +54,6 @@ export class PrivateMatchController {
                 }
             });
 
-            cancelSearchButton.addEventListener("click", () => {
-                console.log("Cancel search button clicked");
-                const matchManager = window.tools.matchManager;
-                if (matchManager) {
-                    matchManager.abortCurrentMatchRequest();
-                }
-                loadingScreen.classList.add("d-none");
-                loadingScreen.classList.remove("d-flex");
-                formContainer.classList.remove("d-none");
-            });
-
             generatePasswordButton.addEventListener("click", () => {
                 this.#generatePIN(passwordInput);
                 generatePasswordButton.blur(); 
@@ -73,7 +61,6 @@ export class PrivateMatchController {
         } else {
             if (!loadingScreen) console.error("Loading screen element (loadingScreen) not found!");
             if (!playButton) console.error("Play button (playButton) not found!");
-            if (!cancelSearchButton) console.error("Cancel search button (cancelSearchButton) not found!");
             if (!generatePasswordButton) console.error("Generate password button (generatePasswordButton) not found!");
         }
     }

@@ -9,6 +9,8 @@ export function createPongManager(pongApiUrl) {
 	const listeners = {
 	  onGameState: null,
 	  onGameOver: null,
+	  onWaitReady: null,
+	  onPlayersReady: null,
 	  onPlayersUpdate: null,
 	  onError: null,
 	};
@@ -56,7 +58,15 @@ export function createPongManager(pongApiUrl) {
 		  case "players_update":
 			listeners.onPlayersUpdate?.(data);
 			break;
-  
+
+		  case "wait_ready":
+			listeners.onWaitReady?.(data);
+			break;
+
+		  case "players_ready":
+			listeners.onPlayersReady?.(data);
+			break;
+
 		  default:
 			console.warn("[PongManager] Tipo di messaggio sconosciuto:", data.type);
 		}

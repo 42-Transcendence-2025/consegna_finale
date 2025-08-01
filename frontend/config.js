@@ -15,7 +15,6 @@ import {ProfileController} from "./src/routes/controllers/profileCtrl.js";
 import {SearchController} from "./src/routes/controllers/searchCtrl.js";
 import {HistoryController} from "./src/routes/controllers/historyCtrl.js";
 import {WallOfFameController} from "./src/routes/controllers/wallOfFameCtrl.js";
-import {TestController} from "./src/routes/controllers/test.js";
 
 
 /**
@@ -168,12 +167,6 @@ export const CONFIG = {
 		tournament: {
 			view: "tournament",
 			controller: TournamentController,
-			authRequired: true,
-			hideLangSwitcher: true,
-		},
-		test: {
-			view: "test",
-			controller: TestController,
 			authRequired: true,
 			hideLangSwitcher: true,
 		}

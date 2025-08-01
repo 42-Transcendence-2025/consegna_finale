@@ -4,6 +4,9 @@ export class GameController {
 
 
     init() {
+        // Pulisci eventuali listener residui da sessioni precedenti
+        this.cleanup();
+        
         console.log("Game Controller");
         this.canvas = document.getElementById("onlineGameCanvas");
         this.ctx = this.canvas.getContext("2d");
@@ -59,6 +62,15 @@ export class GameController {
 			
 		});
 
+		this.pongManager.on("onWaitReady", (data) => {
+			this.startTimer();
+		});
+
+		this.pongManager.on("onPlayersReady", (data) => {
+			this.playersReady(data);
+		});
+
+
 		this.pongManager.on("onPlayersUpdate", (gameState) => {
 			this.leftPlayer = gameState.left_player;
 			this.rightPlayer = gameState.right_player;
@@ -69,12 +81,59 @@ export class GameController {
 		this.gameLoop();
     }
 
+	startTimer() {
+		const timerElement = document.getElementById("readyTimer");
+		const countdownElement = document.getElementById("timerCountdown");
+
+		let countdown = 60; // 60 seconds countdown
+		countdownElement.textContent = countdown;
+		timerElement.classList.remove("visually-hidden");
+		
+		// Salva il riferimento per poterlo cancellare nel cleanup
+		this.timerInterval = setInterval(() => {
+			countdown -= 1;
+			countdownElement.textContent = countdown;
+
+			if (countdown <= 0) {
+				clearInterval(this.timerInterval);
+				timerElement.classList.add("visually-hidden");
+			}
+		}, 1000);
+	}
+
+	playersReady(data) {
+		const leftReady = data.left_ready;
+		const rightReady = data.right_ready;
+		const leftReadyStatus = document.getElementById("leftIsReady");
+		const rightReadyStatus = document.getElementById("rightIsReady");
+		const timer = document.getElementById("readyTimer");
+
+		console.log("[GameController] Players ready status:", leftReady, rightReady);
+		
+
+		if (leftReady) {
+			leftReadyStatus.classList.remove("visually-hidden");
+			const leftReadyText = document.getElementById("timerInstruction");
+			leftReadyText.classList.add("visually-hidden");
+		}
+		if (rightReady) {
+			rightReadyStatus.classList.remove("visually-hidden");
+			const rightReadyText = document.getElementById("timerInstruction");
+			rightReadyText.classList.add("visually-hidden");
+		}
+
+		if (leftReady && rightReady) {
+			leftReadyStatus.classList.add("visually-hidden");
+			rightReadyStatus.classList.add("visually-hidden");
+			timer.classList.add("visually-hidden");
+		}
+	}
+
 	gameLoop() {
 		if (this.gameOver) {
 			this.gameOverScreen();
 			return;
 		}
-		// console.log("Game over:", this.gameOver);
 		
 		this.sendMoves();
 		this.draw();
@@ -100,7 +159,6 @@ export class GameController {
         this.drawScores();
         this.drawNet();
 		this.drawPlayerInfo();
-        // this.drawStartMessage();
     }
 
 	clearCanvas() {
@@ -142,83 +200,66 @@ export class GameController {
         this.ctx.fillText(this.state.rightScore, 600, 50);
     }
 
-	drawStartMessage() {
-        if (this.waitingToStart) {
-            this.ctx.font = "25px Arial";
-            this.ctx.fillStyle = "grey";
-            if (Math.floor(Date.now() / 1000) % 2 === 0) {
-                this.ctx.fillText("Press an arrow to start the game", 228, 250);
-            }
-        }
-    }
-
 	drawPlayerInfo() {
-        const leftPlayerImgPath = "./assets/default_icons/goku.png";
+		const rightPlayerIcon = document.getElementById("rightPlayerIcon");
 		const rightPlayerImgPath = "./assets/default_icons/vegeta.png";
+		rightPlayerIcon.src = rightPlayerImgPath;
+		
+		const rightPlayerName = document.getElementById("rightPlayerName");
+		rightPlayerName.textContent = `${this.rightPlayer}`;
+		
+		const rightPlayerThropies = document.getElementById("rightPlayerThropies");
+		rightPlayerThropies.textContent = `${this.rightPlayerThropies}`;
 
 		const leftPlayerIcon = document.getElementById("leftPlayerIcon");
-		const rightPlayerIcon = document.getElementById("rightPlayerIcon");
+        const leftPlayerImgPath = "./assets/default_icons/goku.png";
+		leftPlayerIcon.src = leftPlayerImgPath;
 
-		leftPlayerIcon.innerHTML = `
-		<img src="${leftPlayerImgPath}" 
-		alt="Left Player">
-		<div class="icon-label">${this.leftPlayer}</div>
-		<div class="trophy-label">
-			<i class="bi bi-trophy-fill" style="color: gold;"></i> ${this.leftPlayerThropies}
-		</div>
-		`;
-		leftPlayerIcon.classList.remove("visually-hidden");
+		const leftPlayerName = document.getElementById("leftPlayerName");
+		leftPlayerName.textContent = `${this.leftPlayer}`;
 
-		rightPlayerIcon.innerHTML = `
-		<img src="${rightPlayerImgPath}"
-		alt="Right Player"
-		<div class="icon-label">${this.rightPlayer}</div>
-		<div class="trophy-label">
-			<i class="bi bi-trophy-fill" style="color: gold;"></i> ${this.rightPlayerThropies}
-		</div>
-		`;
-		rightPlayerIcon.classList.remove("visually-hidden");
+		const leftPlayerThropies = document.getElementById("leftPlayerThropies");
+		leftPlayerThropies.textContent = `${this.leftPlayerThropies}`;
     }
 
     initInputListeners()
 	{
-        document.addEventListener("keydown", (event) =>
-		{
-            if (event.key === "ArrowUp")
-			{
-				this.moveUp = true;
+        // Salva i riferimenti ai listener per poterli rimuovere dopo
+        this.keydownHandler = (event) => {
+            if (event.key === "ArrowUp") {
+                this.moveUp = true;
+            } else if (event.key === "ArrowDown") {
+                this.moveDown = true;
             }
-			else if (event.key === "ArrowDown")
-			{
-				this.moveDown = true;
-            }
-        });
+        };
 
-		document.addEventListener("keyup", (event) =>
-		{
-			if (event.key === "ArrowUp")
-			{
-				this.moveUp = false;
-			}
-			else if (event.key === "ArrowDown")
-			{
-				this.moveDown = false;
-			}
-		});
+        this.keyupHandler = (event) => {
+            if (event.key === "ArrowUp") {
+                this.moveUp = false;
+            } else if (event.key === "ArrowDown") {
+                this.moveDown = false;
+            }
+        };
+
+        document.addEventListener("keydown", this.keydownHandler);
+        document.addEventListener("keyup", this.keyupHandler);
     }
 
 	exitInputListener() {
-		document.addEventListener("keydown", (event) => {
+		this.escapeKeydownHandler = (event) => {
 			if (event.key === "Escape" && this.gameOver) {
 				this.#goBack();
 			}
-		});
+		};
 
-		document.addEventListener("keyup", (event) => {
+		this.escapeKeyupHandler = (event) => {
 			if (event.key === "Escape" && this.gameOver) {
 				this.#goBack();
 			}
-		});
+		};
+
+		document.addEventListener("keydown", this.escapeKeydownHandler);
+		document.addEventListener("keyup", this.escapeKeyupHandler);
 	}
 
 	gameOverScreen() {
@@ -252,11 +293,70 @@ export class GameController {
 	}
 
 	#goBack() {
+		this.cleanup(); // Pulisci prima di cambiare pagina
+		
     	const tId = localStorage.getItem("currentTournamentId");
     	if (tId)
     	    window.location.hash = "#tournament";      // torna al bracket
     	else
     	    window.location.hash = "#onlineGame";    // caso normale
+	}
+
+	cleanup() {
+		console.log("GameController cleanup started");
+		
+		// Rimuovi i listener per i movimenti
+		if (this.keydownHandler) {
+			document.removeEventListener("keydown", this.keydownHandler);
+			this.keydownHandler = null;
+		}
+		if (this.keyupHandler) {
+			document.removeEventListener("keyup", this.keyupHandler);
+			this.keyupHandler = null;
+		}
+		
+		// Rimuovi i listener per Escape
+		if (this.escapeKeydownHandler) {
+			document.removeEventListener("keydown", this.escapeKeydownHandler);
+			this.escapeKeydownHandler = null;
+		}
+		if (this.escapeKeyupHandler) {
+			document.removeEventListener("keyup", this.escapeKeyupHandler);
+			this.escapeKeyupHandler = null;
+		}
+		
+		// Pulisci il timer
+		if (this.timerInterval) {
+			clearInterval(this.timerInterval);
+			this.timerInterval = null;
+		}
+		
+		// Disconnetti il pongManager e rimuovi i listener
+		if (this.pongManager) {
+			// Verifica se il metodo esiste prima di chiamarlo
+			if (typeof this.pongManager.removeAllListeners === 'function') {
+				this.pongManager.removeAllListeners();
+			}
+			if (typeof this.pongManager.disconnect === 'function') {
+				this.pongManager.disconnect();
+			}
+			this.pongManager = null;
+		}
+		
+		// Ferma il game loop
+		this.gameOver = true;
+		
+		// Nascondi il timer se visibile
+		const timerElement = document.getElementById("readyTimer");
+		if (timerElement) {
+			timerElement.classList.add("visually-hidden");
+		}
+		
+		// Reset delle variabili di stato
+		this.moveUp = false;
+		this.moveDown = false;
+		
+		console.log("GameController cleanup completed");
 	}
 }
 
@@ -287,7 +387,12 @@ function animateGameOver(timestamp, context) {
 		ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 + 20);
 
 		ctx.font = "40px Arial";
-		ctx.fillText(`${winner} ${$.i18n('wins')}!`, canvas.width / 2, canvas.height / 2 + 80);
+		if (winner === "null" || winner === null) {
+			ctx.fillText($.i18n('aborted'), canvas.width / 2, canvas.height / 2 + 80);
+		}
+		else {
+			ctx.fillText(`${winner} ${$.i18n('wins')}!`, canvas.width / 2, canvas.height / 2 + 80);
+		}
 	}
 
 	if (progress < 1) {
