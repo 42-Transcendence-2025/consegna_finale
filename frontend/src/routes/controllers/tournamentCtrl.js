@@ -36,6 +36,14 @@ export class TournamentController {
         }
     }
 
+    destroy() {
+        // Ferma l'intervallo quando si cambia pagina o si abbandona il torneo
+        if (this._tournamentInterval) {
+            clearInterval(this._tournamentInterval);
+            this._tournamentInterval = null;
+        }
+    }
+
     #renderBracket(tournamentData) {
         // Ottieni i risultati dei match per aggiornare il bracket
         const matchResults = this.#getMatchResults(tournamentData.matches || []);
@@ -189,6 +197,9 @@ export class TournamentController {
 
         quitBtn.onclick = async () => {
             try {
+                // Ferma l'intervallo prima di abbandonare
+                this.destroy();
+                
                 // Manda DELETE solo se lo status è 'created'
                 if (status === 'created') {
                     await window.tools.matchManager.quitTournament(tournamentId);
