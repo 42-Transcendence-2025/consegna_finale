@@ -7,12 +7,13 @@ export function createPongManager(pongApiUrl) {
   
 	// Callback registrabili dal frontend
 	const listeners = {
-	  onGameState: null,
-	  onGameOver: null,
-	  onWaitReady: null,
-	  onPlayersReady: null,
-	  onPlayersUpdate: null,
-	  onError: null,
+		onAuthentication: null,
+		onGameState: null,
+		onGameOver: null,
+		onWaitReady: null,
+		onPlayersReady: null,
+		onPlayersUpdate: null,
+		onError: null,
 	};
   
 	/**
@@ -65,6 +66,16 @@ export function createPongManager(pongApiUrl) {
 
 		  case "players_ready":
 			listeners.onPlayersReady?.(data);
+			break;
+
+		  case undefined:
+			// Gestione messaggio di autenticazione (non ha campo type)
+			if (data.message && data.message.includes("Authentication successful")) {
+				console.log("[PongManager] Autenticazione riuscita:", data.message);
+				break;
+			}
+			// Se non è autenticazione, logga come messaggio sconosciuto
+			console.warn("[PongManager] Messaggio senza tipo:", data);
 			break;
 
 		  default:
