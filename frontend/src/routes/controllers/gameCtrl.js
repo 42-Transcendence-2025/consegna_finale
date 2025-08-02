@@ -34,7 +34,7 @@ export class GameController {
 		// OTTIMIZZAZIONE: Interpolazione per movimento fluido
 		this.interpolation = {
 			enabled: true,
-			lerpFactor: 0.65, // Velocità interpolazione (0.1 = lento, 0.3 = veloce)
+			lerpFactor: 0.75, // Velocità interpolazione (0.1 = lento, 0.3 = veloce)
 			targetState: null,
 			previousDirection: null,
 			currentState: {
