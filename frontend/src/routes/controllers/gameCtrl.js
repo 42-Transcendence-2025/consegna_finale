@@ -207,7 +207,7 @@ export class GameController {
 		rightPlayerName.textContent = `${this.rightPlayer}`;
 		
 		const rightPlayerThropies = document.getElementById("rightPlayerThropies");
-		rightPlayerThropies.textContent = `${this.rightPlayerThropies}`;
+		rightPlayerThropies.textContent = ` ${this.rightPlayerThropies}`;
 
 		const leftPlayerIcon = document.getElementById("leftPlayerIcon");
         const leftPlayerImgPath = "./assets/default_icons/goku.png";
@@ -217,7 +217,7 @@ export class GameController {
 		leftPlayerName.textContent = `${this.leftPlayer}`;
 
 		const leftPlayerThropies = document.getElementById("leftPlayerThropies");
-		leftPlayerThropies.textContent = `${this.leftPlayerThropies}`;
+		leftPlayerThropies.textContent = ` ${this.leftPlayerThropies}`;
     }
 
     initInputListeners()
