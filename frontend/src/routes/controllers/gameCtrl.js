@@ -21,6 +21,29 @@ export class GameController {
 		this.moveUp = false;
 		this.moveDown = false;
 
+		// OTTIMIZZAZIONE: Cache elementi DOM una sola volta
+		this.domElements = {
+			rightPlayerIcon: document.getElementById("rightPlayerIcon"),
+			rightPlayerName: document.getElementById("rightPlayerName"),
+			rightPlayerTrophies: document.getElementById("rightPlayerThropies"),
+			leftPlayerIcon: document.getElementById("leftPlayerIcon"),
+			leftPlayerName: document.getElementById("leftPlayerName"),
+			leftPlayerTrophies: document.getElementById("leftPlayerThropies")
+		};
+
+		// OTTIMIZZAZIONE: Interpolazione per movimento fluido
+		this.interpolation = {
+			enabled: true,
+			lerpFactor: 0.75, // Velocità interpolazione (0.1 = lento, 0.3 = veloce)
+			targetState: null,
+			previousDirection: null,
+			currentState: {
+				ball: { x: 400, y: 300 },
+				leftPaddle: { y: 250 },
+				rightPaddle: { y: 250 }
+			}
+		};
+
 		this.state = {
             ball: { x: 400, y: 300, dx: 1, dy: 1 },
             leftPaddle: { y: 250 },
@@ -52,7 +75,21 @@ export class GameController {
 		this.pongManager = window.tools.pongManager;
 		this.pongManager.connect(gameId);
 		this.pongManager.on("onGameState", (gameState) => {
-			this.state.updateFromServer(gameState);
+			// OTTIMIZZAZIONE: Salva come target per interpolazione
+			if (this.interpolation.enabled) {
+				this.interpolation.targetState = {
+					ball: { x: gameState.ball.x, y: gameState.ball.y },
+					leftPaddle: { y: gameState.left_paddle.y },
+					rightPaddle: { y: gameState.right_paddle.y }
+				};
+			} else {
+				// Fallback senza interpolazione
+				this.state.updateFromServer(gameState);
+			}
+			
+			// Aggiorna sempre i punteggi immediatamente (non interpolare i numeri)
+			this.state.leftScore = gameState.left_score;
+			this.state.rightScore = gameState.right_score;
 		});
 
 		this.pongManager.on("onGameOver", (gameState) => {
@@ -133,9 +170,55 @@ export class GameController {
 			return;
 		}
 		
+		// OTTIMIZZAZIONE: Interpola movimento per fluidità
+		if (this.interpolation.enabled && this.interpolation.targetState) {
+			this.interpolateMovement();
+		}
+		
 		this.sendMoves();
 		this.draw();
 		requestAnimationFrame(this.gameLoop.bind(this)); // Recursive call for animation
+	}
+
+	interpolateMovement() {
+	    const lerp = this.interpolation.lerpFactor;
+	    const current = this.interpolation.currentState;
+	    const target = this.interpolation.targetState;
+	
+	    // NUOVO: Detection del cambio direzione per la palla
+	    const ballDx = target.ball.x - current.ball.x;
+	    const ballDy = target.ball.y - current.ball.y;
+	
+	    // Se non abbiamo una direzione precedente, salvala
+	    if (!this.interpolation.previousDirection) {
+	        this.interpolation.previousDirection = { dx: ballDx, dy: ballDy };
+	    }
+	
+	    // Controlla se la direzione è cambiata (segno opposto = rimbalzo)
+	    const directionChangedX = (ballDx * this.interpolation.previousDirection.dx) < 0;
+	    const directionChangedY = (ballDy * this.interpolation.previousDirection.dy) < 0;
+	
+	    // Se la direzione è cambiata, aggiorna immediatamente (no interpolazione)
+	    if (directionChangedX || directionChangedY) {
+	        current.ball.x = target.ball.x;
+	        current.ball.y = target.ball.y;
+	        this.interpolation.previousDirection = { dx: ballDx, dy: ballDy };
+	    } else {
+	        // Interpolazione normale solo se la direzione non è cambiata
+	        current.ball.x += (target.ball.x - current.ball.x) * lerp;
+	        current.ball.y += (target.ball.y - current.ball.y) * lerp;
+	        this.interpolation.previousDirection = { dx: ballDx, dy: ballDy };
+	    }
+	
+	    // Interpola sempre i paddle (non hanno problemi di direzione critica)
+	    current.leftPaddle.y += (target.leftPaddle.y - current.leftPaddle.y) * lerp;
+	    current.rightPaddle.y += (target.rightPaddle.y - current.rightPaddle.y) * lerp;
+	
+	    // Aggiorna lo stato di rendering
+	    this.state.ball.x = current.ball.x;
+	    this.state.ball.y = current.ball.y;
+	    this.state.leftPaddle.y = current.leftPaddle.y;
+	    this.state.rightPaddle.y = current.rightPaddle.y;
 	}
 
 	sendMoves() {
@@ -147,7 +230,6 @@ export class GameController {
 			this.pongManager.sendMove("down");
 		}
 	}
-
 
 
 	draw() {
@@ -353,6 +435,12 @@ export class GameController {
 		// Reset delle variabili di stato
 		this.moveUp = false;
 		this.moveDown = false;
+		
+		// OTTIMIZZAZIONE: Pulisci la cache DOM
+		this.domElements = null;
+		
+		// OTTIMIZZAZIONE: Pulisci interpolazione
+		this.interpolation = null;
 		
 		console.log("GameController cleanup completed");
 	}
