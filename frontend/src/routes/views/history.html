@@ -1,5 +1,5 @@
 <!-- Extended Match History Page -->
-<div class="container py-5">
+<div class="container py-5 overflow-auto" style="max-width: 100%; max-height: 90vh;">
     <h1 class="text-warning text-center mb-4" data-i18n="match-history">Match History</h1>
 
     <!-- Search/filter controls -->
@@ -26,10 +26,11 @@
     <!-- Match list -->
     <div id="history-matches-list" class="d-flex flex-column gap-2 overflow-auto" style="max-height: 50vh;"></div>
 
-    <!-- Back -->
-    <div class="mt-4 d-flex justify-content-center">
-        <a href="#home" class="btn btn-outline-secondary" style="border-radius: 12px;">
-            <i class="fa fa-arrow-left"></i>
+    <!-- Back button to return to home -->
+    <div class="mt-5 d-flex justify-content-center">
+        <a href="#home" class="btn btn-outline-secondary d-flex justify-content-center align-items-center"
+        style="min-width: 64px; min-height: 64px; border-radius: 12px;">
+            <i class="fa fa-arrow-left fa-2x"></i>
         </a>
     </div>
 </div>
