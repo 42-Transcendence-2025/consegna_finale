@@ -281,14 +281,25 @@ export class GameController {
     }
 
 	drawPlayerInfo() {
-		// OTTIMIZZAZIONE: Usa cache DOM invece di query ripetute
-		this.domElements.rightPlayerIcon.src = "./assets/default_icons/vegeta.png";
-		this.domElements.rightPlayerName.textContent = `${this.rightPlayer}`;
-		this.domElements.rightPlayerTrophies.textContent = `${this.rightPlayerThropies}`;
+		const rightPlayerIcon = document.getElementById("rightPlayerIcon");
+		const rightPlayerImgPath = "./assets/default_icons/vegeta.png";
+		rightPlayerIcon.src = rightPlayerImgPath;
+		
+		const rightPlayerName = document.getElementById("rightPlayerName");
+		rightPlayerName.textContent = `${this.rightPlayer}`;
+		
+		const rightPlayerThropies = document.getElementById("rightPlayerThropies");
+		rightPlayerThropies.textContent = ` ${this.rightPlayerThropies}`;
 
-		this.domElements.leftPlayerIcon.src = "./assets/default_icons/goku.png";
-		this.domElements.leftPlayerName.textContent = `${this.leftPlayer}`;
-		this.domElements.leftPlayerTrophies.textContent = `${this.leftPlayerThropies}`;
+		const leftPlayerIcon = document.getElementById("leftPlayerIcon");
+        const leftPlayerImgPath = "./assets/default_icons/goku.png";
+		leftPlayerIcon.src = leftPlayerImgPath;
+
+		const leftPlayerName = document.getElementById("leftPlayerName");
+		leftPlayerName.textContent = `${this.leftPlayer}`;
+
+		const leftPlayerThropies = document.getElementById("leftPlayerThropies");
+		leftPlayerThropies.textContent = ` ${this.leftPlayerThropies}`;
     }
 
     initInputListeners()

@@ -218,6 +218,13 @@ body {
     font-family: Arial, sans-serif;
 }
 
+/* Rimuovi corsivo dalle icone dei trofei */
+.trophy-label i,
+#leftPlayerThropies,
+#rightPlayerThropies {
+    font-style: normal;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Contenitore della piramide */
 .pyramid-container {
@@ -295,6 +302,7 @@ body {
 
 /* Canvas gioco online  */
 #onlineGameContainer {
+    position: relative; /* Aggiunto per posizionamento assoluto del timer */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -305,6 +313,18 @@ body {
 #onlineGameCanvas {
     border: 5px solid #fff;
     border-radius: 10px;
+}
+
+/* Timer posizionato sopra il canvas */
+#readyTimer {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Stili per la schermata di caricamento del match privato */
