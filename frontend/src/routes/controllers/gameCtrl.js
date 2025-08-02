@@ -150,16 +150,14 @@ export class GameController {
 
 		if (leftReady) {
 			leftReadyStatus.classList.remove("visually-hidden");
-			const leftReadyText = document.getElementById("timerInstruction");
-			leftReadyText.classList.add("visually-hidden");
 		}
 		if (rightReady) {
 			rightReadyStatus.classList.remove("visually-hidden");
-			const rightReadyText = document.getElementById("timerInstruction");
-			rightReadyText.classList.add("visually-hidden");
 		}
 
 		if (leftReady && rightReady) {
+			const rightReadyText = document.getElementById("timerInstruction");
+			rightReadyText.classList.add("visually-hidden");
 			leftReadyStatus.classList.add("visually-hidden");
 			rightReadyStatus.classList.add("visually-hidden");
 			timer.classList.add("visually-hidden");
