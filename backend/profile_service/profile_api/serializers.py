@@ -65,6 +65,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'trophies',
+            'profile_image',
             'last_activity',
             'tournaments',
             'matches',

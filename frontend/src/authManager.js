@@ -51,12 +51,29 @@ export class AuthManager {
 
 		this.#loadJwtFromStorage();
 		this.#bindEvents();
+		this.#setupAjaxDefaults();
 	}
 
 	#bindEvents(){
 		$(`#logout-button`).on("click", (e) => {
 			e.preventDefault();
 			this.logout(true);
+		});
+	}
+
+	#setupAjaxDefaults() {
+		// Configure jQuery to automatically add Authorization header
+		$.ajaxSetup({
+			beforeSend: (xhr, settings) => {
+				// Only add auth header for requests to our API
+				if (settings.url.includes(':8003') || settings.url.includes(':8001') || 
+				    settings.url.includes(':8002') || settings.url.includes(':8004')) {
+					const token = this.accessToken;
+					if (token) {
+						xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+					}
+				}
+			}
 		});
 	}
 
@@ -415,6 +432,7 @@ export class AuthManager {
 	#setAccessToken(value) {
 		this.#jwt.access = value;
 		this.#saveJwtToStorage();
+		this.#setupAjaxDefaults(); // Refresh Ajax setup when token changes
 	}
 
 	#setRefreshToken(value) {

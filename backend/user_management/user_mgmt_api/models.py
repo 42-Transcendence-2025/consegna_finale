@@ -11,6 +11,7 @@ class PongUser(AbstractUser):
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     last_login_device = models.TextField(null=True, blank=True)
     last_otp_verification = models.DateTimeField(null=True, blank=True)
+    profile_image = models.CharField(max_length=255, blank=True, null=True)
 
     def is_otp_required(self, request):
         """Controlla se l'OTP è necessario"""
@@ -39,6 +40,46 @@ class PongUser(AbstractUser):
             return True  # OTP richiesto
 
         return False  # OTP non richiesto
+
+    def get_profile_image(self):
+        """Restituisce l'immagine del profilo o una casuale se non impostata"""
+        if self.profile_image:
+            return self.profile_image
+        
+        # Lista delle immagini di default
+        default_icons = [
+            "cole(easy).png",
+            "goku.png",
+            "lucia.png",
+            "matt.png",
+            "nick(medium).png",
+            "rin(hard).png",
+            "vegeta.png",
+        ]
+        
+        # Genera indice basato sull'username per consistenza
+        import hashlib
+        hash_object = hashlib.md5(self.username.encode())
+        hash_hex = hash_object.hexdigest()
+        idx = int(hash_hex, 16) % len(default_icons)
+        
+        return f"assets/default_icons/{default_icons[idx]}"
+
+    def assign_random_profile_image(self):
+        """Assegna un'immagine casuale dal set di default"""
+        import random
+        default_icons = [
+            "cole(easy).png",
+            "goku.png", 
+            "lucia.png",
+            "matt.png",
+            "nick(medium).png",
+            "rin(hard).png",
+            "vegeta.png",
+        ]
+        random_icon = random.choice(default_icons)
+        self.profile_image = f"assets/default_icons/{random_icon}"
+        self.save()
 
     def __str__(self):
         return self.username

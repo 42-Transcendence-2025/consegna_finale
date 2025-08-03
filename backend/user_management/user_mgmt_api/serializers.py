@@ -23,7 +23,7 @@ class PongUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'trophies', 'current_password', 'new_password', 'confirm_new_password', 'is_active']
+        fields = ['username', 'email', 'trophies', 'profile_image', 'current_password', 'new_password', 'confirm_new_password', 'is_active']
         read_only_fields = ['trophies']
 
     def get_is_active(self, obj):
