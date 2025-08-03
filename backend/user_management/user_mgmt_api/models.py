@@ -12,6 +12,8 @@ class PongUser(AbstractUser):
     last_login_device = models.TextField(null=True, blank=True)
     last_otp_verification = models.DateTimeField(null=True, blank=True)
 
+    friends = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='friends_list')
+    
     def is_otp_required(self, request):
         """Controlla se l'OTP è necessario"""
         new_ip = get_client_ip(request)

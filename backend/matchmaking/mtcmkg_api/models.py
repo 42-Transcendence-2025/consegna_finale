@@ -13,6 +13,8 @@ class PongUser(AbstractUser):
     last_login_device = models.TextField(null=True, blank=True)
     last_otp_verification = models.DateTimeField(null=True, blank=True)
 
+    friends = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='friends_list')
+
     def __str__(self):
         return self.username
     
