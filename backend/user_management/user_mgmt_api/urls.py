@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PongLoginView, PongRegisterView, PongUserView, VerifyOTPView, PongProfileView, PongUserListView, PongRefreshTokenView, PongLogoutView, PongFriendView
+from .views import PongLoginView, PongRegisterView, PongUserView, VerifyOTPView, PongProfileView, PongUserListView, PongRefreshTokenView, PongLogoutView, ProfileImageUploadView, PongFriendView
 
 app_name = 'user_mgmt_api'
 
@@ -12,5 +12,6 @@ urlpatterns = [
     path('user/<str:username>/', PongUserView.as_view(), name='user_detail'),
     path('token_refresh/', PongRefreshTokenView.as_view(), name='token_refresh'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
+    path('profile/image/', ProfileImageUploadView.as_view(), name='profile_image_upload'),
     path('friends/<str:username>/', PongFriendView.as_view(), name='friend_action'),
 ]

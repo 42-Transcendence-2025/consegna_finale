@@ -1,14 +1,20 @@
 import { PongGame } from "../../pong_ai/game.js";
 import { Player } from "../../pong_ai/player.js";
 import { AI } from "../../pong_ai/ai.js";
+import { CONFIG } from "../../../config.js";
 
 export class PongAIController {
     constructor() {
         this.titleSuffix = "Pong AI";
+        this.userProfile = null;
     }
 
-    init() {
+    async init() {
 		console.log("Pong AI Controller");		
+		
+		// Carica il profilo utente
+		await this.#loadUserProfile();
+		
 		const menu = document.getElementById("menu");
 		const AIgameContainer = document.getElementById("AIgameContainer");
 		const game = new PongGame();
@@ -19,7 +25,7 @@ export class PongAIController {
 			ai = new AI(game, difficulty);
 			menu.classList.add("visually-hidden");
 			AIgameContainer.classList.remove("visually-hidden");
-			drawPlayerInfo(aiImgPath, aiName, aiTrophy);
+			this.#drawPlayerInfo(aiImgPath, aiName, aiTrophy);
 			gameLoop();
 		};
 
@@ -61,27 +67,6 @@ export class PongAIController {
 			requestAnimationFrame(gameLoop); // Recursive call for animation
 		}
 
-		function drawPlayerInfo(aiImgPath, aiName, aiTrophy) {
-			const playerImgPath = "./assets/default_icons/goku.png";
-
-			// Player Icon
-			const playerIcon = document.getElementById("playerIcon");
-			playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">
-				<div class="icon-label">Player</div>
-			`;
-			playerIcon.classList.remove("visually-hidden");
-
-
-			// AI Icon
-			const aiIcon = document.getElementById("aiIcon");
-			aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">
-				<div class="icon-label">${aiName}</div>
-				<div class="trophy-label">
-					<i class="bi bi-trophy-fill" style="color: gold;"></i> ${aiTrophy}
-				</div>
-			`;
-			aiIcon.classList.remove("visually-hidden");
-		}
 	
 		function gameOverScreen()
 		{
@@ -144,6 +129,81 @@ export class PongAIController {
 		
 			requestAnimationFrame(animate);
 		}
-			
-    }
+	}
+
+	async #loadUserProfile() {
+		try {
+			const response = await $.ajax({
+				url: `${CONFIG.apiRoutes.profileApiUrl}/profile/`,
+				method: "GET",
+				dataType: "json",
+			});
+			this.userProfile = response;
+		} catch (error) {
+			console.error("Errore nel caricamento del profilo utente:", error);
+			// Fallback ai valori predefiniti
+			this.userProfile = {
+				username: "Player",
+				profile_image: null
+			};
+		}
+	}
+
+	#drawPlayerInfo(aiImgPath, aiName, aiTrophy) {
+		// Usa i dati reali dell'utente
+		const playerImgPath = this.#getUserAvatarPath();
+		const playerName = this.userProfile?.username || "Player";
+
+		// Player Icon
+		const playerIcon = document.getElementById("playerIcon");
+		playerIcon.innerHTML = `<img src="${playerImgPath}" alt="Player">
+			<div class="icon-label">${playerName}</div>
+		`;
+		playerIcon.classList.remove("visually-hidden");
+
+		// AI Icon
+		const aiIcon = document.getElementById("aiIcon");
+		aiIcon.innerHTML = `<img src="${aiImgPath}" alt="AI">
+			<div class="icon-label">${aiName}</div>
+			<div class="trophy-label">
+				<i class="bi bi-trophy-fill" style="color: gold;"></i> ${aiTrophy}
+			</div>
+		`;
+		aiIcon.classList.remove("visually-hidden");
+	}
+
+	#getUserAvatarPath() {
+		if (this.userProfile?.profile_image) {
+			return this.userProfile.profile_image;
+		}
+		
+		// Fallback al sistema hash-based
+		const defaultIcons = [
+			"cole(easy).png",
+			"goku.png", 
+			"lucia.png",
+			"matt.png",
+			"nick(medium).png",
+			"rin(hard).png",
+			"vegeta.png",
+		];
+		
+		let avatar = defaultIcons[1]; // goku.png come default
+		if (this.userProfile?.username) {
+			const idx = Math.abs(this.#hashString(this.userProfile.username)) % defaultIcons.length;
+			avatar = defaultIcons[idx];
+		}
+		
+		return `assets/default_icons/${avatar}`;
+	}
+
+	#hashString(str) {
+		let hash = 0;
+		for (let i = 0; i < str.length; i++) {
+			const char = str.charCodeAt(i);
+			hash = (hash << 5) - hash + char;
+			hash = hash & hash; // Convert to 32bit integer
+		}
+		return hash;
+	}
 }

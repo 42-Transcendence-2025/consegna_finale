@@ -78,6 +78,7 @@ services:
     volumes:
       - ./backend/user_management:/app # TODO: remove this on prod and use COPY instead
       - user_management_venv:/venv
+      - ./frontend/assets/user_uploads:/app/frontend/assets/user_uploads # Mount for profile image uploads
 
   profile_service:
     build:

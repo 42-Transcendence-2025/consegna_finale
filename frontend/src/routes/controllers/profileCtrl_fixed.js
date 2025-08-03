@@ -72,10 +72,6 @@ export class ProfileController {
     #renderProfile(data) {
         // Informazioni di base
         this.#renderBasicInfo(data);
-
-        // Amicizia
-        this.#renderFriendshipButton(data);
-
         // Tornei
         this.#renderTournaments(data.tournaments || []);
         // Calcola e visualizza le statistiche prima dell'elenco partite
@@ -120,23 +116,23 @@ export class ProfileController {
         }
         
         // Determina se questo è il profilo dell'utente corrente
-        const currentUserToken = localStorage.getItem('access_token');
-        const currentUsername = this.#getCurrentUsername();
-        const isOwnProfile = currentUserToken && data.username === currentUsername;
+        const currentUserToken = localStorage.getItem('accessToken');
+        const isOwnProfile = currentUserToken && data.username === this.#getCurrentUsername();
         
         const emailHtml = data.email
             ? `<p class="mb-0 small text-muted">${data.email}</p>`
             : "";
             
-        // HTML per l'immagine del profilo con icona di modifica se è il proprio profilo
-        const avatarHtml = isOwnProfile || (!this.targetUser) // Mostra sempre se non c'è targetUser specificato
-            ? `<div class="text-center me-3">
+        // HTML per l'immagine del profilo con funzionalità di hover/click se è il proprio profilo
+        const avatarHtml = isOwnProfile 
+            ? `<div class="position-relative" style="cursor: pointer;" id="profile-avatar-container">
                  <img src="${avatarPath}" alt="Avatar" id="profile-avatar"
-                      style="width:80px; height:80px; border-radius:50%; object-fit:cover;" class="d-block">
-                 <button type="button" class="btn btn-sm btn-outline-light mt-2" id="edit-profile-image-btn" 
-                         style="border-radius: 15px; font-size: 0.8rem;">
-                   <i class="fa fa-camera me-1"></i>Edit
-                 </button>
+                      style="width:80px; height:80px; border-radius:50%; object-fit:cover;" class="me-3">
+                 <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                      style="background: rgba(0,0,0,0.7); border-radius:50%; opacity:0; transition: opacity 0.3s;" 
+                      id="profile-avatar-overlay">
+                   <i class="fa fa-camera text-white"></i>
+                 </div>
                </div>`
             : `<img src="${avatarPath}" alt="Avatar"
                     style="width:80px; height:80px; border-radius:50%; object-fit:cover;" class="me-3">`;
@@ -165,7 +161,7 @@ export class ProfileController {
         $list.empty();
         if (!Array.isArray(tournaments) || tournaments.length === 0) {
             $list.append(
-                `<div class="alert alert-warning text-center" data-i18n="noTournamentsFound">Nessun torneo trovato.</div>`
+                `<div class="alert alert-warning text-center" data-i18n="noTournamentsFound">No tournaments found.</div>`
             );
             return;
         }
@@ -224,165 +220,61 @@ export class ProfileController {
             let outcomeClass = "";
             const pf = Number.isFinite(m.points_for) ? m.points_for : null;
             const pa = Number.isFinite(m.points_against) ? m.points_against : null;
-            if (pf !== null && pa !== null) {
-                if (pf > pa) outcomeClass = "border-success";
-                else if (pf < pa) outcomeClass = "border-danger";
-                else outcomeClass = "border-warning";
+            if (pf != null && pa != null) {
+                if (pf > pa) outcomeClass = "bg-success-subtle border border-success";
+                else if (pf < pa) outcomeClass = "bg-danger-subtle border border-danger";
+                else outcomeClass = "bg-secondary-subtle border border-secondary";
+            } else {
+                outcomeClass = "bg-dark";
             }
-            const pointsDisplay =
-                pf !== null && pa !== null ? `${pf} - ${pa}` : "N/A";
-            $list.append(
-                `
-                <div class="card shadow-sm bg-dark text-white ${outcomeClass}" style="border-radius:12px; border-width:2px;">
-                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
-                        <div class="mb-2 mb-md-0">
-                            <h6 class="mb-0">vs ${m.opponent_username ?? "Unknown"}</h6>
+            const html = `
+                <div class="card shadow-sm ${outcomeClass} mb-2" style="border-radius:12px;">
+                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <strong>vs ${m.opponent ?? $.i18n('unknown')}</strong>
+                                ${tournamentPart}
+                            </div>
                             <small class="text-muted">${createdAt}</small>
-                            ${tournamentPart}
                         </div>
-                        <div class="d-flex flex-column flex-sm-row align-items-center gap-2">
-                            <span class="badge bg-primary">${pointsDisplay}</span>
+                        <div class="d-flex align-items-center gap-1 fs-4 fw-bold">
+                            <span class="text-success">${m.points_for ?? "-"}</span>
+                            <span>-</span>
+                            <span class="text-danger">${m.points_against ?? "-"}</span>
+                        </div>
+                        <div>
                             <span class="badge ${statusClass}">${m.status}</span>
                         </div>
                     </div>
                 </div>
-                `
-            );
+            `;
+            $list.append(html);
         }
     }
 
-    #renderFriendshipButton(data) {
-        // Se is_friend è null, significa che stai guardando il tuo profilo
-        if (data.is_friend === null) {
-            return;
-        }
-
-        const container = $("#profile-friendship-actions");
-        container.empty();
-
-        const isFriend = data.is_friend;
-        const buttonClass = isFriend ? "btn-outline-danger" : "btn-outline-success";
-        const buttonText = isFriend ? "Remove Friend" : "Add Friend";
-        const buttonIcon = isFriend ? "fa-user-minus" : "fa-user-plus";
-
-        const buttonHtml = `
-            <div class="text-center mb-4">
-                <button id="friendship-btn" 
-                        class="btn ${buttonClass} d-flex align-items-center gap-2 mx-auto"
-                        data-username="${data.username}"
-                        data-is-friend="${isFriend}">
-                    <i class="fa ${buttonIcon}"></i>
-                    <span>${buttonText}</span>
-                </button>
-            </div>
-        `;
-
-        container.html(buttonHtml);
-
-        // Aggiungi event listener
-        $("#friendship-btn").on("click", async (e) => {
-            await this.#handleFriendshipAction(e);
-        });
-    }
-
-    async #handleFriendshipAction(event) {
-        const button = $(event.currentTarget);
-        const username = button.data("username");
-        const isFriend = button.data("is-friend");
-
-        // Disabilita il pulsante durante la richiesta
-        button.prop("disabled", true);
-
-        try {
-            const method = isFriend ? "DELETE" : "POST";
-            const url = `${CONFIG.apiRoutes.userApiUrl}/friends/${encodeURIComponent(username)}/`;
-
-            const response = await $.ajax({
-                url,
-                method,
-                dataType: "json",
-            });
-
-            // Aggiorna il pulsante
-            if (isFriend) {
-                // Era amico, ora non più
-                button.removeClass("btn-outline-danger").addClass("btn-outline-success");
-                button.find("i").removeClass("fa-user-minus").addClass("fa-user-plus");
-                button.find("span").text("Add Friend");
-                button.data("is-friend", false);
-            } else {
-                // Non era amico, ora sì
-                button.removeClass("btn-outline-success").addClass("btn-outline-danger");
-                button.find("i").removeClass("fa-user-plus").addClass("fa-user-minus");
-                button.find("span").text("Remove Friend");
-                button.data("is-friend", true);
-            }
-
-            // Mostra messaggio di successo
-            this.#showSuccessMessage(response.detail || "Friend status updated successfully");
-
-        } catch (error) {
-            console.error("Error updating friendship:", error);
-            const errorMsg = error?.responseJSON?.detail || "Failed to update friend status";
-            this.#showErrorMessage(errorMsg);
-        } finally {
-            // Riabilita il pulsante
-            button.prop("disabled", false);
-        }
-    }
-
-    #showSuccessMessage(message) {
-        // Rimuovi messaggi precedenti
-        $(".alert-success").remove();
-
-        const alert = `
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        $("#profile-friendship-actions").prepend(alert);
-
-        // Auto-rimuovi dopo 3 secondi
-        setTimeout(() => {
-            $(".alert-success").fadeOut();
-        }, 3000);
-    }
-
-    #showErrorMessage(message) {
-        // Rimuovi messaggi precedenti
-        $(".alert-danger").remove();
-
-        const alert = `
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        $("#profile-friendship-actions").prepend(alert);
-    }
-
-    /**
-     * Calcola statistiche derivate dalla cronologia delle partite.
-     * Non richiede chiamate al backend.
-     */
     #computeStats(matches) {
-        if (!Array.isArray(matches)) return {};
         const stats = {
-            total: matches.length,
+            total: 0,
             wins: 0,
             losses: 0,
             draws: 0,
-            totalPointsFor: 0,
-            totalPointsAgainst: 0,
+            winPercentage: 0,
             currentStreak: 0,
             longestStreak: 0,
+            totalPointsFor: 0,
+            totalPointsAgainst: 0,
+            avgPointsFor: 0,
+            avgPointsAgainst: 0,
         };
+        if (!Array.isArray(matches) || matches.length === 0) {
+            return stats;
+        }
         let currentStreak = 0;
         let longestStreak = 0;
         for (const m of matches) {
             const pf = Number.isFinite(m.points_for) ? m.points_for : 0;
             const pa = Number.isFinite(m.points_against) ? m.points_against : 0;
+            stats.total++;
             stats.totalPointsFor += pf;
             stats.totalPointsAgainst += pa;
             if (pf > pa) {
@@ -441,36 +333,48 @@ export class ProfileController {
     }
 
     #positionToBadgeClass(position) {
-        if (!position) return "bg-secondary";
-        const pos = position.toLowerCase();
-        if (pos.includes("1st") || pos.includes("winner")) return "bg-warning text-dark";
-        if (pos.includes("2nd")) return "bg-light text-dark";
-        if (pos.includes("3rd")) return "bg-info";
-        return "bg-secondary";
+        switch ((position || "").toLowerCase()) {
+            case "winner":
+                return "bg-success";
+            case "finalist":
+                return "bg-warning text-dark";
+            case "semifinalist":
+                return "bg-info";
+            case "quarterfinalist":
+                return "bg-primary";
+            default:
+                return "bg-secondary";
+        }
     }
 
     #statusToBadgeClass(status) {
-        if (!status) return "bg-secondary";
-        const st = status.toLowerCase();
-        if (st.includes("completed")) return "bg-success";
-        if (st.includes("pending")) return "bg-warning text-dark";
-        if (st.includes("active")) return "bg-primary";
-        return "bg-secondary";
+        switch ((status || "").toLowerCase()) {
+            case "completed":
+            case "finished":
+                return "bg-success";
+            case "pending":
+            case "in_progress":
+            case "in progress":
+                return "bg-warning text-dark";
+            case "cancelled":
+            case "forfeited":
+                return "bg-danger";
+            default:
+                return "bg-secondary";
+        }
     }
 
     #hashString(str) {
-        let hash = 0;
+        let hash = 5381;
         for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash = hash & hash; // Convert to 32bit integer
+            hash = ((hash << 5) + hash) + str.charCodeAt(i);
         }
         return hash;
     }
 
     #getCurrentUsername() {
         try {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('accessToken');
             if (!token) return null;
             
             const payload = JSON.parse(atob(token.split('.')[1]));
@@ -481,8 +385,17 @@ export class ProfileController {
     }
 
     #setupProfileImageHandlers() {
-        // Click handler for edit button
-        $(document).on('click', '#edit-profile-image-btn', () => {
+        // Hover effects
+        $(document).on('mouseenter', '#profile-avatar-container', function() {
+            $('#profile-avatar-overlay').css('opacity', '1');
+        });
+        
+        $(document).on('mouseleave', '#profile-avatar-container', function() {
+            $('#profile-avatar-overlay').css('opacity', '0');
+        });
+        
+        // Click handler for image upload
+        $(document).on('click', '#profile-avatar-container', () => {
             this.#showImageUploadModal();
         });
     }
@@ -498,61 +411,41 @@ export class ProfileController {
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="imageFile" class="form-label">Select Image (JPG, PNG, GIF - Max 5MB)</label>
-                                <input type="file" class="form-control" id="imageFile" accept="image/jpeg,image/jpg,image/png,image/gif">
+                                <label for="imageFileInput" class="form-label">Choose new image:</label>
+                                <input type="file" class="form-control" id="imageFileInput" accept="image/*">
                             </div>
-                            <div id="imagePreview" class="text-center mb-3" style="display: none;">
-                                <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 10px;">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" id="uploadImageBtn">Upload Image</button>
+                                <button type="button" class="btn btn-secondary" id="resetImageBtn">Reset to Random</button>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-warning" id="resetImageBtn">Reset to Random</button>
-                            <button type="button" class="btn btn-primary" id="uploadImageBtn">Upload</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
         
-        // Remove existing modal if any
-        $('#profileImageModal').remove();
-        
-        // Add modal to body
         $('body').append(modalHtml);
-        
-        // Show modal
         const modal = new bootstrap.Modal(document.getElementById('profileImageModal'));
         modal.show();
         
-        // Handle file selection
-        $('#imageFile').on('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    $('#previewImg').attr('src', e.target.result);
-                    $('#imagePreview').show();
-                };
-                reader.readAsDataURL(file);
-            } else {
-                $('#imagePreview').hide();
-            }
+        // Cleanup on close
+        $('#profileImageModal').on('hidden.bs.modal', function() {
+            $(this).remove();
         });
         
-        // Handle upload button
+        // Upload handler
         $('#uploadImageBtn').on('click', () => {
             this.#handleImageUpload();
         });
         
-        // Handle reset button
+        // Reset handler
         $('#resetImageBtn').on('click', () => {
             this.#handleImageReset();
         });
     }
 
     async #handleImageUpload() {
-        const fileInput = document.getElementById('imageFile');
+        const fileInput = document.getElementById('imageFileInput');
         const file = fileInput.files[0];
         
         if (!file) {
@@ -564,19 +457,23 @@ export class ProfileController {
         formData.append('image', file);
         
         try {
-            const response = await $.ajax({
-                url: `${CONFIG.apiRoutes.userApiUrl}/profile/image/`,
+            const response = await fetch(`${CONFIG.api.baseURL}/api/v1/user/profile/image/`, {
                 method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                },
+                body: formData
             });
             
-            $('#profileImageModal').modal('hide');
-            alert('Image uploaded successfully!');
-            
-            // Refresh profile to show new image
-            await this.#fetchAndRenderProfile();
+            if (response.ok) {
+                const data = await response.json();
+                $('#profileImageModal').modal('hide');
+                // Refresh profile to show new image
+                await this.#fetchAndRenderProfile();
+            } else {
+                const errorData = await response.json();
+                alert(errorData.detail || 'Failed to upload image');
+            }
         } catch (error) {
             console.error('Upload error:', error);
             alert('Failed to upload image');
@@ -585,16 +482,21 @@ export class ProfileController {
 
     async #handleImageReset() {
         try {
-            await $.ajax({
-                url: `${CONFIG.apiRoutes.userApiUrl}/profile/image/`,
-                method: 'DELETE'
+            const response = await fetch(`${CONFIG.api.baseURL}/api/v1/user/profile/image/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
             });
             
-            $('#profileImageModal').modal('hide');
-            alert('Image reset successfully!');
-            
-            // Refresh profile to show new random image
-            await this.#fetchAndRenderProfile();
+            if (response.ok) {
+                $('#profileImageModal').modal('hide');
+                // Refresh profile to show new random image
+                await this.#fetchAndRenderProfile();
+            } else {
+                const errorData = await response.json();
+                alert(errorData.detail || 'Failed to reset image');
+            }
         } catch (error) {
             console.error('Reset error:', error);
             alert('Failed to reset image');
