@@ -137,8 +137,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "type": "players_update",
                 "left_player": self.game.left_player.username if self.game.left_player else None,
                 "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
+                "left_player_image": self.game.left_player.profile_image if self.game.left_player else None,
                 "right_player": self.game.right_player.username if self.game.right_player else None,
                 "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
+                "right_player_image": self.game.right_player.profile_image if self.game.right_player else None,
             }
         )
 
@@ -324,8 +326,10 @@ class GameConsumer(AsyncWebsocketConsumer):
             "type": "players_update",
             "left_player": event["left_player"],
             "left_player_trophies": event["left_player_trophies"],
+            "left_player_image": event["left_player_image"],
             "right_player": event["right_player"],
             "right_player_trophies": event["right_player_trophies"],
+            "right_player_image": event["right_player_image"],
         })
 
 

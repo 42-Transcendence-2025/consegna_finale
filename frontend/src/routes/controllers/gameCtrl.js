@@ -20,6 +20,8 @@ export class GameController {
 		this.winner = null;
 		this.moveUp = false;
 		this.moveDown = false;
+		this.rightPlayerImage = null;
+    	this.leftPlayerImage = null;
 
 		// Proprietà per l'effetto fuoco
 		this.fireThreshold = 15; // Velocità minima per attivare l'effetto fuoco
@@ -116,8 +118,10 @@ export class GameController {
 		this.pongManager.on("onPlayersUpdate", (gameState) => {
 			this.leftPlayer = gameState.left_player;
 			this.rightPlayer = gameState.right_player;
+			this.leftPlayerImage = gameState.left_player_image;
 			this.leftPlayerThropies = gameState.left_player_trophies;
 			this.rightPlayerThropies = gameState.right_player_trophies;
+			this.rightPlayerImage = gameState.right_player_image;
 		});
 		this.initInputListeners();
 		this.gameLoop();
@@ -459,26 +463,26 @@ export class GameController {
     }
 
 	drawPlayerInfo() {
-		const rightPlayerIcon = document.getElementById("rightPlayerIcon");
-		const rightPlayerImgPath = "./assets/default_icons/vegeta.png";
-		rightPlayerIcon.src = rightPlayerImgPath;
-		
-		const rightPlayerName = document.getElementById("rightPlayerName");
-		rightPlayerName.textContent = `${this.rightPlayer}`;
-		
-		const rightPlayerThropies = document.getElementById("rightPlayerThropies");
-		rightPlayerThropies.textContent = ` ${this.rightPlayerThropies}`;
-
-		const leftPlayerIcon = document.getElementById("leftPlayerIcon");
-        const leftPlayerImgPath = "./assets/default_icons/goku.png";
-		leftPlayerIcon.src = leftPlayerImgPath;
-
-		const leftPlayerName = document.getElementById("leftPlayerName");
-		leftPlayerName.textContent = `${this.leftPlayer}`;
-
-		const leftPlayerThropies = document.getElementById("leftPlayerThropies");
-		leftPlayerThropies.textContent = ` ${this.leftPlayerThropies}`;
-    }
+	    // OTTIMIZZAZIONE: Usa cache DOM invece di query multiple
+	    this.domElements.rightPlayerName.textContent = `${this.rightPlayer}`;
+	    this.domElements.rightPlayerTrophies.textContent = `${this.rightPlayerThropies}`;
+	
+	    this.domElements.leftPlayerName.textContent = `${this.leftPlayer}`;
+	    this.domElements.leftPlayerTrophies.textContent = `${this.leftPlayerThropies}`;
+	
+	    // NUOVO: Imposta le immagini profilo se disponibili
+	    if (this.rightPlayerImage) {
+	        this.domElements.rightPlayerIcon.src = this.rightPlayerImage;
+	    } else {
+	        this.domElements.rightPlayerIcon.src = "./assets/default_icons/vegeta.png";
+	    }
+	
+	    if (this.leftPlayerImage) {
+	        this.domElements.leftPlayerIcon.src = this.leftPlayerImage;
+	    } else {
+	        this.domElements.leftPlayerIcon.src = "./assets/default_icons/goku.png";
+	    }
+	}
 
     initInputListeners()
 	{
