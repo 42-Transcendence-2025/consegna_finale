@@ -13,5 +13,6 @@ urlpatterns = [
     path('token_refresh/', PongRefreshTokenView.as_view(), name='token_refresh'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('profile/image/', ProfileImageUploadView.as_view(), name='profile_image_upload'),
+    path('friends/', PongFriendView.as_view(), name='friends_list'),
     path('friends/<str:username>/', PongFriendView.as_view(), name='friend_action'),
 ]

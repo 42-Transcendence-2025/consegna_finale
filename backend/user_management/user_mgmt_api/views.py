@@ -141,6 +141,24 @@ class PongUserListView(UpdateLastActivityMixin, ListAPIView):
 class PongFriendView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request, username=None):
+        """Get list of user's friends with online status for search page"""
+        friends = request.user.friends.all()
+        friends_data = []
+        
+        for friend in friends:
+            from .serializers import PongUserSerializer
+            friend_serializer = PongUserSerializer(friend)
+            friends_data.append({
+                'username': friend.username,
+                'is_online': friend_serializer.get_is_active(friend)
+            })
+        
+        # Sort friends: online first, then by username
+        friends_data.sort(key=lambda x: (not x['is_online'], x['username']))
+        
+        return Response(friends_data, status=status.HTTP_200_OK)
+
     def post(self, request, username):
         try:
             friend = User.objects.get(username=username)

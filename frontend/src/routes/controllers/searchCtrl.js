@@ -80,9 +80,9 @@ export class SearchController {
             $friendsList.addClass("d-none");
             $noFriends.addClass("d-none");
 
-            // Carica la lista amici
+            // Carica la lista amici con stato online
             this.friends = await $.ajax({
-                url: `${CONFIG.apiRoutes.profileApiUrl}/friends/`,
+                url: `${CONFIG.apiRoutes.userApiUrl}/friends/`,
                 method: "GET",
                 dataType: "json",
             });
@@ -119,11 +119,38 @@ export class SearchController {
             return;
         }
 
-        for (const friendUsername of friends) {
-            const friendData = { username: friendUsername };
-            const item = this.createUserListItem(friendData, true); // true = è dalla lista amici
+        for (const friend of friends) {
+            const item = this.createFriendListItem(friend);
             $friendsList.append(item);
         }
+    }
+
+    createFriendListItem(friend) {
+        // Colori: verdino chiaro per online, grigino spento per offline
+        const bgColor = friend.is_online ? 'rgba(144, 238, 144, 0.2)' : 'rgba(128, 128, 128, 0.1)'; // light green vs light gray
+        const textColor = friend.is_online ? '#32CD32' : '#808080'; // green vs gray
+        const badgeClass = friend.is_online ? 'bg-success' : 'bg-secondary';
+        const statusText = friend.is_online ? 'Online' : 'Offline';
+        
+        const item = $(`
+            <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" 
+                data-username="${friend.username}"
+                style="background-color: ${bgColor}; border-left: 3px solid ${textColor};">
+                <div class="d-flex align-items-center">
+                    <strong style="color: ${textColor};">${friend.username}</strong>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge ${badgeClass}">${statusText}</span>
+                    <i class="fa fa-chevron-right text-muted"></i>
+                </div>
+            </li>
+        `);
+
+        item.on("click", () => {
+            this.navigateToProfile(friend.username);
+        });
+
+        return item;
     }
 
     createUserListItem(user, isFromFriends = false) {
@@ -163,8 +190,8 @@ export class SearchController {
         }
 
         // Filtra gli amici
-        const filteredFriends = this.friends.filter(friendUsername => 
-            friendUsername.toLowerCase().includes(query)
+        const filteredFriends = this.friends.filter(friend => 
+            friend.username.toLowerCase().includes(query)
         );
 
         this.renderFriends(filteredFriends);
