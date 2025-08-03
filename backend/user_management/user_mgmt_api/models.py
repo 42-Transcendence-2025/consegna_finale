@@ -13,6 +13,8 @@ class PongUser(AbstractUser):
     last_otp_verification = models.DateTimeField(null=True, blank=True)
     profile_image = models.CharField(max_length=255, blank=True, null=True)
 
+    friends = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='friends_list')
+    
     def is_otp_required(self, request):
         """Controlla se l'OTP è necessario"""
         new_ip = get_client_ip(request)

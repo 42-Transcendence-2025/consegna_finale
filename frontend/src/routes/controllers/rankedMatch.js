@@ -46,9 +46,14 @@ export class RankedMatchController {
             this.#startPolling();
 
         } catch (error) {
-            console.error("RankedMatch: Error starting search:", error);
-            this.#showForm();
-            this.#showError("Failed to start ranked match search");
+            if (error.status === 409) {
+                this.#startPolling(); // Inizia il polling se l'utente è già in coda
+            }
+            else {
+                console.error("RankedMatch: Error starting search:", error);
+                this.#showForm();
+                this.#showError("Failed to start ranked match search");
+            }
         }
     }
 

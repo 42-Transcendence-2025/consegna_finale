@@ -138,6 +138,29 @@ class PongUserListView(UpdateLastActivityMixin, ListAPIView):
         print(f"User list requested by {request.user}")
         return response
 
+class PongFriendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        try:
+            friend = User.objects.get(username=username)
+            if request.user.friends.filter(username=username).exists():
+                return Response({"detail": f"{username} is already your friend"}, status=status.HTTP_400_BAD_REQUEST)
+            request.user.friends.add(friend)
+            return Response({"detail": f"{username} added as a friend"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, username):
+        try:
+            friend = User.objects.get(username=username)
+            if not request.user.friends.filter(username=username).exists():
+                return Response({"detail": f"{username} is not your friend"}, status=status.HTTP_400_BAD_REQUEST)
+            request.user.friends.remove(friend)
+            return Response({"detail": f"{username} removed from friends"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)

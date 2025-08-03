@@ -58,6 +58,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     tournaments = serializers.SerializerMethodField()
     matches = serializers.SerializerMethodField()
+    is_friend = serializers.SerializerMethodField()
 
     class Meta:
         model = PongUser
@@ -69,6 +70,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_activity',
             'tournaments',
             'matches',
+            'is_friend',
         ]
 
     def to_representation(self, instance):
@@ -78,6 +80,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if request and request.user != instance:
             representation.pop('email', None)
         return representation
+
+    def get_is_friend(self, obj):
+        """Check if the requesting user is a friend of the profile owner."""
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        
+        # Se stai guardando il tuo profilo, non mostrare il pulsante amicizia
+        if request.user == obj:
+            return None
+            
+        return request.user.friends.filter(id=obj.id).exists()
 
     def get_tournaments(self, obj):
         """Return a list of TournamentSummary for the user in reverse chronological order."""

@@ -29,6 +29,14 @@ class PongRankedMatchView(APIView):
         username = user.username
         trophies = user.trophies
 
+        #controllo se l'utente è già in ranked
+        if cache.get(f"ranked_wait_{username}"):
+            return Response(
+                {"detail": "You are already in matchmaking queue"}, 
+                status=status.HTTP_409_CONFLICT
+            )
+
+
         # Timestamp e payload per il matchmaking
         timestamp = now().isoformat()
         player_data = {

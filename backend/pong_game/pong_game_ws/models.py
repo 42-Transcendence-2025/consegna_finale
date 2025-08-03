@@ -14,6 +14,8 @@ class PongUser(AbstractUser):
     last_otp_verification = models.DateTimeField(null=True, blank=True)
     profile_image = models.CharField(max_length=255, blank=True, null=True)
 
+    friends = models.ManyToManyField('self', blank=True, symmetrical=True, related_name='friends_list')
+
     def __str__(self):
         return self.username
 

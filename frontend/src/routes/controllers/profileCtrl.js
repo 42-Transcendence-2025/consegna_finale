@@ -72,6 +72,10 @@ export class ProfileController {
     #renderProfile(data) {
         // Informazioni di base
         this.#renderBasicInfo(data);
+
+        // Amicizia
+        this.#renderFriendshipButton(data);
+
         // Tornei
         this.#renderTournaments(data.tournaments || []);
         // Calcola e visualizza le statistiche prima dell'elenco partite
@@ -247,6 +251,121 @@ export class ProfileController {
         }
     }
 
+    #renderFriendshipButton(data) {
+        // Se is_friend è null, significa che stai guardando il tuo profilo
+        if (data.is_friend === null) {
+            return;
+        }
+
+        const container = $("#profile-friendship-actions");
+        container.empty();
+
+        const isFriend = data.is_friend;
+        const buttonClass = isFriend ? "btn-outline-danger" : "btn-outline-success";
+        const buttonText = isFriend ? "Remove Friend" : "Add Friend";
+        const buttonIcon = isFriend ? "fa-user-minus" : "fa-user-plus";
+
+        const buttonHtml = `
+            <div class="text-center mb-4">
+                <button id="friendship-btn" 
+                        class="btn ${buttonClass} d-flex align-items-center gap-2 mx-auto"
+                        data-username="${data.username}"
+                        data-is-friend="${isFriend}">
+                    <i class="fa ${buttonIcon}"></i>
+                    <span>${buttonText}</span>
+                </button>
+            </div>
+        `;
+
+        container.html(buttonHtml);
+
+        // Aggiungi event listener
+        $("#friendship-btn").on("click", async (e) => {
+            await this.#handleFriendshipAction(e);
+        });
+    }
+
+    async #handleFriendshipAction(event) {
+        const button = $(event.currentTarget);
+        const username = button.data("username");
+        const isFriend = button.data("is-friend");
+
+        // Disabilita il pulsante durante la richiesta
+        button.prop("disabled", true);
+
+        try {
+            const method = isFriend ? "DELETE" : "POST";
+            const url = `${CONFIG.apiRoutes.userApiUrl}/friends/${encodeURIComponent(username)}/`;
+
+            const response = await $.ajax({
+                url,
+                method,
+                dataType: "json",
+            });
+
+            // Aggiorna il pulsante
+            if (isFriend) {
+                // Era amico, ora non più
+                button.removeClass("btn-outline-danger").addClass("btn-outline-success");
+                button.find("i").removeClass("fa-user-minus").addClass("fa-user-plus");
+                button.find("span").text("Add Friend");
+                button.data("is-friend", false);
+            } else {
+                // Non era amico, ora sì
+                button.removeClass("btn-outline-success").addClass("btn-outline-danger");
+                button.find("i").removeClass("fa-user-plus").addClass("fa-user-minus");
+                button.find("span").text("Remove Friend");
+                button.data("is-friend", true);
+            }
+
+            // Mostra messaggio di successo
+            this.#showSuccessMessage(response.detail || "Friend status updated successfully");
+
+        } catch (error) {
+            console.error("Error updating friendship:", error);
+            const errorMsg = error?.responseJSON?.detail || "Failed to update friend status";
+            this.#showErrorMessage(errorMsg);
+        } finally {
+            // Riabilita il pulsante
+            button.prop("disabled", false);
+        }
+    }
+
+    #showSuccessMessage(message) {
+        // Rimuovi messaggi precedenti
+        $(".alert-success").remove();
+
+        const alert = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        $("#profile-friendship-actions").prepend(alert);
+
+        // Auto-rimuovi dopo 3 secondi
+        setTimeout(() => {
+            $(".alert-success").fadeOut();
+        }, 3000);
+    }
+
+    #showErrorMessage(message) {
+        // Rimuovi messaggi precedenti
+        $(".alert-danger").remove();
+
+        const alert = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        $("#profile-friendship-actions").prepend(alert);
+    }
+
+    /**
+     * Calcola statistiche derivate dalla cronologia delle partite.
+     * Non richiede chiamate al backend.
+     */
     #computeStats(matches) {
         if (!Array.isArray(matches)) return {};
         const stats = {

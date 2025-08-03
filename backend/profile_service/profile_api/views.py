@@ -39,3 +39,12 @@ class PublicUserProfileView(APIView):
         user = get_object_or_404(PongUser, username=username)
         serializer = UserProfileSerializer(user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class PongFriendsListView(APIView):
+    """Return a list of friends for the authenticated user."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        friends = request.user.friends.all()
+        friend_usernames = [friend.username for friend in friends]
+        return Response(friend_usernames, status=status.HTTP_200_OK)
