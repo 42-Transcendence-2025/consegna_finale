@@ -1,4 +1,4 @@
-# Generated manually for profile image feature
+# Generated manually to resolve migration conflicts
 
 from django.db import migrations, models
 
@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='ponguser',
-            name='profile_image',
-            field=models.CharField(blank=True, max_length=255, null=True),
+            name='friends',
+            field=models.ManyToManyField(blank=True, related_name='friends_list', symmetrical=True, to='user_mgmt_api.ponguser'),
         ),
     ]
