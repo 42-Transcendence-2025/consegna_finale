@@ -407,6 +407,12 @@ export class AuthManager {
 		return null;
 	}
 
+	get trophies() {
+		if (this.#user && this.#user.trophies)
+			return this.#user.trophies;
+		return 0; // Default to 0 if not available
+	}
+
 	// SETTERS ---------------------------------------------------------------------------------------------------------
 
 	/**

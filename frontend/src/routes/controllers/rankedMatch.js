@@ -142,16 +142,23 @@ export class RankedMatchController {
 
     async #loadPlayerTrophies() {
         try {
-            // Carica i trofei dell'utente dal localStorage o API
+            const trophiesElement = document.getElementById("playerTrophies");
+            if (!trophiesElement) return;
+        
             const authManager = window.tools.authManager;
-            if (authManager && authManager.user) {
-                const trophiesElement = document.getElementById("playerTrophies");
-                if (trophiesElement) {
-                    trophiesElement.textContent = authManager.user.trophies || 0;
-                }
-            }
+            
+            // Usa direttamente il getter trophies che gestisce i fallback
+            const trophies = authManager?.trophies || 0;
+            trophiesElement.textContent = trophies;
+        
         } catch (error) {
             console.error("RankedMatch: Error loading player trophies:", error);
+            
+            // Fallback: mostra 0 in caso di errore
+            const trophiesElement = document.getElementById("playerTrophies");
+            if (trophiesElement) {
+                trophiesElement.textContent = "0";
+            }
         }
     }
 
