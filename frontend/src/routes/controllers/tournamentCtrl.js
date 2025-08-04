@@ -206,12 +206,14 @@ export class TournamentController {
                 }
                 // Rimuovi l'ID del torneo dal localStorage
                 localStorage.removeItem("currentTournamentId");
+                localStorage.removeItem("tournament_game_id"); // Rimuovi anche l'ID della partita di torneo
                 // Rimanda sempre alla pagina tournament menu
                 window.location.hash = "#tournamentMenu";
             } catch (err) {
                 console.error("Failed to quit tournament:", err);
                 // Anche in caso di errore, torna al menu
                 localStorage.removeItem("currentTournamentId");
+                localStorage.removeItem("tournament_game_id"); // Rimuovi anche l'ID della partita di torneo
                 window.location.hash = "#tournamentMenu";
             }
         };
@@ -241,7 +243,8 @@ export class TournamentController {
                 const res = await window.tools.matchManager.matchTournament(tournamentId);
                 if (res && res.game_id) {
                     localStorage.setItem("game_id", res.game_id);
-                    window.location.hash = "#game";
+                    localStorage.setItem("tournament_game_id", res.game_id); // Salva anche per distinguere partite di torneo
+                    window.location.hash = "#game?type=tournament";
                 } else {
                     // Re-abilita il bottone se non c'è game_id
                     playBtn.disabled = false;

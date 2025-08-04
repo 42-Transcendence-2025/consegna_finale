@@ -34,7 +34,7 @@ export class PrivateMatchController {
                     if (response && response.game_id) {
                         console.log("Match found:", response);
                         localStorage.setItem("game_id", response.game_id);
-                        window.location.hash = "#game";
+                        window.location.hash = "#game?type=private";
                     } else {
                         loadingScreen.classList.add("d-none");
                         loadingScreen.classList.remove("d-flex");

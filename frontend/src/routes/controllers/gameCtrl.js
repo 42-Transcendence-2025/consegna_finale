@@ -557,11 +557,27 @@ export class GameController {
 	#goBack() {
 		this.cleanup(); // Pulisci prima di cambiare pagina
 		
-    	const tId = localStorage.getItem("currentTournamentId");
-    	if (tId)
-    	    window.location.hash = "#tournament";      // torna al bracket
-    	else
-    	    window.location.hash = "#onlineGame";    // caso normale
+		// Leggi il tipo di partita dall'URL corrente
+		const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+		const gameType = urlParams.get('type');
+		
+		console.log("[GameController] Game type from URL:", gameType);
+		
+		// Reindirizza basandosi sul tipo di partita
+		switch (gameType) {
+			case 'tournament':
+				window.location.hash = "#tournament";      // torna al bracket
+				break;
+			case 'private':
+				window.location.hash = "#privateMatch";    // torna a partite private
+				break;
+			case 'ranked':
+				window.location.hash = "#rankedMatch";     // torna a partite ranked
+				break;
+			default:
+				window.location.hash = "#onlineGame";      // fallback generico
+				break;
+		}
 	}
 
 	cleanup() {

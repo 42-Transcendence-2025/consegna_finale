@@ -72,7 +72,7 @@ export class RankedMatchController {
                     console.log("Ranked match found:", response);
                     this.#stopPolling();
                     localStorage.setItem("game_id", response.game_id);
-                    window.location.hash = "#game";
+                    window.location.hash = "#game?type=ranked";
                 }
                 // Se status è ancora "waiting", continua il polling
             } catch (error) {
