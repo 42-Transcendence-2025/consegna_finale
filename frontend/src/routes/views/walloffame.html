@@ -1,16 +1,16 @@
 <!-- Wall of Fame Page -->
 <div class="container py-5">
-    <h1 class="text-warning text-center mb-4">Wall of Fame</h1>
+    <h1 class="text-warning text-center mb-4" data-i18n="wall-of-fame">Wall of Fame</h1>
 
     <!-- Timeframe selector -->
     <div class="row mb-4">
         <div class="col-12 col-md-4 offset-md-4">
-            <label for="wof-timeframe" class="form-label">Timeframe</label>
+            <label for="wof-timeframe" class="form-label" data-i18n="timeframe">Timeframe</label>
             <select id="wof-timeframe" class="form-select">
-                <option value="all">All Time</option>
-                <option value="week">Past Week</option>
-                <option value="month">Past Month</option>
-                <option value="year">Past Year</option>
+                <option value="all" data-i18n="all">All Time</option>
+                <option value="week" data-i18n="week">Past Week</option>
+                <option value="month" data-i18n="month">Past Month</option>
+                <option value="year" data-i18n="year">Past Year</option>
             </select>
         </div>
     </div>
@@ -18,29 +18,30 @@
     <!-- Leaderboard sections -->
     <div class="row">
         <div class="col-12 col-md-6 mb-4">
-            <h3 class="text-info">Top Trophies</h3>
+            <h3 class="text-info" data-i18n="top-trophies">Top Trophies</h3>
             <div id="wof-top-trophies"></div>
         </div>
         <div class="col-12 col-md-6 mb-4">
-            <h3 class="text-info">Longest Win Streaks</h3>
+            <h3 class="text-info" data-i18n="longest-win-streaks">Longest Win Streaks</h3>
             <div id="wof-longest-streaks"></div>
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-6 mb-4">
-            <h3 class="text-info">Most Wins</h3>
+            <h3 class="text-info" data-i18n="most-wins">Most Wins</h3>
             <div id="wof-most-wins"></div>
         </div>
         <div class="col-12 col-md-6 mb-4">
-            <h3 class="text-info">Never Lost</h3>
+            <h3 class="text-info" data-i18n="never-lost">Never Lost</h3>
             <div id="wof-never-lost"></div>
         </div>
     </div>
 
-    <!-- Back button -->
-    <div class="mt-4 d-flex justify-content-center">
-        <a href="#home" class="btn btn-outline-secondary" style="border-radius: 12px;">
-            <i class="fa fa-arrow-left"></i>
+    <!-- Back button to return to home -->
+    <div class="mt-3 d-flex justify-content-center">
+        <a href="#home" class="btn btn-outline-secondary d-flex justify-content-center align-items-center"
+        style="min-width: 64px; min-height: 64px; border-radius: 12px;">
+            <i class="fa fa-arrow-left fa-2x"></i>
         </a>
     </div>
 </div>

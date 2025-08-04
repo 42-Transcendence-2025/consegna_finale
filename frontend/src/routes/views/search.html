@@ -3,20 +3,20 @@
     Permette di cercare utenti per prefisso e di navigare ai loro profili.
 -->
 <div class="container py-5">
-    <h1 class="text-warning text-center mb-4">Search Users</h1>
-    
+    <h1 class="text-warning text-center mb-4" data-i18n="search-users">Search Users</h1>
+
     <!-- User Search Section -->
     <div class="card mb-5"> <!-- CAMBIATO: da mb-4 a mb-5 per più spazio -->
         <div class="card-header">
             <h5 class="card-title mb-0">
-                <i class="fa fa-search"></i> Search All Users
+                <i class="fa fa-search"></i> <span data-i18n="search-users">Search Users</span>
             </h5>
         </div>
         <div class="card-body">
             <form id="search-form" class="mb-3">
                 <div class="input-group">
-                    <input type="text" id="search-input" class="form-control" placeholder="Enter username" required>
-                    <button class="btn btn-primary" type="submit">Search</button>
+                    <input type="text" id="search-input" class="form-control" data-i18n="[placeholder]please-enter-username" placeholder="Please enter a username" required>
+                    <button class="btn btn-primary" type="submit" data-i18n="search">Search</button>
                 </div>
             </form>
             <ul id="search-results" class="list-group"></ul>
@@ -27,7 +27,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">
-                <i class="fa fa-users"></i> My Friends
+                <i class="fa fa-users"></i> <span data-i18n="my-friends">My Friends</span>
             </h5>
             <span id="friends-count" class="badge bg-secondary">0</span>
         </div>
@@ -35,7 +35,7 @@
             <!-- Search Friends -->
             <div class="mb-3">
                 <div class="input-group">
-                    <input type="text" id="friends-search-input" class="form-control" placeholder="Search among friends">
+                    <input type="text" id="friends-search-input" class="form-control" data-i18n="[placeholder]search-among-friends" placeholder="Search among friends">
                     <button class="btn btn-outline-secondary" type="button" id="clear-friends-search">
                         <i class="fa fa-times"></i>
                     </button>
@@ -52,7 +52,7 @@
             
             <!-- No Friends Message -->
             <div id="no-friends-message" class="alert alert-info d-none">
-                <i class="fa fa-info-circle"></i> You don't have any friends yet. Start by searching for users above!
+                <i class="fa fa-info-circle"></i> <span data-i18n="no-friends-message">You don't have any friends yet. Start by searching for users above!</span>
             </div>
         </div>
     </div>
