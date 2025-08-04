@@ -36,8 +36,6 @@ SECRET_KEY = 'django-insecure-0@n&*t190%$-3nk#^r=#($te)ilh8_dps$odbwgj&5%kpj713n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -56,6 +54,22 @@ INSTALLED_APPS = [
     'pong_game_ws.apps.PongGameWsConfig',
     'corsheaders'
 ]
+
+# HTTPS Security Settings
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# CORS per HTTPS
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost",
+    "https://127.0.0.1",
+]
+
+ALLOWED_HOSTS = [ "*" ]
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
