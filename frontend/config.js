@@ -99,6 +99,7 @@ export const CONFIG = {
 			view: "playMenu",
 			controller: PlayMenuController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		localGame: {
 			view: "localGame",
@@ -110,16 +111,19 @@ export const CONFIG = {
 			view: "onlineGame",
 			controller: OnlineGameController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		privateMatch: {
 			view: "privateMatch",
 			controller: PrivateMatchController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		rankedMatch: {
 			view: "rankedMatch",
 			controller: RankedMatchController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		login: {
 			view: "login",
@@ -139,6 +143,7 @@ export const CONFIG = {
 			view: "",
 			controller: ProfileMenuController,
 			authRequired: false,
+			hideLangSwitcher: true,
 		},
 		game: {
 			view: "game",
@@ -150,26 +155,31 @@ export const CONFIG = {
 			view: "profile",
 			controller: ProfileController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		history: {
 			view: "history",
 			controller: HistoryController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		walloffame: {
              view: "walloffame",
              controller: WallOfFameController,
              authRequired: true,
+			hideLangSwitcher: true,
          },
 		search: {
 			view: "search",
 			controller: SearchController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		tournamentMenu: {
 			view: "tournamentMenu",
 			controller: TournamentMenuController,
 			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		tournament: {
 			view: "tournament",
