@@ -72,11 +72,11 @@ export const CONFIG = {
 	appContainerID: "app",
 
 	apiRoutes: {
-		userApiUrl: `${BASE_URL}:8003`,
-		matchApiUrl: `${BASE_URL}:8001`,
-		pongApiUrl: `${WS_URL}:8002`,
-		profileApiUrl: `${BASE_URL}:8004`,
-	},
+    userApiUrl: "/api/user",        // PRIMA era `${BASE_URL}:8003`
+    matchApiUrl: "/api/match",      // PRIMA era `${BASE_URL}:8001`
+    pongApiUrl: "/api/pong",        // PRIMA era `${WS_URL}:8002`
+    profileApiUrl: "/api/profile",  // PRIMA era `${BASE_URL}:8004`
+  	},
 	
 
 	/**
