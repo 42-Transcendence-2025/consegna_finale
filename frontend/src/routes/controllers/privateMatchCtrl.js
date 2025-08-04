@@ -2,7 +2,6 @@ export class PrivateMatchController {
     titleSuffix = "";
 
     init() {
-        console.log("Private Match Controller");
         this.#bindEvents();
         this.#initializeTooltips();
         this.#setupLanguageChangeListener();
@@ -32,7 +31,6 @@ export class PrivateMatchController {
                     const response = await matchManager.matchPassword(password);
 
                     if (response && response.game_id) {
-                        console.log("Match found:", response);
                         localStorage.setItem("game_id", response.game_id);
                         window.location.hash = "#game?type=private";
                     } else {
@@ -43,7 +41,6 @@ export class PrivateMatchController {
                     }
                 } catch (error) {
                     if (error && error.name === 'AbortError') {
-                        console.log('PrivateMatchCtrl: Match search aborted by user.');
                     } else {
                         console.error("PrivateMatchCtrl: Error during match:", error);
                         loadingScreen.classList.add("d-none");

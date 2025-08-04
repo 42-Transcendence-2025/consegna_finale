@@ -13,7 +13,6 @@ export class LoginController {
 	];
 
 	init() {
-		console.log("Login Controller");
 		this.#bindEvents();
 	};
 

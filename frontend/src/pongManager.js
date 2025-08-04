@@ -23,15 +23,9 @@ export function createPongManager(pongApiUrl) {
 	  gameId = _gameId;
 	  accessToken = localStorage.getItem("access_token");
 	  
-	  console.log("[PongManager] PongAPI URL:", pongApiUrl);
-	  
 	  socket = new WebSocket(`${pongApiUrl}/ws/game/${gameId}/`);
   
-	  socket.onopen = () => {
-		console.log("[PongManager] Connessione aperta");
-		// Autenticazione: invia il token come semplice stringa
-		console.log("[PongManager] Inviando accessToken:", accessToken);
-		
+	  socket.onopen = () => {		
 		socket.send(accessToken);
 	  };
   
@@ -71,7 +65,6 @@ export function createPongManager(pongApiUrl) {
 		  case undefined:
 			// Gestione messaggio di autenticazione (non ha campo type)
 			if (data.message && data.message.includes("Authentication successful")) {
-				console.log("[PongManager] Autenticazione riuscita:", data.message);
 				break;
 			}
 			// Se non è autenticazione, logga come messaggio sconosciuto

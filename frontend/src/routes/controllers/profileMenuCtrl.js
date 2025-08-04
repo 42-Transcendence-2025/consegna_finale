@@ -4,7 +4,6 @@ export class ProfileMenuController {
     }
 
     init() {
-		console.log("Profile Menu Controller");
         this.update(); // Inizializza il menu
     }
 

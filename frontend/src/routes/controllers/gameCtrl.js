@@ -7,7 +7,6 @@ export class GameController {
         // Pulisci eventuali listener residui da sessioni precedenti
         this.cleanup();
         
-        console.log("Game Controller");
         this.canvas = document.getElementById("onlineGameCanvas");
         this.ctx = this.canvas.getContext("2d");
 		const gameContainer = document.getElementById("onlineGameContainer");
@@ -152,10 +151,7 @@ export class GameController {
 		const rightReady = data.right_ready;
 		const leftReadyStatus = document.getElementById("leftIsReady");
 		const rightReadyStatus = document.getElementById("rightIsReady");
-		const timer = document.getElementById("readyTimer");
-
-		console.log("[GameController] Players ready status:", leftReady, rightReady);
-		
+		const timer = document.getElementById("readyTimer");		
 
 		if (leftReady) {
 			leftReadyStatus.classList.remove("visually-hidden");
@@ -561,8 +557,6 @@ export class GameController {
 		const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
 		const gameType = urlParams.get('type');
 		
-		console.log("[GameController] Game type from URL:", gameType);
-		
 		// Reindirizza basandosi sul tipo di partita
 		switch (gameType) {
 			case 'tournament':
@@ -580,9 +574,7 @@ export class GameController {
 		}
 	}
 
-	cleanup() {
-		console.log("GameController cleanup started");
-		
+	cleanup() {		
 		// Rimuovi i listener per i movimenti
 		if (this.keydownHandler) {
 			document.removeEventListener("keydown", this.keydownHandler);
@@ -643,8 +635,6 @@ export class GameController {
 		
 		// OTTIMIZZAZIONE: Pulisci interpolazione
 		this.interpolation = null;
-		
-		console.log("GameController cleanup completed");
 	}
 }
 

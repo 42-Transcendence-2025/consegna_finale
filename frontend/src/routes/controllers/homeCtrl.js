@@ -7,11 +7,8 @@ export class HomeController {
 	titleSuffix = "Home";
 
 	async init() {
-		console.log("Home Controller");
-
 		if (window.tools?.authManager?.isLoggedIn()) {
 			await window.tools.authManager.getUserInfo();
-			console.log("User info loaded:", window.tools.authManager.username);
 			const navbarUsername = document.getElementById('navbar-username');
 			if (navbarUsername) {
 				navbarUsername.textContent = window.tools.authManager.username;

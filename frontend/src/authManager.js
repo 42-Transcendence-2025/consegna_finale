@@ -176,8 +176,6 @@ export class AuthManager {
 				.done((response, status, jqXHR) => {
 					this.#lastResponse = response;
 					if (jqXHR.status == 202){
-						// The OTP code was sent to the user's email
-						console.log(response.detail);
 						
 						// Mostra l'OTP nella console del browser per copia/incolla facile
 						if (response.otp_code) {
@@ -232,8 +230,6 @@ export class AuthManager {
 					this.#lastResponse = response;
 					console.debug(`Register response:`, response, textStatus, jqXHR);
 					if (jqXHR.status == 201){
-						// The OTP code was sent to the user's email
-						console.log(response.detail);
 						
 						// Mostra l'OTP nella console del browser per copia/incolla facile
 						if (response.otp_code) {
@@ -371,7 +367,6 @@ export class AuthManager {
 			.done((response) => {
 				this.#lastResponse = response;
 				this.#user = response;
-				console.log('User info loaded:', this.username);
 				resolve(response);
 			})
 			.fail((error) => {
@@ -386,7 +381,6 @@ export class AuthManager {
 
 	async initializeUserInfo() {
 		if (this.isLoggedIn() && !this.#user) {
-			console.log('Initializing user info...');
 			await this.getUserInfo();
 		}
 	}

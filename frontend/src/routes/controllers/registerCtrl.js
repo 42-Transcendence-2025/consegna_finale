@@ -21,7 +21,6 @@ export class RegisterController {
 	lastRegisterRequest = null;
 
 	init() {
-		console.log("Register Controller");
 		this.#bindEvents();
 	};
 

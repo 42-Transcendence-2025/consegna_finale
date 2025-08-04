@@ -41,9 +41,7 @@ export class LocalGameCtrl {
         };
     }
 
-    async init() {
-        console.log("Local Game Controller");
-        
+    async init() {        
         this.initializeCanvas();
         this.inputListeners();
         this.gameLoop();
@@ -612,9 +610,7 @@ export class LocalGameCtrl {
         requestAnimationFrame(animate);
     }
 
-    cleanup() {
-        console.log("LocalGameController cleanup started");
-        
+    cleanup() {        
         // Rimuovi i listener per i movimenti
         if (this.keydownHandler) {
             document.removeEventListener("keydown", this.keydownHandler);
@@ -652,8 +648,5 @@ export class LocalGameCtrl {
         
         // Pulisci l'effetto fuoco
         this.fireParticles = [];
-        this.fireAnimationTime = 0;
-        
-        console.log("LocalGameController cleanup completed");
-    }
+        this.fireAnimationTime = 0;    }
 }

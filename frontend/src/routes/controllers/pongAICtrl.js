@@ -9,8 +9,7 @@ export class PongAIController {
         this.userProfile = null;
     }
 
-    async init() {
-		console.log("Pong AI Controller");		
+    async init() {	
 		
 		// Carica il profilo utente
 		await this.#loadUserProfile();

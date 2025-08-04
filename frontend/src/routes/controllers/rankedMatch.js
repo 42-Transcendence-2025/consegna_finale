@@ -3,7 +3,6 @@ export class RankedMatchController {
     #pollingInterval = null;
 
     init() {
-        console.log("Ranked Match Controller");
         this.#bindEvents();
         this.#setupLanguageChangeListener();
         this.#loadPlayerTrophies();
@@ -68,8 +67,6 @@ export class RankedMatchController {
                 const response = await matchManager.checkRankedMatchStatus();
 
                 if (response && response.game_id) {
-                    // Match trovato!
-                    console.log("Ranked match found:", response);
                     this.#stopPolling();
                     localStorage.setItem("game_id", response.game_id);
                     window.location.hash = "#game?type=ranked";
@@ -77,13 +74,11 @@ export class RankedMatchController {
                 // Se status è ancora "waiting", continua il polling
             } catch (error) {
                 if (error.status === 404) {
-                    // Matchmaking scaduto o cancellato
-                    console.log("Ranked matchmaking expired or cancelled");
                     this.#stopPolling();
                     this.#showForm();
                 } else if (error.status === 202) {
                     // Ancora in attesa, continua il polling
-                    console.log("Still searching for ranked match...");
+                    console.log("Searching for ranked match...");
                 } else {
                     console.error("RankedMatch: Polling error:", error);
                     this.#stopPolling();
@@ -108,7 +103,6 @@ export class RankedMatchController {
             
             this.#stopPolling();
             this.#showForm();
-            console.log("Ranked search cancelled");
         } catch (error) {
             console.error("RankedMatch: Error cancelling search:", error);
             this.#stopPolling();

@@ -12,7 +12,6 @@ export class MockTournamentApi {
         this.tournamentId = tournamentId;
         this.#initializeState();
         this.#startSimulation();
-        console.log("MockTournamentApi Iniziata (Nuova Struttura).");
     }
 
     #initializeState() {
@@ -75,7 +74,6 @@ export class MockTournamentApi {
 
     #addPlayer(slot) {
         const playerName = this.#playerNames[slot];
-        console.log(`MOCK: Aggiunto player ${playerName} allo slot ${slot}`);
 
         const matchIndex = Math.floor(slot / 2);
         const playerIndex = slot % 2;
@@ -89,7 +87,6 @@ export class MockTournamentApi {
         // Se è l'ultimo giocatore, imposta lo stato a "full"
         if (slot === 7) {
             this.#tournamentState.status = "full";
-            console.log("MOCK: Torneo pieno!");
         }
     }
 
@@ -98,19 +95,16 @@ export class MockTournamentApi {
         for (let i = 0; i < 4; i++) {
             this.#tournamentState.matches[i].status = "in_game";
         }
-        console.log("MOCK: Torneo pronto per iniziare i match! Quarti di finale in corso.");
     }
 
     #setMatchInProgress(matchIndex) {
         const match = this.#tournamentState.matches[matchIndex];
         if (match && match.player_1 !== "null" && match.player_2 !== "null") {
             match.status = "in_game";
-            console.log(`MOCK: Match ${matchIndex} è ora in corso.`);
         }
     }
 
     #finishMatch(matchIndex, winner) {
-        console.log(`MOCK: Fine match ${matchIndex}, vincitore: ${winner}`);
         const match = this.#tournamentState.matches[matchIndex];
         if (!match) return;
 
@@ -144,14 +138,12 @@ export class MockTournamentApi {
 
             if (finalMatch.player_1 !== "null" && finalMatch.player_2 !== "null") {
                 finalMatch.status = "in_game";
-                console.log("MOCK: Finale pronta per iniziare.");
             }
         }
         // Finale -> Fine torneo
         else if (finishedMatchIndex === 6) {
             this.#tournamentState.status = "finished";
             this.#tournamentState.winner = winner;
-            console.log(`MOCK: Torneo finito! Vincitore: ${winner}`);
         }
     }
 
