@@ -15,6 +15,7 @@ import {ProfileController} from "./src/routes/controllers/profileCtrl.js";
 import {SearchController} from "./src/routes/controllers/searchCtrl.js";
 import {HistoryController} from "./src/routes/controllers/historyCtrl.js";
 import {WallOfFameController} from "./src/routes/controllers/wallOfFameCtrl.js";
+import {LocalGameCtrl} from "./src/routes/controllers/localGameCtrl.js";
 
 
 /**
@@ -98,6 +99,12 @@ export const CONFIG = {
 			view: "playMenu",
 			controller: PlayMenuController,
 			authRequired: true,
+		},
+		localGame: {
+			view: "localGame",
+			controller: LocalGameCtrl,
+			authRequired: true,
+			hideLangSwitcher: true,
 		},
 		onlineGame: {
 			view: "onlineGame",
