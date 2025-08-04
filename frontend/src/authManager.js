@@ -62,19 +62,18 @@ export class AuthManager {
 	}
 
 	#setupAjaxDefaults() {
-		// Configure jQuery to automatically add Authorization header
-		$.ajaxSetup({
-			beforeSend: (xhr, settings) => {
-				// Only add auth header for requests to our API
-				if (settings.url.includes(':8003') || settings.url.includes(':8001') || 
-				    settings.url.includes(':8002') || settings.url.includes(':8004')) {
-					const token = this.accessToken;
-					if (token) {
-						xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-					}
+	// Configure jQuery to automatically add Authorization header
+	$.ajaxSetup({
+		beforeSend: (xhr, settings) => {
+			// Aggiungi header solo per le richieste verso /api/
+			if (settings.url.startsWith("/api/")) {
+				const token = this.accessToken;
+				if (token) {
+					xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 				}
 			}
-		});
+		}
+	});
 	}
 
 	destroy() {
