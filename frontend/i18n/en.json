@@ -87,6 +87,10 @@
 	"month": "Past Month",
 	"year": "Past Year",
 	"all-time": "All Time",
-	"privateMatch": "Private Match"
-
+	"privateMatch": "Private Match",
+	"local-game": "Local Game",
+	"player1": "Player 1",
+	"player2": "Player 2",
+	"ready": "Ready",
+	"localGameControls": "Player 1: W/S - Player 2: ↑/↓"
 }

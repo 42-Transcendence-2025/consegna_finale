@@ -87,5 +87,10 @@
 	"week": "Тиждень",
 	"month": "Місяць",
 	"year": "Рік",
-	"privateMatch": "Приватна гра"
+	"privateMatch": "Приватна гра",
+	"local-game": "Локальна гра",
+	"ready": "Готовий",
+	"player1": "Гравець 1",
+	"player2": "Гравець 2",
+	"localGameControls": "Гравець 1: W/S - Гравець 2: ↑/↓"
 }

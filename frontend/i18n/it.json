@@ -88,5 +88,10 @@
 	"month": "Ultimo Mese",
 	"year": "Ultimo Anno",
 	"all-time": "Tutti i Tempi",
-	"privateMatch": "Partita Privata"
+	"privateMatch": "Partita Privata",
+	"local-game": "Partita Locale",
+	"ready": "Pronto",
+	"player1": "Giocatore 1",
+	"player2": "Giocatore 2",
+	"localGameControls": "Giocatore 1: W/S - Giocatore 2: ↑/↓"
 }

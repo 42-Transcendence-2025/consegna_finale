@@ -542,14 +542,8 @@ export class LocalGameCtrl {
             this.ctx.textAlign = "center";
             this.ctx.zIndex = 1000;
             if (Math.floor(Date.now() / 1000) % 2 === 0) {
-                if (!this.player1Ready && !this.player2Ready) {
-                    this.ctx.fillText("Player 1: W/S - Player 2: ↑/↓", this.canvas.width / 2, this.canvas.height / 3);
-                } else if (this.player1Ready && !this.player2Ready) {
-                    this.ctx.fillText("Waiting for Player 2...", this.canvas.width / 2, this.canvas.height / 3);
-                } else if (!this.player1Ready && this.player2Ready) {
-                    this.ctx.fillText("Waiting for Player 1...", this.canvas.width / 2, this.canvas.height / 3);
-                } else {
-                    this.ctx.fillText("Both players ready! Starting...", this.canvas.width / 2, this.canvas.height / 3);
+                if (!this.player1Ready || !this.player2Ready) {
+                    this.ctx.fillText($.i18n('localGameControls') || "Player 1: W/S - Player 2: ↑/↓", this.canvas.width / 2, this.canvas.height / 3);
                 }
             }
         }
