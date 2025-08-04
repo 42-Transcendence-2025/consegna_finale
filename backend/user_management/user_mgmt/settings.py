@@ -53,16 +53,18 @@ INSTALLED_APPS = [
 
 # HTTPS Security Settings
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # CORS per HTTPS
 CORS_ALLOWED_ORIGINS = [
-    "https://localhost",
-    "https://127.0.0.1",
+    "http://localhost",     # ← HTTP
+    "https://localhost",    # ← HTTPS
+    "http://127.0.0.1",     # ← HTTP
+    "https://127.0.0.1",    # ← HTTPS
 ]
 
 ALLOWED_HOSTS = [ "*" ]
@@ -72,10 +74,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
