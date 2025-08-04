@@ -45,7 +45,7 @@ export class ProfileMenuController {
             //profileDropdown.appendChild(divider);
 
             const searchItem = document.createElement('li');
-            searchItem.innerHTML = `<a class="dropdown-item" href="#search">Search Users</a>`;
+            searchItem.innerHTML = `<a class="dropdown-item" href="#search" data-i18n="search-users">Search Users</a>`;
             profileDropdown.appendChild(searchItem);
 
             const divider = document.createElement('li');

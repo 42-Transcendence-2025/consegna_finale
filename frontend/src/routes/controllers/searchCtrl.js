@@ -33,7 +33,7 @@ export class SearchController {
         
         if (!query) {
             $results.html(
-                '<div class="alert alert-warning">Please enter a username.</div>'
+                '<div class="alert alert-warning" data-i18n="please-enter-username">Please enter a username.</div>'
             );
             return;
         }
@@ -52,7 +52,7 @@ export class SearchController {
             
             if (filtered.length === 0) {
                 $results.html(
-                    '<div class="alert alert-info">No users found.</div>'
+                    '<div class="alert alert-info" data-i18n="no-users-found">No users found.</div>'
                 );
                 return;
             }
@@ -114,7 +114,7 @@ export class SearchController {
 
         if (friends.length === 0) {
             $friendsList.html(
-                '<div class="alert alert-info">No friends match your search.</div>'
+                '<div class="alert alert-info" data-i18n="no-users-found">No friends match your search.</div>'
             );
             return;
         }

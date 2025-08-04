@@ -159,7 +159,7 @@ export class WallOfFameController {
                 <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                     style="cursor:pointer;">
                     <span>${u.username}</span>
-                    <span class="fw-bold">${subtitleFn(u)}</span>
+                    <span class="fw-bold" data-i18n="trophies">${subtitleFn(u)}</span>
                 </li>`);
             $li.on('click', () =>
 			{
